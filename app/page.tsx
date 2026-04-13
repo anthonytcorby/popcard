@@ -336,16 +336,16 @@ export default function HomePage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, transition: { duration: 0.2 } }}
+              className="flex flex-col items-center gap-3 py-16"
             >
               <LoadingBubbles />
-              <div className="flex justify-center">
-                <button
-                  onClick={handleCancel}
-                  className="mt-2 text-sm text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
+              <p className="text-sm text-gray-400 animate-pulse">Analyzing transcript...</p>
+              <button
+                onClick={handleCancel}
+                className="mt-1 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
             </motion.div>
           )}
 
@@ -399,8 +399,10 @@ export default function HomePage() {
               </div>
 
               <p className="text-xs text-gray-400 mb-5">
-                {filterableCards.length} card{filterableCards.length !== 1 ? 's' : ''} popped
-                {appState === 'loading' && ' · loading more…'}
+                {filterableCards.length} card{filterableCards.length !== 1 ? 's' : ''} found
+                {appState === 'loading' ? (
+                  <span className="animate-pulse"> · extracting more...</span>
+                ) : null}
               </p>
 
               {videoInfo && (
