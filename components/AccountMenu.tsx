@@ -39,7 +39,7 @@ export default function AccountMenu({ onSignIn }: { onSignIn: () => void }) {
   }
 
   const { extractionCount, subscriptionStatus } = session.user;
-  const isSubscribed = subscriptionStatus === 'active' || subscriptionStatus === 'past_due';
+  const isSubscribed = subscriptionStatus === 'active' || subscriptionStatus === 'trialing' || subscriptionStatus === 'past_due';
   const remaining = Math.max(0, FREE_LIMIT - extractionCount);
 
   return (
@@ -61,7 +61,9 @@ export default function AccountMenu({ onSignIn }: { onSignIn: () => void }) {
 
           <div className="px-4 py-3 border-b border-gray-100">
             {isSubscribed ? (
-              <p className="text-xs font-medium text-green-600">Pro plan active</p>
+              <p className="text-xs font-medium text-green-600">
+                {subscriptionStatus === 'trialing' ? 'Pro trial active' : 'Pro plan active'}
+              </p>
             ) : (
               <p className="text-xs font-medium text-gray-500">
                 {remaining} of {FREE_LIMIT} free extraction{remaining !== 1 ? 's' : ''} remaining

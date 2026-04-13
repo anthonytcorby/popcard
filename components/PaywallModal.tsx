@@ -17,6 +17,7 @@ const PLANS = [
     period: '/month',
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY,
     badge: null,
+    afterTrial: 'then £3.99/mo',
   },
   {
     id: 'yearly',
@@ -25,6 +26,7 @@ const PLANS = [
     period: '/year',
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY,
     badge: 'Save 16%',
+    afterTrial: 'then £39.99/yr',
   },
 ];
 
@@ -78,9 +80,9 @@ export default function PaywallModal({ open, onClose }: PaywallModalProps) {
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#4A90D9] to-[#6C63FF] flex items-center justify-center">
             <Lightning size={28} weight="fill" className="text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-1">Upgrade to Popcard Pro</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-1">Start your free trial</h2>
           <p className="text-sm text-gray-500">
-            You&apos;ve used all 3 free extractions. Upgrade for unlimited access.
+            You&apos;ve used all 3 free extractions. Try Popcard Pro free for 7 days — cancel anytime.
           </p>
         </div>
 
@@ -107,9 +109,9 @@ export default function PaywallModal({ open, onClose }: PaywallModalProps) {
               )}
               <p className="text-sm font-semibold text-gray-700 mb-1">{plan.name}</p>
               <p className="text-2xl font-bold text-gray-900">
-                {plan.price}
-                <span className="text-sm font-normal text-gray-400">{plan.period}</span>
+                7 days free
               </p>
+              <p className="text-xs text-gray-400 mt-0.5">{plan.afterTrial}</p>
               {loading === plan.id && (
                 <SpinnerGap size={20} className="animate-spin text-[#4A90D9] mt-2" />
               )}
@@ -128,7 +130,7 @@ export default function PaywallModal({ open, onClose }: PaywallModalProps) {
         </ul>
 
         <p className="text-xs text-gray-400 text-center">
-          Cancel anytime. Payments secured by Stripe.
+          No charge for 7 days. Cancel anytime. Payments secured by Stripe.
         </p>
       </div>
     </div>

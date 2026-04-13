@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import {
   Sparkle, Rocket, ChartBar, Quotes, Warning,
   Wrench, Books, ArrowsClockwise, Lightning,
-  Copy, ArrowSquareOut,
+  Copy, ArrowSquareOut, BookOpen,
 } from '@phosphor-icons/react';
 import { PopCard as PopCardType, CARD_COLORS, CARD_LABELS } from '@/types/card';
 
@@ -72,7 +72,8 @@ export default function PopCard({ card, index, videoUrl }: PopCardProps) {
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const copyText = `${card.headline}\n${card.body}`;
+    const refsText = card.references?.length ? `\n\nReferences:\n${card.references.map(r => `- ${r}`).join('\n')}` : '';
+    const copyText = `${card.headline}\n${card.body}${refsText}`;
     try {
       await navigator.clipboard.writeText(copyText);
     } catch {
@@ -199,6 +200,47 @@ export default function PopCard({ card, index, videoUrl }: PopCardProps) {
         >
           ⚠ {card.warning}
         </p>
+      )}
+
+      {/* References */}
+      {card.references && card.references.length > 0 && (
+        <div
+          className="mt-1 px-3 py-2 rounded-xl"
+          style={{ backgroundColor: 'rgba(0,0,0,0.12)' }}
+        >
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <BookOpen size={11} weight="bold" color={text === 'white' ? 'white' : '#1a1a1a'} />
+            <span
+              className="text-[10px] font-semibold uppercase tracking-wider opacity-70"
+              style={{ color: text }}
+            >
+              References
+            </span>
+          </div>
+          <ul className="flex flex-col gap-1">
+            {card.references.map((ref, i) => {
+              const isUrl = ref.startsWith('http://') || ref.startsWith('https://');
+              return (
+                <li key={i} className="text-xs leading-snug opacity-80" style={{ color: text }}>
+                  {isUrl ? (
+                    <a
+                      href={ref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:opacity-100 transition-opacity break-all"
+                      style={{ color: text }}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      {ref.replace(/^https?:\/\/(www\.)?/, '')}
+                    </a>
+                  ) : (
+                    <span>{ref}</span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
 
       {/* Timestamp chip */}

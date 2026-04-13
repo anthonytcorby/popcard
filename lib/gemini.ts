@@ -37,11 +37,12 @@ Return a JSON object with exactly two keys:
    {
      "type": string,         — see types below
      "headline": string,     — max 12 words; for SECTION_HEADER use the topic name
-     "body": string,         — 2-5 sentences, neutral factual tone; omit for SECTION_HEADER
+     "body": string,         — 4-8 sentences, neutral factual tone; omit for SECTION_HEADER
      "boldPhrase": string,   — single most important phrase to bold; omit for TLDR/SECTION_HEADER
      "timestamp": string,    — "MM:SS" REQUIRED for all except TLDR (use "0:00")
      "warning": string,      — OPTIONAL: brief, non-aggressive note if claim could mislead or cause harm
      "url": string           — OPTIONAL: only for TOOL_MENTIONED or RESOURCE_LINK if a URL was stated
+     "references": [string]  — OPTIONAL: array of URLs, book titles, paper names, or resources mentioned in context of this card
    }
 
 2. "takeaways" — an array of exactly 30 bite-size takeaway strings.
@@ -52,7 +53,7 @@ Return a JSON object with exactly two keys:
    - Order from most important → least important.
 
 ━━━ CARD TYPES ━━━
-TLDR           — One card only, first in array. 3-5 sentence plain-English summary of the whole video.
+TLDR           — One card only, first in array. 5-8 sentence plain-English summary of the whole video with specific takeaways, not vague overview.
 SECTION_HEADER — Topic divider. headline = topic name. No body, no boldPhrase needed.
 KEY_INSIGHT    — Core conceptual takeaway from the video.
 ACTIONABLE_TIP — Something the viewer can immediately do or apply.
@@ -76,20 +77,39 @@ KEY_THEME      — A point repeated or heavily emphasised across the video (use 
 - Add "warning" field ONLY when content could be misleading, dangerous, or controversial.
   Keep warnings brief and factual, not preachy: e.g. "Note: no peer-reviewed studies cited."
 
-━━━ DEPTH & SPECIFICITY (CRITICAL) ━━━
+━━━ DEPTH & SPECIFICITY (CRITICAL — READ THREE TIMES) ━━━
 Your job is to REPLACE watching the video. The user should get FULL VALUE from your cards.
+If someone reads your cards and still needs to watch the video to learn what was actually said, YOU HAVE FAILED.
 
 DO NOT summarise. DO NOT generalise. DO NOT merge multiple points into one card.
 Each distinct idea, fact, step, example, anecdote, or quote = its own card.
 
+ABSOLUTE RULE: Never write ABOUT what someone said — write WHAT they said.
+- TERRIBLE: "Brett discusses the importance of wow moments in product design." ← This tells the reader NOTHING. What ARE the wow moments? What examples did he give? What makes them work?
+- TERRIBLE: "They emphasize creating products that provide wow moments to engage users." ← Still useless. The reader learns nothing they couldn't guess from the video title.
+- GOOD: "Brett defines a 'wow moment' as the first time a user experiences unexpected value — for example, when Dropbox's file syncs instantly across devices without the user doing anything. He argues the wow moment should happen within the first 60 seconds of using the product, before the user has time to get bored or confused. Products that delay the wow moment past the first session lose 80% of signups."
+
+Card bodies must be 4-8 sentences. EACH sentence should contain a FACT, DETAIL, EXAMPLE, or NUMBER from the source.
+Zero filler sentences. Zero meta-commentary. Zero "this is important because..." padding.
+
 - Extract SPECIFIC details: names, dollar amounts, percentages, timeframes, frameworks, examples.
 - BAD: "He suggests cutting costs." GOOD: "Hormozi suggests cancelling all subscriptions under $500/month, switching to a cheaper phone plan, and meal prepping to cut food costs by 60%."
 - BAD: "Revenue increased." GOOD: "Revenue increased from $12K/month to $48K/month in 90 days after switching to cold outbound."
-- If the speaker tells a story or gives an example, capture it as a card with the actual details.
+- BAD: "She shares several strategies for growth." GOOD: Include EACH strategy as its own card with the actual strategy explained.
+- If the speaker tells a story or gives an example, capture the FULL story — the setup, the key details, and the outcome.
 - If the speaker gives a multi-step process, EACH step gets its own ACTIONABLE_TIP card with specifics.
+- If the speaker mentions a framework, explain the ENTIRE framework — what are its components, how do they connect, what are examples?
 - Include enough context that each card is useful WITHOUT watching the video.
 - QUOTE cards are the most valuable — capture EVERY memorable, provocative, funny, or insightful line.
   Scan the entire transcript for quotable moments. When in doubt, include the quote.
+
+━━━ REFERENCES & LINKS ━━━
+- When a speaker mentions a book, paper, study, website, tool, or resource, add it to the "references" array on that card.
+- For books: "Book: [Title] by [Author]"
+- For websites/tools: include the full URL if stated, or the product name if no URL given
+- For studies/papers: "Study: [description]" with author/institution if mentioned
+- For people mentioned: "Person: [Name] — [role/context]" if the speaker references someone's work
+- Only include references that were ACTUALLY MENTIONED in the source material. Never fabricate references.
 
 ━━━ NARRATIVE THREADING (IMPORTANT) ━━━
 When the source material builds a logical chain — where point A leads to point B, or a cause produces an effect, or a story builds on itself — weave this into the card bodies so the reader feels the progression.
@@ -157,6 +177,7 @@ type RawCard = {
   timestamp?: string;
   warning?: string;
   url?: string;
+  references?: string[];
 };
 
 /* ─── Shared JSON parser ──────────────────────────────────────── */
@@ -191,11 +212,13 @@ function toCards(rawCards: RawCard[]): PopCard[] {
     timestamp: item.timestamp,
     warning: item.warning,
     url: item.url,
+    references: item.references?.length ? item.references : undefined,
   }));
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   OpenAI — primary engine (GPT-4o-mini: fast, cheap, 99.9% SLA)
+   OpenAI — primary engine (GPT-4.1-mini: strong instruction
+   following at mini pricing)
    ═══════════════════════════════════════════════════════════════ */
 async function extractViaOpenAI(transcript: string): Promise<ExtractionResult> {
   if (!openai) throw new Error('OPENAI_API_KEY not configured');
@@ -206,10 +229,10 @@ async function extractViaOpenAI(transcript: string): Promise<ExtractionResult> {
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     try {
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1-mini',
         response_format: { type: 'json_object' },
-        temperature: 0.3,
-        max_tokens: 16384,
+        temperature: 0.4,
+        max_tokens: 32768,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: `Transcript:\n${transcript}` },
@@ -219,8 +242,14 @@ async function extractViaOpenAI(transcript: string): Promise<ExtractionResult> {
       const text = completion.choices[0]?.message?.content?.trim();
       if (!text) throw new Error('Empty OpenAI response');
 
-      console.log(`[openai] gpt-4o-mini succeeded on attempt ${attempt + 1}`);
+      console.log(`[openai] gpt-4.1-mini succeeded on attempt ${attempt + 1}`);
       const { rawCards, takeaways } = parseExtractionJSON(text);
+
+      // Validate minimum quality — if GPT returns too few cards, log a warning
+      if (rawCards.length < 20) {
+        console.warn(`[openai] Only ${rawCards.length} cards returned (minimum 25 expected)`);
+      }
+
       return { cards: toCards(rawCards), takeaways };
     } catch (err) {
       lastErr = err;
@@ -287,8 +316,8 @@ async function extractViaGemini(transcript: string): Promise<ExtractionResult> {
   for (const modelName of MODELS) {
     const model = genAI.getGenerativeModel({ model: modelName });
     const generationConfig: ExtendedGenerationConfig = {
-      temperature: 0.3,
-      maxOutputTokens: 16384,
+      temperature: 0.4,
+      maxOutputTokens: 32768,
       responseMimeType: 'application/json',
       thinkingConfig: { thinkingBudget: modelName.includes('pro') ? 1024 : 0 },
     };
@@ -379,20 +408,119 @@ async function extractWithQuoteValidation(
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Public API — OpenAI first, Gemini fallback
+   Chunking — split long transcripts for parallel extraction
    ═══════════════════════════════════════════════════════════════ */
-export async function extractCards(transcript_: string): Promise<ExtractionResult> {
-  let transcript = transcript_;
 
-  const estimatedTokens = estimateTokens(transcript);
-  const MAX_INPUT_TOKENS = 120_000; // leave room for system prompt + output
-  if (estimatedTokens > MAX_INPUT_TOKENS) {
-    // Truncate transcript to fit within context window
-    const maxChars = MAX_INPUT_TOKENS * 4;
-    console.warn(`[extract] Transcript ~${estimatedTokens} tokens, truncating to ~${MAX_INPUT_TOKENS}`);
-    transcript = transcript.slice(0, maxChars) + '\n\n[Transcript truncated due to length]';
+/** Target ~25K tokens per chunk (~100K chars) — fits comfortably in 128K context with room for system prompt + output */
+const CHUNK_TOKEN_TARGET = 25_000;
+const CHUNK_CHAR_TARGET = CHUNK_TOKEN_TARGET * 4;
+
+/** Threshold above which we chunk instead of sending as one request */
+const CHUNK_THRESHOLD_TOKENS = 35_000;
+
+/**
+ * Split transcript into chunks at natural boundaries (timestamp markers or sentence ends).
+ * Each chunk gets ~300 char overlap with its neighbor for context continuity.
+ */
+function chunkTranscript(transcript: string): string[] {
+  const totalTokens = estimateTokens(transcript);
+  if (totalTokens <= CHUNK_THRESHOLD_TOKENS) return [transcript];
+
+  const chunks: string[] = [];
+  let offset = 0;
+  const OVERLAP = 300;
+
+  while (offset < transcript.length) {
+    let end = Math.min(offset + CHUNK_CHAR_TARGET, transcript.length);
+
+    // If not at the end, try to break at a timestamp marker [MM:SS] or sentence boundary
+    if (end < transcript.length) {
+      // Look backwards up to 2000 chars for a good break point
+      const searchRegion = transcript.slice(Math.max(offset, end - 2000), end);
+      // Prefer breaking at a timestamp marker
+      const tsMatch = searchRegion.match(/[\s\S]*\[\d+:\d{2}\]/);
+      if (tsMatch) {
+        end = (end - 2000 + tsMatch[0].length);
+        if (end <= offset) end = Math.min(offset + CHUNK_CHAR_TARGET, transcript.length);
+      } else {
+        // Fall back to sentence boundary
+        const sentEnd = searchRegion.match(/[\s\S]*[.!?]\s/);
+        if (sentEnd) {
+          end = (end - 2000 + sentEnd[0].length);
+          if (end <= offset) end = Math.min(offset + CHUNK_CHAR_TARGET, transcript.length);
+        }
+      }
+    }
+
+    chunks.push(transcript.slice(offset, end));
+    offset = Math.max(offset + 1, end - OVERLAP); // overlap for context
   }
 
+  console.log(`[extract] Split transcript (~${totalTokens} tokens) into ${chunks.length} chunks`);
+  return chunks;
+}
+
+/** Merge results from multiple chunks into one, deduplicating and re-ordering */
+function mergeResults(results: ExtractionResult[]): ExtractionResult {
+  if (results.length === 1) return results[0];
+
+  // Use the first TLDR found (from the first chunk which has full opening context)
+  let tldrCard: PopCard | undefined;
+  const allCards: PopCard[] = [];
+  const allTakeaways: string[] = [];
+  const seenHeadlines = new Set<string>();
+
+  for (const result of results) {
+    for (const card of result.cards) {
+      // Take first TLDR only
+      if (card.type === 'TLDR') {
+        if (!tldrCard) tldrCard = card;
+        continue;
+      }
+
+      // Basic dedup by headline similarity
+      const normHeadline = card.headline.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (seenHeadlines.has(normHeadline)) continue;
+      seenHeadlines.add(normHeadline);
+
+      allCards.push(card);
+    }
+
+    for (const t of result.takeaways) {
+      const norm = t.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (!allTakeaways.some(existing => existing.toLowerCase().replace(/[^a-z0-9]/g, '') === norm)) {
+        allTakeaways.push(t);
+      }
+    }
+  }
+
+  // Sort non-TLDR/non-SECTION_HEADER cards by timestamp
+  allCards.sort((a, b) => {
+    if (!a.timestamp || !b.timestamp) return 0;
+    const parseTs = (ts: string) => {
+      const parts = ts.split(':').map(Number);
+      return parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] :
+             parts.length === 2 ? parts[0] * 60 + parts[1] : 0;
+    };
+    return parseTs(a.timestamp) - parseTs(b.timestamp);
+  });
+
+  // Re-assign IDs to avoid duplicates
+  const finalCards = [
+    ...(tldrCard ? [{ ...tldrCard, id: `card-${Date.now()}-tldr` }] : []),
+    ...allCards.map((c, i) => ({ ...c, id: `card-${Date.now()}-${i}` })),
+  ];
+
+  return {
+    cards: finalCards,
+    takeaways: allTakeaways.slice(0, 30),
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Primary extractor — tries OpenAI, falls back to Gemini
+   ═══════════════════════════════════════════════════════════════ */
+async function extractSingleChunk(transcript: string): Promise<ExtractionResult> {
   // 1. Try OpenAI (primary — fast, reliable, SLA-backed)
   if (openai) {
     try {
@@ -408,4 +536,36 @@ export async function extractCards(transcript_: string): Promise<ExtractionResul
   }
 
   throw new Error('No AI provider configured. Set OPENAI_API_KEY or GOOGLE_AI_API_KEY.');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Public API — chunks long transcripts, extracts in parallel
+   ═══════════════════════════════════════════════════════════════ */
+export async function extractCards(transcript: string): Promise<ExtractionResult> {
+  const chunks = chunkTranscript(transcript);
+
+  if (chunks.length === 1) {
+    return await extractSingleChunk(chunks[0]);
+  }
+
+  // Extract all chunks in parallel (max 3 concurrent to avoid rate limits)
+  const CONCURRENCY = 3;
+  const results: ExtractionResult[] = [];
+
+  for (let i = 0; i < chunks.length; i += CONCURRENCY) {
+    const batch = chunks.slice(i, i + CONCURRENCY);
+    const batchLabel = `chunks ${i + 1}-${i + batch.length}/${chunks.length}`;
+    console.log(`[extract] Processing ${batchLabel}`);
+
+    const batchResults = await Promise.all(
+      batch.map((chunk, j) => {
+        const chunkNum = i + j + 1;
+        const prefix = `This is part ${chunkNum} of ${chunks.length} of a longer transcript. Extract cards for THIS section only.\n\n`;
+        return extractSingleChunk(prefix + chunk);
+      }),
+    );
+    results.push(...batchResults);
+  }
+
+  return mergeResults(results);
 }

@@ -19,6 +19,7 @@ export interface PopCard {
   timestamp?: string;
   warning?: string;  // subtle note for potentially misleading content
   url?: string;      // for TOOL_MENTIONED / RESOURCE_LINK
+  references?: string[]; // books, papers, URLs, people mentioned in context of this card
 }
 
 export const CARD_COLORS: Record<CardType, { bg: string; text: string; pill: string }> = {

@@ -18,6 +18,7 @@ export async function GET() {
     remaining: Math.max(0, FREE_LIMIT - session.user.extractionCount),
     canExtract:
       session.user.subscriptionStatus === 'active' ||
+      session.user.subscriptionStatus === 'trialing' ||
       session.user.subscriptionStatus === 'past_due' ||
       session.user.extractionCount < FREE_LIMIT,
   });
@@ -43,6 +44,7 @@ export async function POST() {
   const isSubscribed =
     isAdmin ||
     dbUser.subscription?.status === 'active' ||
+    dbUser.subscription?.status === 'trialing' ||
     dbUser.subscription?.status === 'past_due';
 
   if (!isSubscribed && dbUser.extractionCount >= FREE_LIMIT) {

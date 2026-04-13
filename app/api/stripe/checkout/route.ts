@@ -33,9 +33,13 @@ export async function POST(req: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
+    include: { subscription: true },
   });
 
   const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
+
+  // Only offer free trial to first-time subscribers
+  const hasHadSubscription = !!user?.subscription;
 
   const checkoutParams: Record<string, unknown> = {
     mode: 'subscription',
@@ -44,6 +48,14 @@ export async function POST(req: NextRequest) {
     cancel_url: `${baseUrl}/`,
     metadata: { userId: session.user.id },
     allow_promotion_codes: true,
+    ...(hasHadSubscription
+      ? {}
+      : {
+          subscription_data: {
+            trial_period_days: 7,
+            metadata: { userId: session.user.id },
+          },
+        }),
   };
 
   if (user?.stripeCustomerId) {

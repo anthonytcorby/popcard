@@ -169,7 +169,7 @@ export default function HomePage() {
     }
 
     // Increment usage counter (fire-and-forget for non-subscribers)
-    const isSubscribed = usage.subscriptionStatus === 'active' || usage.subscriptionStatus === 'past_due';
+    const isSubscribed = usage.subscriptionStatus === 'active' || usage.subscriptionStatus === 'trialing' || usage.subscriptionStatus === 'past_due';
     if (!isSubscribed) {
       await fetch('/api/usage', { method: 'POST' });
     }
@@ -330,7 +330,7 @@ export default function HomePage() {
       </nav>
 
       {/* Remaining uses banner for free-tier users */}
-      {session && !(['active', 'past_due'].includes(session.user.subscriptionStatus ?? '')) && (
+      {session && !(['active', 'trialing', 'past_due'].includes(session.user.subscriptionStatus ?? '')) && (
         <div className="bg-blue-50 border-b border-blue-100 py-1.5 text-center">
           <p className="text-xs text-blue-600 font-medium">
             {Math.max(0, 3 - session.user.extractionCount)} of 3 free extractions remaining
@@ -339,7 +339,7 @@ export default function HomePage() {
                 onClick={() => setShowPaywallModal(true)}
                 className="ml-2 text-[#4A90D9] font-bold hover:underline"
               >
-                Upgrade
+                Start free trial
               </button>
             )}
           </p>
