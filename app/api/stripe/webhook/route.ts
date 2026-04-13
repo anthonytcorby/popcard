@@ -44,13 +44,13 @@ export async function POST(req: NextRequest) {
             stripeSubscriptionId: subscription.id,
             stripePriceId: subscription.items.data[0].price.id,
             status: subscription.status,
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            currentPeriodEnd: new Date(subscription.items.data[0].current_period_end * 1000),
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
           },
           update: {
             status: subscription.status,
             stripePriceId: subscription.items.data[0].price.id,
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            currentPeriodEnd: new Date(subscription.items.data[0].current_period_end * 1000),
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
           },
         });
@@ -71,13 +71,13 @@ export async function POST(req: NextRequest) {
               stripeSubscriptionId: subscription.id,
               stripePriceId: subscription.items.data[0].price.id,
               status: subscription.status,
-              currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+              currentPeriodEnd: new Date(subscription.items.data[0].current_period_end * 1000),
               cancelAtPeriodEnd: subscription.cancel_at_period_end,
             },
             update: {
               status: subscription.status,
               stripePriceId: subscription.items.data[0].price.id,
-              currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+              currentPeriodEnd: new Date(subscription.items.data[0].current_period_end * 1000),
               cancelAtPeriodEnd: subscription.cancel_at_period_end,
             },
           });
