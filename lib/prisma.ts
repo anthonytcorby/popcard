@@ -4,9 +4,12 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefi
 
 function getPrismaClient(): PrismaClient {
   if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = new PrismaClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    globalForPrisma.prisma = new (PrismaClient as any)({
+      datasourceUrl: process.env.DATABASE_URL,
+    });
   }
-  return globalForPrisma.prisma;
+  return globalForPrisma.prisma!;
 }
 
 // Lazy proxy so PrismaClient isn't instantiated at import time (breaks Vercel build with no DATABASE_URL)
