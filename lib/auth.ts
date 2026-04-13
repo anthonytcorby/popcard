@@ -17,8 +17,8 @@ export const authOptions: NextAuthOptions = {
     EmailProvider({
       from: process.env.EMAIL_FROM ?? 'noreply@popcard.app',
       sendVerificationRequest: async ({ identifier: email, url }) => {
-        await getResend().emails.send({
-          from: process.env.EMAIL_FROM ?? 'noreply@popcard.app',
+        const result = await getResend().emails.send({
+          from: process.env.EMAIL_FROM ?? 'noreply@popcard.me',
           to: email,
           subject: 'Sign in to Popcard',
           html: `
@@ -34,6 +34,9 @@ export const authOptions: NextAuthOptions = {
             </div>
           `,
         });
+        if (result.error) {
+          throw new Error(`Failed to send verification email: ${result.error.message}`);
+        }
       },
     }),
   ],
