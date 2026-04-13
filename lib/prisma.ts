@@ -4,10 +4,7 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefi
 
 function getPrismaClient(): PrismaClient {
   if (!globalForPrisma.prisma) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    globalForPrisma.prisma = new (PrismaClient as any)({
-      datasourceUrl: process.env.DATABASE_URL,
-    });
+    globalForPrisma.prisma = new PrismaClient();
   }
   return globalForPrisma.prisma!;
 }
