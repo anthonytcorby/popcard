@@ -4,7 +4,12 @@ import EmailProvider from 'next-auth/providers/email';
 import { Resend } from 'resend';
 import { prisma } from '@/lib/prisma';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-init to avoid build-time error when RESEND_API_KEY is not set
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
@@ -12,7 +17,7 @@ export const authOptions: NextAuthOptions = {
     EmailProvider({
       from: process.env.EMAIL_FROM ?? 'noreply@popcard.app',
       sendVerificationRequest: async ({ identifier: email, url }) => {
-        await resend.emails.send({
+        await getResend().emails.send({
           from: process.env.EMAIL_FROM ?? 'noreply@popcard.app',
           to: email,
           subject: 'Sign in to Popcard',
