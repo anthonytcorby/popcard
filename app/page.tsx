@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Lightning, Target, ArrowSquareOut, MagnifyingGlass } from '@phosphor-icons/react';
+import { Clock, Lightning, Target, ArrowSquareOut, MagnifyingGlass, X } from '@phosphor-icons/react';
 import Logo from '@/components/Logo';
 import UrlInput, { SubmitPayload } from '@/components/UrlInput';
 import LoadingBubbles from '@/components/LoadingBubbles';
@@ -68,12 +68,18 @@ export default function HomePage() {
   const resultsRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const videoInfoRef = useRef<{ title: string; thumbnailUrl: string | null } | null>(null);
+  const [sourceQueue, setSourceQueue] = useState<Array<{ label: string; status: 'pending' | 'done' | 'error' }>>([]);
+  const [mergeMode, setMergeMode] = useState(false);
+  const mergeModeRef = useRef(false);
 
   const handleCancel = useCallback(() => {
     abortRef.current?.abort();
     setAppState('landing');
     setCards([]);
     setTakeaways([]);
+    setSourceQueue([]);
+    setMergeMode(false);
+    mergeModeRef.current = false;
   }, []);
 
   /** Shared SSE reader — streams cards from /api/extract */
@@ -121,28 +127,51 @@ export default function HomePage() {
               }
             } else if (event.type === 'done') {
               receivedTerminalEvent = true;
-              setCards(event.cards);
-              if (Array.isArray(event.takeaways)) setTakeaways(event.takeaways);
+              if (mergeModeRef.current) {
+                setCards(prev => {
+                  const existingIds = new Set(prev.map(c => c.id));
+                  const newCards = (event.cards as PopCard[]).filter(c => !existingIds.has(c.id));
+                  return [...prev, ...newCards];
+                });
+                setSourceQueue(prev => prev.map((s, i) =>
+                  i === prev.findLastIndex((x: { status: string }) => x.status === 'pending')
+                    ? { ...s, status: 'done' }
+                    : s
+                ));
+              } else {
+                setCards(event.cards);
+                if (Array.isArray(event.takeaways)) setTakeaways(event.takeaways);
+              }
               setAppState('results');
               transitionedToResults = true;
-              // Save to localStorage history
-              const info = videoInfoRef.current;
-              if (info) {
-                addEntry({
-                  title: info.title,
-                  url: currentUrl.startsWith('paste-') || !currentUrl ? undefined : currentUrl,
-                  thumbnailUrl: info.thumbnailUrl,
-                  cardCount: (event.cards as PopCard[]).filter(
-                    (c: PopCard) => c.type !== 'TLDR' && c.type !== 'SECTION_HEADER'
-                  ).length,
-                  cards: event.cards as PopCard[],
-                  takeaways: Array.isArray(event.takeaways) ? event.takeaways : [],
-                });
+              // Save to localStorage history — only on initial extraction, not merge
+              if (!mergeModeRef.current) {
+                const info = videoInfoRef.current;
+                if (info) {
+                  addEntry({
+                    title: info.title,
+                    url: currentUrl.startsWith('paste-') || !currentUrl ? undefined : currentUrl,
+                    thumbnailUrl: info.thumbnailUrl,
+                    cardCount: (event.cards as PopCard[]).filter(
+                      (c: PopCard) => c.type !== 'TLDR' && c.type !== 'SECTION_HEADER'
+                    ).length,
+                    cards: event.cards as PopCard[],
+                    takeaways: Array.isArray(event.takeaways) ? event.takeaways : [],
+                  });
+                }
               }
             } else if (event.type === 'error') {
               receivedTerminalEvent = true;
-              setError({ code: 'extraction_error', message: event.message });
-              setAppState('error');
+              if (mergeModeRef.current) {
+                setSourceQueue(prev => prev.map((s, i) =>
+                  i === prev.findLastIndex((x: { status: string }) => x.status === 'pending')
+                    ? { ...s, status: 'error' }
+                    : s
+                ));
+              } else {
+                setError({ code: 'extraction_error', message: event.message });
+                setAppState('error');
+              }
             }
           } catch {
             // Skip malformed SSE lines
@@ -159,13 +188,26 @@ export default function HomePage() {
     }
   };
 
-  const handleSubmit = async (payload: SubmitPayload) => {
-    setCurrentUrl(payload.url ?? '');
-    setAppState('loading');
-    setCards([]);
-    setTakeaways([]);
-    setError(null);
-    setVideoInfo(null);
+  const handleSubmit = async (payload: SubmitPayload, append = false) => {
+    if (!append) {
+      setCurrentUrl(payload.url ?? '');
+      setAppState('loading');
+      setCards([]);
+      setTakeaways([]);
+      setError(null);
+      setVideoInfo(null);
+      videoInfoRef.current = null;
+      setSourceQueue([]);
+      setMergeMode(false);
+      mergeModeRef.current = false;
+    } else {
+      setSourceQueue(prev => [...prev, {
+        label: payload.url ?? payload.file?.name ?? 'Pasted text',
+        status: 'pending',
+      }]);
+      setMergeMode(true);
+      mergeModeRef.current = true;
+    }
 
     const abort = new AbortController();
     abortRef.current = abort;
@@ -248,6 +290,9 @@ export default function HomePage() {
     setActiveFilter('ALL');
     setSearchQuery('');
     setVideoInfo(null);
+    setSourceQueue([]);
+    setMergeMode(false);
+    mergeModeRef.current = false;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -419,6 +464,24 @@ export default function HomePage() {
               animate={{ opacity: 1 }}
               className="pb-20"
             >
+              {/* Source queue strip */}
+              {sourceQueue.length > 0 && (
+                <div className="flex gap-2 flex-wrap mb-2">
+                  {sourceQueue.map((s, i) => (
+                    <span
+                      key={i}
+                      className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full font-medium ${
+                        s.status === 'done' ? 'bg-green-50 text-green-700' :
+                        s.status === 'error' ? 'bg-red-50 text-red-700' :
+                        'bg-blue-50 text-blue-600 animate-pulse'
+                      }`}
+                    >
+                      {s.status === 'done' ? '✓' : s.status === 'error' ? '✗' : '…'} {s.label}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               {/* Controls bar */}
               <div className="flex flex-wrap items-center justify-between gap-3 py-4 mb-2">
                 <FilterBar active={activeFilter} onChange={setActiveFilter} counts={counts} />
@@ -438,6 +501,14 @@ export default function HomePage() {
                     />
                   </div>
                   <ExportPanel cards={cards} videoUrl={currentUrl} />
+                  {appState === 'results' && !mergeMode && (
+                    <button
+                      onClick={() => { setMergeMode(true); mergeModeRef.current = true; }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-[#4A90D9] border-2 border-[#4A90D9]/30 hover:border-[#4A90D9] transition-colors"
+                    >
+                      + Add source
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -572,6 +643,27 @@ export default function HomePage() {
             </motion.div>
           </section>
         </>
+      )}
+
+      {/* ── MERGE INPUT OVERLAY ─────────────────────── */}
+      {mergeMode && appState === 'results' && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4">
+          <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-gray-700">Add another source</span>
+              <button
+                onClick={() => { setMergeMode(false); mergeModeRef.current = false; }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <UrlInput
+              onSubmit={(p) => { setMergeMode(false); mergeModeRef.current = false; handleSubmit(p, true); }}
+              loading={false}
+            />
+          </div>
+        </div>
       )}
 
       </main>
