@@ -313,7 +313,7 @@ export default function HomePage() {
             transition={{ duration: 0.55, delay: 0.1 }}
             className="text-gray-500 text-lg mb-10 max-w-xl mx-auto leading-relaxed"
           >
-            Turn videos, podcasts, and books into crisp, interactive cards. Ready to save your time?
+            Turn videos, PDFs, and articles into crisp, interactive cards. Ready to save your time?
           </motion.p>
 
           <motion.div

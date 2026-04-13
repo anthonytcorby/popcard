@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: '%s | Popcard',
   },
   description:
-    'Turn YouTube videos, Spotify podcasts, and ebooks into crisp, interactive knowledge cards with AI. Save time and learn faster.',
+    'Turn YouTube videos, PDFs, and articles into crisp, interactive knowledge cards with AI. Save time and learn faster.',
   keywords: [
     'YouTube summary',
     'AI knowledge cards',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     'Popcard',
     'learn faster',
     'video notes',
-    'Spotify podcast summary',
+    'podcast summary',
     'PDF summary',
     'ebook summary',
     'podcast to notes',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Popcard — Watch less. Know more.',
     description:
-      'Turn YouTube videos, Spotify podcasts, and ebooks into crisp, interactive knowledge cards with AI.',
+      'Turn YouTube videos, PDFs, and articles into crisp, interactive knowledge cards with AI.',
     url: SITE_URL,
     siteName: 'Popcard',
     images: [{ url: `${SITE_URL}/og-image.png`, width: 1200, height: 630, alt: 'Popcard — AI-powered YouTube knowledge cards' }],
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Popcard — Watch less. Know more.',
     description:
-      'Turn YouTube videos, Spotify podcasts, and ebooks into crisp, interactive knowledge cards with AI.',
+      'Turn YouTube videos, PDFs, and articles into crisp, interactive knowledge cards with AI.',
     images: [`${SITE_URL}/og-image.png`],
   },
   icons: { icon: '/favicon.ico' },
@@ -62,11 +62,11 @@ const jsonLd = {
   '@type': 'WebApplication',
   name: 'Popcard',
   description:
-    'Turn YouTube videos, Spotify podcasts, and ebooks into crisp, interactive knowledge cards with AI.',
+    'Turn YouTube videos, PDFs, and articles into crisp, interactive knowledge cards with AI.',
   url: SITE_URL,
   applicationCategory: 'EducationalApplication',
   operatingSystem: 'Any',
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  offers: { '@type': 'Offer', price: '3.99', priceCurrency: 'GBP', description: 'Pro plan, 3 free extractions included' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
