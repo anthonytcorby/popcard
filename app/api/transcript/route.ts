@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { fetchTranscript, TranscriptError } from '@/lib/supadata';
+
+const TranscriptBody = z.object({
+  url: z.string().url('Must be a valid URL'),
+});
 import {
   isSpotifyUrl,
   extractSpotifyEpisodeId,
@@ -38,14 +43,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { url } = await req.json();
-
-  if (!url) {
-    return NextResponse.json(
-      { error: 'invalid_url', message: 'No URL provided.' },
+  const body = await req.json().catch(() => null);
+  const parsed = TranscriptBody.safeParse(body);
+  if (!parsed.success) {
+    return Response.json(
+      { error: 'invalid_request', message: parsed.error.issues[0]?.message ?? 'Invalid request body.' },
       { status: 400 }
     );
   }
+  const { url } = parsed.data;
 
   /* ─── Spotify episode ─────────────────────────────────────── */
   if (isSpotifyUrl(url)) {
