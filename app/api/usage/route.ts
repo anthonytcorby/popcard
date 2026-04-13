@@ -1,5 +1,5 @@
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { authOptions, ADMIN_EMAILS } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -39,7 +39,9 @@ export async function POST() {
     return Response.json({ error: 'user_not_found' }, { status: 404 });
   }
 
+  const isAdmin = ADMIN_EMAILS.includes(dbUser.email ?? '');
   const isSubscribed =
+    isAdmin ||
     dbUser.subscription?.status === 'active' ||
     dbUser.subscription?.status === 'past_due';
 
