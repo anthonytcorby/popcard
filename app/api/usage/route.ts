@@ -27,19 +27,34 @@ export async function POST() {
     return Response.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  const isSubscribed =
-    session.user.subscriptionStatus === 'active' ||
-    session.user.subscriptionStatus === 'past_due';
+  // Read fresh from DB to avoid stale JWT data
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { subscription: true },
+  });
 
-  if (!isSubscribed && session.user.extractionCount >= FREE_LIMIT) {
+  if (!dbUser) {
+    return Response.json({ error: 'user_not_found' }, { status: 404 });
+  }
+
+  const isSubscribed =
+    dbUser.subscription?.status === 'active' ||
+    dbUser.subscription?.status === 'past_due';
+
+  if (!isSubscribed && dbUser.extractionCount >= FREE_LIMIT) {
     return Response.json({ error: 'limit_reached', canExtract: false }, { status: 403 });
   }
 
   if (!isSubscribed) {
-    await prisma.user.update({
-      where: { id: session.user.id },
+    // Atomic increment with guard to prevent race conditions
+    const result = await prisma.user.updateMany({
+      where: { id: session.user.id, extractionCount: { lt: FREE_LIMIT } },
       data: { extractionCount: { increment: 1 } },
     });
+
+    if (result.count === 0) {
+      return Response.json({ error: 'limit_reached', canExtract: false }, { status: 403 });
+    }
   }
 
   return Response.json({ ok: true });

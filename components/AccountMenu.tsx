@@ -74,8 +74,12 @@ export default function AccountMenu({ onSignIn }: { onSignIn: () => void }) {
               onClick={async () => {
                 setOpen(false);
                 const res = await fetch('/api/stripe/portal', { method: 'POST' });
-                const { url } = await res.json();
-                window.location.href = url;
+                const data = await res.json();
+                if (data.url) {
+                  window.location.href = data.url;
+                } else {
+                  console.error('Portal error:', data.error);
+                }
               }}
               className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
             >

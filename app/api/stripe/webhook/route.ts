@@ -59,17 +59,31 @@ export async function POST(req: NextRequest) {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
-        await prisma.subscription.update({
-          where: { stripeSubscriptionId: subscription.id },
-          data: {
-            status: subscription.status,
-            stripePriceId: subscription.items.data[0].price.id,
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          },
-        }).catch(() => {
-          console.warn('[stripe:webhook] subscription.updated for unknown sub:', subscription.id);
+        // Find user by stripeCustomerId to get userId for upsert
+        const customerUser = await prisma.user.findFirst({
+          where: { stripeCustomerId: subscription.customer as string },
         });
+        if (customerUser) {
+          await prisma.subscription.upsert({
+            where: { stripeSubscriptionId: subscription.id },
+            create: {
+              userId: customerUser.id,
+              stripeSubscriptionId: subscription.id,
+              stripePriceId: subscription.items.data[0].price.id,
+              status: subscription.status,
+              currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+              cancelAtPeriodEnd: subscription.cancel_at_period_end,
+            },
+            update: {
+              status: subscription.status,
+              stripePriceId: subscription.items.data[0].price.id,
+              currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+              cancelAtPeriodEnd: subscription.cancel_at_period_end,
+            },
+          });
+        } else {
+          console.warn('[stripe:webhook] subscription.updated for unknown customer:', subscription.customer);
+        }
         break;
       }
 
