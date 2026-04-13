@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Lightning, Target, ArrowSquareOut, MagnifyingGlass } from '@phosphor-icons/react';
 import Logo from '@/components/Logo';
@@ -13,6 +13,10 @@ import VideoHeaderCard from '@/components/VideoHeaderCard';
 import TakeawaysSection from '@/components/TakeawaysSection';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { PopCard, CardType } from '@/types/card';
+import { useSession } from 'next-auth/react';
+import AuthModal from '@/components/AuthModal';
+import PaywallModal from '@/components/PaywallModal';
+import AccountMenu from '@/components/AccountMenu';
 
 type AppState = 'landing' | 'loading' | 'results' | 'error';
 
@@ -64,6 +68,11 @@ export default function HomePage() {
   const [videoInfo, setVideoInfo] = useState<{ title: string; thumbnailUrl: string | null } | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  const { data: session, update: updateSession } = useSession();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPaywallModal, setShowPaywallModal] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<SubmitPayload | null>(null);
 
   const handleCancel = useCallback(() => {
     abortRef.current?.abort();
@@ -141,6 +150,56 @@ export default function HomePage() {
     }
   };
 
+  /** Check auth & usage before allowing extraction */
+  const checkAccessAndSubmit = async (payload: SubmitPayload) => {
+    // Must be signed in
+    if (!session) {
+      setPendingPayload(payload);
+      setShowAuthModal(true);
+      return;
+    }
+
+    // Check usage
+    const usageRes = await fetch('/api/usage');
+    const usage = await usageRes.json();
+
+    if (!usage.canExtract) {
+      setShowPaywallModal(true);
+      return;
+    }
+
+    // Increment usage counter (fire-and-forget for non-subscribers)
+    const isSubscribed = usage.subscriptionStatus === 'active' || usage.subscriptionStatus === 'past_due';
+    if (!isSubscribed) {
+      await fetch('/api/usage', { method: 'POST' });
+    }
+
+    // Refresh session to get updated count
+    await updateSession();
+
+    // Proceed with extraction
+    handleSubmit(payload);
+  };
+
+  // After signing in via magic link, retry the pending payload
+  useEffect(() => {
+    if (session && pendingPayload) {
+      const payload = pendingPayload;
+      setPendingPayload(null);
+      setShowAuthModal(false);
+      checkAccessAndSubmit(payload);
+    }
+  }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Clear ?subscribed=true from URL after checkout
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('subscribed') === 'true') {
+      window.history.replaceState({}, '', '/');
+      updateSession();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSubmit = async (payload: SubmitPayload) => {
     setCurrentUrl(payload.url ?? '');
     setAppState('loading');
@@ -158,7 +217,7 @@ export default function HomePage() {
 
     try {
       if (payload.mode === 'link' && payload.url) {
-        /* ── Link mode: YouTube or Spotify ──────────── */
+        /* ── Link mode: YouTube ────────────────────── */
         const transcriptRes = await fetch('/api/transcript', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -265,13 +324,27 @@ export default function HomePage() {
             >
               How it works
             </a>
-            <button aria-label="Menu" className="flex flex-col gap-[5px] cursor-pointer" onClick={handleReset}>
-              <span className="w-5 h-0.5 bg-gray-500 rounded-full block" />
-              <span className="w-5 h-0.5 bg-gray-500 rounded-full block" />
-            </button>
+            <AccountMenu onSignIn={() => setShowAuthModal(true)} />
           </div>
         </div>
       </nav>
+
+      {/* Remaining uses banner for free-tier users */}
+      {session && !(['active', 'past_due'].includes(session.user.subscriptionStatus ?? '')) && (
+        <div className="bg-blue-50 border-b border-blue-100 py-1.5 text-center">
+          <p className="text-xs text-blue-600 font-medium">
+            {Math.max(0, 3 - session.user.extractionCount)} of 3 free extractions remaining
+            {session.user.extractionCount >= 2 && (
+              <button
+                onClick={() => setShowPaywallModal(true)}
+                className="ml-2 text-[#4A90D9] font-bold hover:underline"
+              >
+                Upgrade
+              </button>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* flex-1 keeps the footer pinned to the bottom even when content is short */}
       <main role="main" className="flex-1">
@@ -321,7 +394,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.2 }}
           >
-            <UrlInput onSubmit={(p: SubmitPayload) => handleSubmit(p)} loading={appState === 'loading'} />
+            <UrlInput onSubmit={(p: SubmitPayload) => checkAccessAndSubmit(p)} loading={appState === 'loading'} />
           </motion.div>
         </div>
       </section>
@@ -547,6 +620,16 @@ export default function HomePage() {
           </nav>
         </div>
       </footer>
+      {/* Modals */}
+      <AuthModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        message={pendingPayload ? 'Sign in to start extracting knowledge cards.' : undefined}
+      />
+      <PaywallModal
+        open={showPaywallModal}
+        onClose={() => setShowPaywallModal(false)}
+      />
     </div>
   );
 }
