@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/react';
+import SessionProvider from '@/components/SessionProvider';
 import './globals.css';
 
 const SITE_URL = 'https://popcard-eta.vercel.app';
@@ -72,7 +73,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        {children}
+        <SessionProvider>
+          {children}
+        </SessionProvider>
         <Analytics />
         <script
           type="application/ld+json"
