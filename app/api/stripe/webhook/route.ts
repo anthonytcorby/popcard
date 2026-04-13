@@ -100,12 +100,17 @@ export async function POST(req: NextRequest) {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
-        if (invoice.subscription) {
+        // Stripe v22: subscription is at invoice.parent.subscription_details.subscription
+        const invoiceSubId =
+          typeof invoice.parent?.subscription_details?.subscription === 'string'
+            ? invoice.parent.subscription_details.subscription
+            : invoice.parent?.subscription_details?.subscription?.id;
+        if (invoiceSubId) {
           await prisma.subscription.update({
-            where: { stripeSubscriptionId: invoice.subscription as string },
+            where: { stripeSubscriptionId: invoiceSubId },
             data: { status: 'past_due' },
           }).catch(() => {
-            console.warn('[stripe:webhook] payment_failed for unknown sub:', invoice.subscription);
+            console.warn('[stripe:webhook] payment_failed for unknown sub:', invoiceSubId);
           });
         }
         break;
