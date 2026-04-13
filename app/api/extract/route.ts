@@ -2,6 +2,12 @@ import { NextRequest } from 'next/server';
 import { extractCards } from '@/lib/gemini';
 import { getCached, setCached } from '@/lib/cache';
 import { rateLimit } from '@/lib/rate-limit';
+import { z } from 'zod';
+
+const ExtractBody = z.object({
+  transcript: z.string().min(1, 'transcript is required'),
+  videoId: z.string().optional(),
+});
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // Vercel Pro allows up to 300s
@@ -13,11 +19,15 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'rate_limited', message: 'Too many requests. Please wait a moment.' }), { status: 429 });
   }
 
-  const { transcript, videoId } = await req.json();
-
-  if (!transcript) {
-    return new Response(JSON.stringify({ error: 'No transcript provided.' }), { status: 400 });
+  const body = await req.json().catch(() => null);
+  const parsed = ExtractBody.safeParse(body);
+  if (!parsed.success) {
+    return new Response(
+      JSON.stringify({ error: 'invalid_request', message: parsed.error.issues[0]?.message ?? 'Invalid request body.' }),
+      { status: 400 }
+    );
   }
+  const { transcript, videoId } = parsed.data;
 
   const encoder = new TextEncoder();
 
