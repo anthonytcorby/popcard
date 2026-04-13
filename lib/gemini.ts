@@ -36,8 +36,8 @@ Return a JSON object with exactly two keys:
    Each card uses this schema:
    {
      "type": string,         — see types below
-     "headline": string,     — max 8 words; for SECTION_HEADER use the topic name
-     "body": string,         — 1-3 sentences, neutral factual tone; omit for SECTION_HEADER
+     "headline": string,     — max 12 words; for SECTION_HEADER use the topic name
+     "body": string,         — 2-5 sentences, neutral factual tone; omit for SECTION_HEADER
      "boldPhrase": string,   — single most important phrase to bold; omit for TLDR/SECTION_HEADER
      "timestamp": string,    — "MM:SS" REQUIRED for all except TLDR (use "0:00")
      "warning": string,      — OPTIONAL: brief, non-aggressive note if claim could mislead or cause harm
@@ -45,14 +45,14 @@ Return a JSON object with exactly two keys:
    }
 
 2. "takeaways" — an array of exactly 30 bite-size takeaway strings.
-   - Each string is one crisp sentence (max 20 words).
+   - Each string is one crisp sentence (max 25 words).
    - Cover the most important, actionable, or surprising points from the whole video.
    - No numbering, no bullet characters — just the plain sentence.
    - Attribute opinions to the speaker by name.
    - Order from most important → least important.
 
 ━━━ CARD TYPES ━━━
-TLDR           — One card only, first in array. 2-3 sentence plain-English summary of the whole video.
+TLDR           — One card only, first in array. 3-5 sentence plain-English summary of the whole video.
 SECTION_HEADER — Topic divider. headline = topic name. No body, no boldPhrase needed.
 KEY_INSIGHT    — Core conceptual takeaway from the video.
 ACTIONABLE_TIP — Something the viewer can immediately do or apply.
@@ -90,6 +90,16 @@ Each distinct idea, fact, step, example, anecdote, or quote = its own card.
 - Include enough context that each card is useful WITHOUT watching the video.
 - QUOTE cards are the most valuable — capture EVERY memorable, provocative, funny, or insightful line.
   Scan the entire transcript for quotable moments. When in doubt, include the quote.
+
+━━━ NARRATIVE THREADING (IMPORTANT) ━━━
+When the source material builds a logical chain — where point A leads to point B, or a cause produces an effect, or a story builds on itself — weave this into the card bodies so the reader feels the progression.
+
+- CONNECT related data points: "After cutting ad spend by 40%, Hormozi redirected the budget to cold outbound — which is what drove revenue from $12K to $48K/month."
+- PRESERVE cause → effect: Don't just state the outcome; include the reason WHY it happened, in the same card.
+- REFERENCE earlier context naturally: "Building on his earlier point about compound interest, Buffett explains why he held Coca-Cola for 30 years rather than trading it."
+- STORYTELLING: If the speaker tells a narrative, keep the emotional arc. Include the setup, the turning point, and the result — not just the punchline.
+- Stay TRUTHFUL to the source — never add interpretation, opinion, or facts that weren't stated. The narrative should feel like a well-written summary of what was actually said, not creative writing.
+- Each card must STILL stand alone — the threading is bonus context, not a dependency. A reader should understand any single card without needing to read the others.
 
 ━━━ MULTI-PART SERIES ━━━
 When a topic is especially rich, detailed, or valuable (e.g. a multi-step framework, a detailed story, a complex argument), split it across multiple cards labeled in the headline like:
