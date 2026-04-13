@@ -15,7 +15,7 @@ export const runtime = 'nodejs';
  */
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-  const { ok } = rateLimit(ip, 60_000, 10);
+  const { ok } = await rateLimit(ip);
   if (!ok) return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
 
   const { videoId, timestamps } = (await req.json()) as {

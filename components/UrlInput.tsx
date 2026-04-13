@@ -26,7 +26,7 @@ function isValidUrl(url: string): boolean {
     // YouTube
     /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9_-]{11}/.test(trimmed) ||
     // Spotify episode
-    /^(https?:\/\/)?open\.spotify\.com\/episode\/[a-zA-Z0-9]{22}/.test(trimmed)
+    /^(https?:\/\/)?open\.spotify\.com\/episode\/[a-zA-Z0-9]{22}(\?.*)?$/.test(trimmed)
   );
 }
 

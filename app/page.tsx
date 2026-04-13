@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Lightning, Target, ArrowSquareOut, MagnifyingGlass } from '@phosphor-icons/react';
+import { Clock, Lightning, Target, ArrowSquareOut, MagnifyingGlass, X, Check } from '@phosphor-icons/react';
 import Logo from '@/components/Logo';
 import UrlInput, { SubmitPayload } from '@/components/UrlInput';
 import LoadingBubbles from '@/components/LoadingBubbles';
@@ -13,6 +13,8 @@ import VideoHeaderCard from '@/components/VideoHeaderCard';
 import TakeawaysSection from '@/components/TakeawaysSection';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { PopCard, CardType } from '@/types/card';
+import { useHistory, HistoryEntry } from '@/lib/useHistory';
+import HistoryPanel from '@/components/HistoryPanel';
 
 type AppState = 'landing' | 'loading' | 'results' | 'error';
 
@@ -62,14 +64,30 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentUrl, setCurrentUrl] = useState('');
   const [videoInfo, setVideoInfo] = useState<{ title: string; thumbnailUrl: string | null } | null>(null);
+  const { history, addEntry, removeEntry } = useHistory();
   const resultsRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const videoInfoRef = useRef<{ title: string; thumbnailUrl: string | null } | null>(null);
+  const [sourceQueue, setSourceQueue] = useState<Array<{ label: string; status: 'pending' | 'done' | 'error' }>>([]);
+  const [mergeMode, setMergeMode] = useState(false);
+  const mergeModeRef = useRef(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
+
+  useEffect(() => {
+    if (!shareUrl) return;
+    const t = setTimeout(() => setShareUrl(null), 3000);
+    return () => clearTimeout(t);
+  }, [shareUrl]);
 
   const handleCancel = useCallback(() => {
     abortRef.current?.abort();
     setAppState('landing');
     setCards([]);
     setTakeaways([]);
+    setSourceQueue([]);
+    setMergeMode(false);
+    mergeModeRef.current = false;
   }, []);
 
   /** Shared SSE reader — streams cards from /api/extract */
@@ -117,14 +135,51 @@ export default function HomePage() {
               }
             } else if (event.type === 'done') {
               receivedTerminalEvent = true;
-              setCards(event.cards);
-              if (Array.isArray(event.takeaways)) setTakeaways(event.takeaways);
+              if (mergeModeRef.current) {
+                setCards(prev => {
+                  const existingIds = new Set(prev.map(c => c.id));
+                  const newCards = (event.cards as PopCard[]).filter(c => !existingIds.has(c.id));
+                  return [...prev, ...newCards];
+                });
+                setSourceQueue(prev => prev.map((s, i) =>
+                  i === prev.findLastIndex((x: { status: string }) => x.status === 'pending')
+                    ? { ...s, status: 'done' }
+                    : s
+                ));
+              } else {
+                setCards(event.cards);
+                if (Array.isArray(event.takeaways)) setTakeaways(event.takeaways);
+              }
               setAppState('results');
               transitionedToResults = true;
+              // Save to localStorage history — only on initial extraction, not merge
+              if (!mergeModeRef.current) {
+                const info = videoInfoRef.current;
+                if (info) {
+                  addEntry({
+                    title: info.title,
+                    url: currentUrl.startsWith('paste-') || !currentUrl ? undefined : currentUrl,
+                    thumbnailUrl: info.thumbnailUrl,
+                    cardCount: (event.cards as PopCard[]).filter(
+                      (c: PopCard) => c.type !== 'TLDR' && c.type !== 'SECTION_HEADER'
+                    ).length,
+                    cards: event.cards as PopCard[],
+                    takeaways: Array.isArray(event.takeaways) ? event.takeaways : [],
+                  });
+                }
+              }
             } else if (event.type === 'error') {
               receivedTerminalEvent = true;
-              setError({ code: 'extraction_error', message: event.message });
-              setAppState('error');
+              if (mergeModeRef.current) {
+                setSourceQueue(prev => prev.map((s, i) =>
+                  i === prev.findLastIndex((x: { status: string }) => x.status === 'pending')
+                    ? { ...s, status: 'error' }
+                    : s
+                ));
+              } else {
+                setError({ code: 'extraction_error', message: event.message });
+                setAppState('error');
+              }
             }
           } catch {
             // Skip malformed SSE lines
@@ -141,13 +196,26 @@ export default function HomePage() {
     }
   };
 
-  const handleSubmit = async (payload: SubmitPayload) => {
-    setCurrentUrl(payload.url ?? '');
-    setAppState('loading');
-    setCards([]);
-    setTakeaways([]);
-    setError(null);
-    setVideoInfo(null);
+  const handleSubmit = async (payload: SubmitPayload, append = false) => {
+    if (!append) {
+      setCurrentUrl(payload.url ?? '');
+      setAppState('loading');
+      setCards([]);
+      setTakeaways([]);
+      setError(null);
+      setVideoInfo(null);
+      videoInfoRef.current = null;
+      setSourceQueue([]);
+      setMergeMode(false);
+      mergeModeRef.current = false;
+    } else {
+      setSourceQueue(prev => [...prev, {
+        label: payload.url ?? payload.file?.name ?? 'Pasted text',
+        status: 'pending',
+      }]);
+      setMergeMode(true);
+      mergeModeRef.current = true;
+    }
 
     const abort = new AbortController();
     abortRef.current = abort;
@@ -174,7 +242,10 @@ export default function HomePage() {
         }
 
         const { transcript, videoId, title, thumbnailUrl } = await transcriptRes.json();
-        if (title) setVideoInfo({ title, thumbnailUrl: thumbnailUrl ?? null });
+        if (title) {
+          setVideoInfo({ title, thumbnailUrl: thumbnailUrl ?? null });
+          videoInfoRef.current = { title, thumbnailUrl: thumbnailUrl ?? null };
+        }
 
         await streamExtraction(transcript, videoId, abort);
 
@@ -198,6 +269,7 @@ export default function HomePage() {
 
         const { transcript, contentId, title } = await uploadRes.json();
         setVideoInfo({ title: title ?? payload.file.name, thumbnailUrl: null });
+        videoInfoRef.current = { title: title ?? payload.file.name, thumbnailUrl: null };
 
         await streamExtraction(transcript, contentId, abort);
 
@@ -206,6 +278,7 @@ export default function HomePage() {
         const hash = payload.text.slice(0, 200).replace(/\s+/g, '').slice(0, 32);
         const contentId = `paste-${hash}`;
         setVideoInfo({ title: 'Pasted Text', thumbnailUrl: null });
+        videoInfoRef.current = { title: 'Pasted Text', thumbnailUrl: null };
 
         await streamExtraction(payload.text, contentId, abort);
       }
@@ -225,8 +298,51 @@ export default function HomePage() {
     setActiveFilter('ALL');
     setSearchQuery('');
     setVideoInfo(null);
+    setSourceQueue([]);
+    setMergeMode(false);
+    mergeModeRef.current = false;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const handleRestore = useCallback((entry: HistoryEntry) => {
+    setCards(entry.cards);
+    setTakeaways(entry.takeaways);
+    setVideoInfo({ title: entry.title, thumbnailUrl: entry.thumbnailUrl ?? null });
+    setCurrentUrl(entry.url ?? '');
+    setActiveFilter('ALL');
+    setSearchQuery('');
+    setAppState('results');
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }, []);
+
+  const handleShare = useCallback(async () => {
+    if (sharing || cards.length === 0) return;
+    setSharing(true);
+    try {
+      const res = await fetch('/api/deck', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: videoInfo?.title ?? 'Untitled',
+          cards,
+          takeaways,
+          videoUrl: currentUrl || undefined,
+          thumbnailUrl: videoInfo?.thumbnailUrl ?? undefined,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to create share link');
+      const { id } = await res.json();
+      const url = `${window.location.origin}/deck/${id}`;
+      setShareUrl(url);
+      await navigator.clipboard.writeText(url).catch(() => {});
+    } catch {
+      // silently fail — share is not critical
+    } finally {
+      setSharing(false);
+    }
+  }, [sharing, cards, takeaways, videoInfo, currentUrl]);
 
   // Extract TL;DR and section headers from the main card stream
   const tldrCard = cards.find(c => c.type === 'TLDR');
@@ -323,6 +439,13 @@ export default function HomePage() {
           >
             <UrlInput onSubmit={(p: SubmitPayload) => handleSubmit(p)} loading={appState === 'loading'} />
           </motion.div>
+          {appState === 'landing' && (
+            <HistoryPanel
+              history={history}
+              onRestore={handleRestore}
+              onRemove={removeEntry}
+            />
+          )}
         </div>
       </section>
 
@@ -336,16 +459,16 @@ export default function HomePage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, transition: { duration: 0.2 } }}
+              className="flex flex-col items-center gap-3 py-16"
             >
               <LoadingBubbles />
-              <div className="flex justify-center">
-                <button
-                  onClick={handleCancel}
-                  className="mt-2 text-sm text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
+              <p className="text-sm text-gray-400 animate-pulse">Analyzing transcript...</p>
+              <button
+                onClick={handleCancel}
+                className="mt-1 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
             </motion.div>
           )}
 
@@ -376,6 +499,24 @@ export default function HomePage() {
               animate={{ opacity: 1 }}
               className="pb-20"
             >
+              {/* Source queue strip */}
+              {sourceQueue.length > 0 && (
+                <div className="flex gap-2 flex-wrap mb-2">
+                  {sourceQueue.map((s, i) => (
+                    <span
+                      key={i}
+                      className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full font-medium ${
+                        s.status === 'done' ? 'bg-green-50 text-green-700' :
+                        s.status === 'error' ? 'bg-red-50 text-red-700' :
+                        'bg-blue-50 text-blue-600 animate-pulse'
+                      }`}
+                    >
+                      {s.status === 'done' ? '✓' : s.status === 'error' ? '✗' : '…'} {s.label}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               {/* Controls bar */}
               <div className="flex flex-wrap items-center justify-between gap-3 py-4 mb-2">
                 <FilterBar active={activeFilter} onChange={setActiveFilter} counts={counts} />
@@ -395,12 +536,36 @@ export default function HomePage() {
                     />
                   </div>
                   <ExportPanel cards={cards} videoUrl={currentUrl} />
+                  {appState === 'results' && !mergeMode && (
+                    <button
+                      onClick={() => { setMergeMode(true); mergeModeRef.current = true; }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-[#4A90D9] border-2 border-[#4A90D9]/30 hover:border-[#4A90D9] transition-colors"
+                    >
+                      + Add source
+                    </button>
+                  )}
+                  <button
+                    onClick={handleShare}
+                    disabled={sharing}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-white border-2 border-gray-200 text-gray-700 hover:border-gray-300 transition-all disabled:opacity-60"
+                  >
+                    {sharing ? (
+                      <span className="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                    ) : shareUrl ? (
+                      <Check size={14} weight="bold" className="text-green-500" />
+                    ) : (
+                      <ArrowSquareOut size={14} weight="bold" />
+                    )}
+                    {shareUrl ? 'Link copied!' : 'Share'}
+                  </button>
                 </div>
               </div>
 
               <p className="text-xs text-gray-400 mb-5">
-                {filterableCards.length} card{filterableCards.length !== 1 ? 's' : ''} popped
-                {appState === 'loading' && ' · loading more…'}
+                {filterableCards.length} card{filterableCards.length !== 1 ? 's' : ''} found
+                {appState === 'loading' ? (
+                  <span className="animate-pulse"> · extracting more...</span>
+                ) : null}
               </p>
 
               {videoInfo && (
@@ -527,6 +692,27 @@ export default function HomePage() {
             </motion.div>
           </section>
         </>
+      )}
+
+      {/* ── MERGE INPUT OVERLAY ─────────────────────── */}
+      {mergeMode && appState === 'results' && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4">
+          <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-gray-700">Add another source</span>
+              <button
+                onClick={() => { setMergeMode(false); mergeModeRef.current = false; }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <UrlInput
+              onSubmit={(p) => { setMergeMode(false); mergeModeRef.current = false; handleSubmit(p, true); }}
+              loading={false}
+            />
+          </div>
+        </div>
       )}
 
       </main>

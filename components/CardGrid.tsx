@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { PopCard as PopCardType, CardType } from '@/types/card';
 import PopCard from './PopCard';
@@ -14,21 +15,20 @@ interface CardGridProps {
 export default function CardGrid({ cards, filter, videoUrl, searchQuery = '' }: CardGridProps) {
   const query = searchQuery.toLowerCase().trim();
 
-  // Apply type filter first, then search filter
-  let visible = filter === 'ALL'
-    ? cards
-    : cards.filter(c => c.type === filter);
+  const { visible, filterable } = useMemo(() => {
+    let v = filter === 'ALL' ? cards : cards.filter(c => c.type === filter);
 
-  if (query) {
-    visible = visible.filter(c =>
-      c.type === 'SECTION_HEADER' ||
-      c.headline.toLowerCase().includes(query) ||
-      c.body.toLowerCase().includes(query) ||
-      (c.boldPhrase && c.boldPhrase.toLowerCase().includes(query))
-    );
-  }
+    if (query) {
+      v = v.filter(c =>
+        c.type === 'SECTION_HEADER' ||
+        c.headline.toLowerCase().includes(query) ||
+        c.body.toLowerCase().includes(query) ||
+        (c.boldPhrase && c.boldPhrase.toLowerCase().includes(query))
+      );
+    }
 
-  const filterable = visible.filter(c => c.type !== 'SECTION_HEADER');
+    return { visible: v, filterable: v.filter(c => c.type !== 'SECTION_HEADER') };
+  }, [cards, filter, query]);
 
   if (filterable.length === 0) {
     return (

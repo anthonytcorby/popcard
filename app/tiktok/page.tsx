@@ -122,6 +122,27 @@ function cropFrame(
   return canvas.toDataURL('image/jpeg', 0.85);
 }
 
+/** Run `fn` on each item with at most `limit` concurrent executions. */
+async function withConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<(R | undefined)[]> {
+  const results: (R | undefined)[] = new Array(items.length);
+  const queue = items.map((item, i) => ({ item, i }));
+  let next = 0;
+
+  async function worker() {
+    while (next < queue.length) {
+      const { item, i } = queue[next++];
+      results[i] = await fn(item);
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
 /**
  * Fetch unique video frames for each card's timestamp.
  *
@@ -157,14 +178,12 @@ async function fetchStoryboardFrames(
       const sheetUrls = [...new Set(frames.map(f => f.sheetUrl))];
       const sheetImages = new Map<string, HTMLImageElement>();
 
-      await Promise.all(
-        sheetUrls.map(async (url) => {
-          try {
-            const img = await loadImage(url);
-            sheetImages.set(url, img);
-          } catch { /* skip */ }
-        }),
-      );
+      await withConcurrency(sheetUrls, 3, async (url) => {
+        try {
+          const img = await loadImage(url);
+          sheetImages.set(url, img);
+        } catch { /* skip sheets that fail to load */ }
+      });
 
       for (const f of frames) {
         const img = sheetImages.get(f.sheetUrl);
