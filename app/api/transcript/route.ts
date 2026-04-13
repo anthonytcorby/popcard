@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchTranscript, TranscriptError } from '@/lib/supadata';
-import {
-  isSpotifyUrl,
-  extractSpotifyEpisodeId,
-  fetchSpotifyMetadata,
-  fetchSpotifyTranscript,
-  SpotifyError,
-} from '@/lib/spotify';
 import { rateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
@@ -45,54 +38,6 @@ export async function POST(req: NextRequest) {
       { error: 'invalid_url', message: 'No URL provided.' },
       { status: 400 }
     );
-  }
-
-  /* ─── Spotify episode ─────────────────────────────────────── */
-  if (isSpotifyUrl(url)) {
-    const episodeId = extractSpotifyEpisodeId(url);
-    if (!episodeId) {
-      return NextResponse.json(
-        { error: 'invalid_url', message: 'Could not parse Spotify episode ID.' },
-        { status: 400 }
-      );
-    }
-
-    try {
-      const [transcript, metadata] = await Promise.all([
-        fetchSpotifyTranscript(episodeId),
-        fetchSpotifyMetadata(episodeId),
-      ]);
-
-      return NextResponse.json({
-        transcript,
-        videoId: `spotify-${episodeId}`,
-        title: metadata?.title ?? null,
-        thumbnailUrl: metadata?.thumbnailUrl ?? null,
-        sourceType: 'spotify',
-      });
-    } catch (err) {
-      if (err instanceof SpotifyError) {
-        const messages: Record<string, string> = {
-          no_transcript:
-            "This Spotify episode doesn't have an accessible transcript. Try uploading a PDF or pasting the text instead.",
-          invalid_url: "That doesn't look like a valid Spotify episode link.",
-          not_episode:
-            'Only Spotify podcast episodes are supported (not tracks or albums).',
-        };
-        return NextResponse.json(
-          {
-            error: err.code,
-            message: messages[err.code] ?? 'Something went wrong.',
-          },
-          { status: 422 }
-        );
-      }
-      console.error('[transcript:spotify]', err);
-      return NextResponse.json(
-        { error: 'unknown', message: 'Failed to fetch Spotify transcript.' },
-        { status: 500 }
-      );
-    }
   }
 
   /* ─── YouTube video ───────────────────────────────────────── */
