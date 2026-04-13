@@ -61,7 +61,7 @@ Return ONLY JSON: { "hookLine": "...", "slideOrder": [0,3,1,...], "rewrittenHead
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-  const { ok } = rateLimit(ip, 60_000, 10);
+  const { ok } = await rateLimit(ip);
   if (!ok) return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
 
   const body = await req.json().catch(() => null);

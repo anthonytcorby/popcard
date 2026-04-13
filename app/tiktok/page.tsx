@@ -127,8 +127,8 @@ async function withConcurrency<T, R>(
   items: T[],
   limit: number,
   fn: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const results: R[] = new Array(items.length);
+): Promise<(R | undefined)[]> {
+  const results: (R | undefined)[] = new Array(items.length);
   const queue = items.map((item, i) => ({ item, i }));
   let next = 0;
 

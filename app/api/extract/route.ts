@@ -14,7 +14,7 @@ export const maxDuration = 300; // Vercel Pro allows up to 300s
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-  const { ok } = rateLimit(ip, 60_000, 10);
+  const { ok } = await rateLimit(ip);
   if (!ok) {
     return new Response(JSON.stringify({ error: 'rate_limited', message: 'Too many requests. Please wait a moment.' }), { status: 429 });
   }
