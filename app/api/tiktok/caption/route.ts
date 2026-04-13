@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { z } from 'zod';
 import { rateLimit } from '@/lib/rate-limit';
+
+const CaptionBody = z.object({
+  title: z.string().min(1),
+  channelName: z.string().optional(),
+  cards: z.array(z.object({
+    type: z.string(),
+    headline: z.string(),
+    body: z.string(),
+  })).min(1, 'At least one card is required'),
+});
 
 export const runtime = 'nodejs';
 
@@ -53,15 +64,23 @@ export async function POST(req: NextRequest) {
   const { ok } = rateLimit(ip, 60_000, 10);
   if (!ok) return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
 
-  const { title, cards, channelName } = await req.json();
+  const body = await req.json().catch(() => null);
+  const parsed = CaptionBody.safeParse(body);
+  if (!parsed.success) {
+    return Response.json(
+      { error: 'invalid_request', message: parsed.error.issues[0]?.message ?? 'Invalid request body.' },
+      { status: 400 }
+    );
+  }
+  const { title, channelName, cards } = parsed.data;
 
   // cards is an array of { headline, body, type }
-  const cardList = (cards as Array<{ headline: string; body: string; type: string }>)
+  const cardList = cards
     .map((c, i) => `${i + 1}. [${c.type}] "${c.headline}" — ${c.body?.slice(0, 150) || ''}`)
     .join('\n');
 
   if (!openai) {
-    const fallbackHeadlines = (cards as Array<{ headline: string }>).map((c) => c.headline);
+    const fallbackHeadlines = cards.map((c) => c.headline);
     return NextResponse.json({
       caption: `${title}\n\nKey takeaways you need to know. Save this for later!\n\n#knowledge #learning #education #productivity #selfimprovement #motivation #tips #fyp`,
       hookLine: title?.split(':')[0] || title,
@@ -86,16 +105,16 @@ export async function POST(req: NextRequest) {
 
     const text = completion.choices[0]?.message?.content?.trim();
     if (!text) throw new Error('Empty response');
-    const parsed = JSON.parse(text) as {
+    const result = JSON.parse(text) as {
       caption: string;
       hookLine: string;
       slideOrder?: number[];
       rewrittenHeadlines: string[];
     };
-    return NextResponse.json(parsed);
+    return NextResponse.json(result);
   } catch (err) {
     console.error('[tiktok/caption]', err);
-    const fallbackHeadlines = (cards as Array<{ headline: string }>).map((c) => c.headline);
+    const fallbackHeadlines = cards.map((c) => c.headline);
     return NextResponse.json({
       caption: `${title}\n\nKey takeaways you need to know. Save this!\n\n#knowledge #learning #education #fyp #tips`,
       hookLine: title,
