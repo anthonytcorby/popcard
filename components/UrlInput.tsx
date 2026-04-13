@@ -25,11 +25,6 @@ function isValidUrl(url: string): boolean {
   return /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9_-]{11}/.test(trimmed);
 }
 
-function detectSource(url: string): 'youtube' | null {
-  if (/youtube\.com|youtu\.be/.test(url)) return 'youtube';
-  return null;
-}
-
 const TABS: { id: SourceMode; label: string; icon: typeof Link2 }[] = [
   { id: 'link', label: 'Link', icon: Link2 },
   { id: 'upload', label: 'Upload', icon: Upload },
@@ -99,8 +94,6 @@ export default function UrlInput({ onSubmit, loading = false }: UrlInputProps) {
       setMode('upload');
     }
   };
-
-  const detected = mode === 'link' && urlValue.trim() ? detectSource(urlValue) : null;
 
   return (
     <div className="w-full max-w-2xl mx-auto">
