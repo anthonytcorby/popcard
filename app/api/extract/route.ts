@@ -47,7 +47,13 @@ export async function POST(req: NextRequest) {
 
         send({ type: 'progress' });
 
+        const transcriptLen = typeof transcript === 'string' ? transcript.length : 0;
+        const estimatedTokens = Math.ceil(transcriptLen / 4);
+        console.log(`[extract] Transcript: ${transcriptLen} chars, ~${estimatedTokens} tokens`);
+
         const { cards, takeaways } = await extractCards(transcript);
+
+        console.log(`[extract] Result: ${cards.length} cards, ${takeaways.length} takeaways`);
 
         if (cards.length === 0) {
           send({ type: 'error', message: "Couldn't extract any cards. The video may not have enough content, or try again in a moment." });

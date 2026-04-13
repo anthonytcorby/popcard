@@ -16,7 +16,7 @@ const cache = new Map<string, { result: CachedResult; ts: number }>();
 const TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 /** Cache version — bump to invalidate all cached results after prompt/model changes */
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 
 function versionedKey(videoId: string): string {
   return `v${CACHE_VERSION}:${videoId}`;

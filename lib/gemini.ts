@@ -420,7 +420,7 @@ const CHUNK_THRESHOLD_TOKENS = 35_000;
 
 /**
  * Split transcript into chunks at natural boundaries (timestamp markers or sentence ends).
- * Each chunk gets ~300 char overlap with its neighbor for context continuity.
+ * Each chunk gets ~200 char overlap with its neighbor for context continuity.
  */
 function chunkTranscript(transcript: string): string[] {
   const totalTokens = estimateTokens(transcript);
@@ -428,32 +428,30 @@ function chunkTranscript(transcript: string): string[] {
 
   const chunks: string[] = [];
   let offset = 0;
-  const OVERLAP = 300;
+  const OVERLAP = 200;
 
   while (offset < transcript.length) {
     let end = Math.min(offset + CHUNK_CHAR_TARGET, transcript.length);
 
     // If not at the end, try to break at a timestamp marker [MM:SS] or sentence boundary
     if (end < transcript.length) {
-      // Look backwards up to 2000 chars for a good break point
-      const searchRegion = transcript.slice(Math.max(offset, end - 2000), end);
-      // Prefer breaking at a timestamp marker
-      const tsMatch = searchRegion.match(/[\s\S]*\[\d+:\d{2}\]/);
-      if (tsMatch) {
-        end = (end - 2000 + tsMatch[0].length);
-        if (end <= offset) end = Math.min(offset + CHUNK_CHAR_TARGET, transcript.length);
-      } else {
-        // Fall back to sentence boundary
-        const sentEnd = searchRegion.match(/[\s\S]*[.!?]\s/);
-        if (sentEnd) {
-          end = (end - 2000 + sentEnd[0].length);
-          if (end <= offset) end = Math.min(offset + CHUNK_CHAR_TARGET, transcript.length);
+      // Scan backwards from end to find a good break point
+      const scanStart = Math.max(offset + 1, end - 2000);
+      const tail = transcript.slice(scanStart, end);
+
+      // Prefer breaking right after a timestamp marker like [12:34]
+      const lastTs = tail.lastIndexOf(']');
+      if (lastTs > 0) {
+        const bracket = tail.lastIndexOf('[', lastTs);
+        if (bracket >= 0 && /^\[\d+:\d{2}\]/.test(tail.slice(bracket))) {
+          end = scanStart + lastTs + 1;
         }
       }
     }
 
     chunks.push(transcript.slice(offset, end));
-    offset = Math.max(offset + 1, end - OVERLAP); // overlap for context
+    // Next chunk starts with some overlap for context
+    offset = end > offset ? end - OVERLAP : offset + CHUNK_CHAR_TARGET;
   }
 
   console.log(`[extract] Split transcript (~${totalTokens} tokens) into ${chunks.length} chunks`);
