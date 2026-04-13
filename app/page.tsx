@@ -13,6 +13,8 @@ import VideoHeaderCard from '@/components/VideoHeaderCard';
 import TakeawaysSection from '@/components/TakeawaysSection';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { PopCard, CardType } from '@/types/card';
+import { useHistory, HistoryEntry } from '@/lib/useHistory';
+import HistoryPanel from '@/components/HistoryPanel';
 
 type AppState = 'landing' | 'loading' | 'results' | 'error';
 
@@ -62,8 +64,10 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentUrl, setCurrentUrl] = useState('');
   const [videoInfo, setVideoInfo] = useState<{ title: string; thumbnailUrl: string | null } | null>(null);
+  const { history, addEntry, removeEntry } = useHistory();
   const resultsRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const videoInfoRef = useRef<{ title: string; thumbnailUrl: string | null } | null>(null);
 
   const handleCancel = useCallback(() => {
     abortRef.current?.abort();
@@ -121,6 +125,20 @@ export default function HomePage() {
               if (Array.isArray(event.takeaways)) setTakeaways(event.takeaways);
               setAppState('results');
               transitionedToResults = true;
+              // Save to localStorage history
+              const info = videoInfoRef.current;
+              if (info) {
+                addEntry({
+                  title: info.title,
+                  url: currentUrl.startsWith('paste-') || !currentUrl ? undefined : currentUrl,
+                  thumbnailUrl: info.thumbnailUrl,
+                  cardCount: (event.cards as PopCard[]).filter(
+                    (c: PopCard) => c.type !== 'TLDR' && c.type !== 'SECTION_HEADER'
+                  ).length,
+                  cards: event.cards as PopCard[],
+                  takeaways: Array.isArray(event.takeaways) ? event.takeaways : [],
+                });
+              }
             } else if (event.type === 'error') {
               receivedTerminalEvent = true;
               setError({ code: 'extraction_error', message: event.message });
@@ -174,7 +192,10 @@ export default function HomePage() {
         }
 
         const { transcript, videoId, title, thumbnailUrl } = await transcriptRes.json();
-        if (title) setVideoInfo({ title, thumbnailUrl: thumbnailUrl ?? null });
+        if (title) {
+          setVideoInfo({ title, thumbnailUrl: thumbnailUrl ?? null });
+          videoInfoRef.current = { title, thumbnailUrl: thumbnailUrl ?? null };
+        }
 
         await streamExtraction(transcript, videoId, abort);
 
@@ -198,6 +219,7 @@ export default function HomePage() {
 
         const { transcript, contentId, title } = await uploadRes.json();
         setVideoInfo({ title: title ?? payload.file.name, thumbnailUrl: null });
+        videoInfoRef.current = { title: title ?? payload.file.name, thumbnailUrl: null };
 
         await streamExtraction(transcript, contentId, abort);
 
@@ -206,6 +228,7 @@ export default function HomePage() {
         const hash = payload.text.slice(0, 200).replace(/\s+/g, '').slice(0, 32);
         const contentId = `paste-${hash}`;
         setVideoInfo({ title: 'Pasted Text', thumbnailUrl: null });
+        videoInfoRef.current = { title: 'Pasted Text', thumbnailUrl: null };
 
         await streamExtraction(payload.text, contentId, abort);
       }
@@ -227,6 +250,19 @@ export default function HomePage() {
     setVideoInfo(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const handleRestore = useCallback((entry: HistoryEntry) => {
+    setCards(entry.cards);
+    setTakeaways(entry.takeaways);
+    setVideoInfo({ title: entry.title, thumbnailUrl: entry.thumbnailUrl ?? null });
+    setCurrentUrl(entry.url ?? '');
+    setActiveFilter('ALL');
+    setSearchQuery('');
+    setAppState('results');
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }, []);
 
   // Extract TL;DR and section headers from the main card stream
   const tldrCard = cards.find(c => c.type === 'TLDR');
@@ -323,6 +359,13 @@ export default function HomePage() {
           >
             <UrlInput onSubmit={(p: SubmitPayload) => handleSubmit(p)} loading={appState === 'loading'} />
           </motion.div>
+          {appState === 'landing' && (
+            <HistoryPanel
+              history={history}
+              onRestore={handleRestore}
+              onRemove={removeEntry}
+            />
+          )}
         </div>
       </section>
 
