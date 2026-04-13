@@ -13,18 +13,25 @@ export interface CachedResult {
 
 const cache = new Map<string, { result: CachedResult; ts: number }>();
 
-const TTL_MS = 60 * 60 * 1000; // 1 hour
+const TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+/** Cache version — bump to invalidate all cached results after prompt/model changes */
+const CACHE_VERSION = 2;
+
+function versionedKey(videoId: string): string {
+  return `v${CACHE_VERSION}:${videoId}`;
+}
 
 export function getCached(videoId: string): CachedResult | null {
-  const entry = cache.get(videoId);
+  const entry = cache.get(versionedKey(videoId));
   if (!entry) return null;
   if (Date.now() - entry.ts > TTL_MS) {
-    cache.delete(videoId);
+    cache.delete(versionedKey(videoId));
     return null;
   }
   return entry.result;
 }
 
 export function setCached(videoId: string, result: CachedResult): void {
-  cache.set(videoId, { result, ts: Date.now() });
+  cache.set(versionedKey(videoId), { result, ts: Date.now() });
 }
