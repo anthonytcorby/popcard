@@ -109,6 +109,9 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: -0.01em;
 }
 .nav a:hover { color: var(--purple); }
+/* Pill CTAs in the nav (Sign up free, etc.) — keep their button colours, not the nav-link colour */
+.nav a.btn-primary { color: #fff; }
+.nav a.btn-primary:hover { color: #fff; }
 
 .btn-primary {
   background: var(--purple);
