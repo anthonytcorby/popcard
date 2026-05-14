@@ -63,8 +63,21 @@
         <h2>You're on a paid plan</h2>
         <p>Manage your subscription, change plan, or cancel anytime.</p>
         <div class="account-cta-row">
-          <a href="mailto:support@popcard.app" class="tier-cta" style="background: var(--ink)">Contact support</a>
+          <a href="mailto:support@popcard.me" class="tier-cta" style="background: var(--ink)">Contact support</a>
         </div>
+      </section>
+
+      <section class="account-decks" id="account-decks" hidden>
+        <div class="account-decks-head">
+          <h2>Your decks</h2>
+          <a class="deck-action-link" href="/">+ Pop another</a>
+        </div>
+        <div class="account-decks-loading" id="account-decks-loading">Loading your decks…</div>
+        <div class="account-decks-empty" id="account-decks-empty" hidden>
+          <p>No decks yet. Paste a YouTube link or some notes on the homepage to make your first.</p>
+          <a class="tier-cta" href="/">Make your first deck</a>
+        </div>
+        <div class="account-decks-grid" id="account-decks-grid" hidden></div>
       </section>
 
       <div class="account-loading" id="account-loading">Loading your account…</div>
@@ -75,6 +88,68 @@
   <script src="cookies.js"></script>
   <script src="auth.js"></script>
   <script>
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      }[c]));
+    }
+
+    function timeAgo(iso) {
+      const then = new Date(iso).getTime();
+      const diff = Math.max(0, Date.now() - then);
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'just now';
+      if (mins < 60) return mins + 'm ago';
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + 'h ago';
+      const days = Math.floor(hrs / 24);
+      if (days < 30) return days + 'd ago';
+      return new Date(iso).toLocaleDateString();
+    }
+
+    function sourceBadge(d) {
+      if (d.sourceType === 'youtube') {
+        return '<span class="account-deck-source"><span class="account-deck-source-icon" style="background:#FF0033"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>YouTube</span>';
+      }
+      return '<span class="account-deck-source">📝 Text</span>';
+    }
+
+    async function loadDecks() {
+      const section = document.getElementById('account-decks');
+      const loading = document.getElementById('account-decks-loading');
+      const empty = document.getElementById('account-decks-empty');
+      const gridEl = document.getElementById('account-decks-grid');
+      section.hidden = false;
+
+      try {
+        const r = await fetch('/api/decks?limit=30', { credentials: 'same-origin' });
+        if (!r.ok) throw new Error('Failed to load');
+        const { decks } = await r.json();
+        loading.hidden = true;
+
+        if (!decks.length) {
+          empty.hidden = false;
+          return;
+        }
+        gridEl.hidden = false;
+        gridEl.innerHTML = decks.map((d) => `
+          <a class="account-deck-card" href="/deck/${d.id}">
+            <div class="account-deck-top">
+              <span class="tier-pill account-deck-mode" data-mode="${d.mode}">${d.mode}</span>
+              <span class="account-deck-time">${timeAgo(d.createdAt)}</span>
+            </div>
+            <h3 class="account-deck-title">${escapeHtml(d.title || 'Untitled')}</h3>
+            <div class="account-deck-meta">
+              ${sourceBadge(d)}
+              <span class="account-deck-count">${d.cardCount} card${d.cardCount === 1 ? '' : 's'}</span>
+            </div>
+          </a>
+        `).join('');
+      } catch (e) {
+        loading.textContent = "Couldn't load your decks. Refresh to try again.";
+      }
+    }
+
     (async function init() {
       const loading = document.getElementById('account-loading');
       const card = document.getElementById('account-card');
@@ -103,6 +178,8 @@
         window.PopcardAnalytics?.track('Sign Out');
         window.location.href = '/';
       });
+
+      loadDecks();
     })();
   </script>
 </body>

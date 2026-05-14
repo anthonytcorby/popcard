@@ -114,6 +114,10 @@
         </div>
 
         <div class="deck-actions">
+          <button type="button" class="deck-action-cta" id="deck-start-quiz" hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4z"/></svg>
+            Take the quiz
+          </button>
           <button type="button" class="deck-action-link deck-show-all" id="deck-show-all">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
@@ -122,6 +126,47 @@
           </button>
           <span class="deck-action-sep">·</span>
           <a class="deck-action-link" href="/">Pop another</a>
+        </div>
+      </div>
+
+      <!-- Quiz view -->
+      <div class="deck-quiz-wrap" id="deck-quiz-wrap" hidden>
+        <div class="deck-quiz-loading" id="deck-quiz-loading" hidden>
+          <div class="quiz-spinner"></div>
+          <p>Generating your quiz…</p>
+          <span class="deck-quiz-loading-sub">Reading your cards and writing fresh questions</span>
+        </div>
+
+        <div class="deck-quiz-error" id="deck-quiz-error" hidden></div>
+
+        <div class="deck-quiz-active" id="deck-quiz-active" hidden>
+          <div class="deck-quiz-progress">
+            <div class="deck-quiz-progress-bar"><span id="quiz-progress-fill"></span></div>
+            <div class="deck-quiz-progress-text">
+              Question <span id="quiz-current-num">1</span> of <span id="quiz-total-num">10</span>
+            </div>
+          </div>
+          <h2 class="deck-quiz-question" id="quiz-question">…</h2>
+          <div class="deck-quiz-options" id="quiz-options"></div>
+          <div class="deck-quiz-feedback" id="quiz-feedback" hidden>
+            <div class="deck-quiz-feedback-status" id="quiz-feedback-status"></div>
+            <p class="deck-quiz-feedback-text" id="quiz-feedback-text"></p>
+            <button type="button" class="deck-quiz-next" id="quiz-next">Next question →</button>
+          </div>
+        </div>
+
+        <div class="deck-quiz-results" id="deck-quiz-results" hidden>
+          <div class="deck-quiz-score">
+            <div class="deck-quiz-score-emoji" id="quiz-score-emoji">🎉</div>
+            <div class="deck-quiz-score-num" id="quiz-score-num">0/0</div>
+            <div class="deck-quiz-score-label" id="quiz-score-label">Nicely done</div>
+            <div class="deck-quiz-score-sub" id="quiz-score-sub"></div>
+          </div>
+          <div class="deck-quiz-results-actions">
+            <button type="button" class="deck-action-cta" id="quiz-retake">Retake quiz</button>
+            <button type="button" class="deck-action-link" id="quiz-back-deck">Back to cards</button>
+          </div>
+          <div class="deck-quiz-missed" id="quiz-missed-list" hidden></div>
         </div>
       </div>
 

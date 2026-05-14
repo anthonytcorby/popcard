@@ -147,6 +147,82 @@ const REFINE_INSTRUCTIONS = {
 - Concrete, not vague.`,
 };
 
+const QUIZ_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    questions: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          question: { type: 'string' },
+          options: {
+            type: 'array',
+            items: { type: 'string' },
+          },
+          correctIndex: { type: 'integer' },
+          explanation: { type: 'string' },
+          kind: { type: 'string', enum: ['multiple_choice', 'true_false'] },
+        },
+        required: ['question', 'options', 'correctIndex', 'explanation', 'kind'],
+      },
+    },
+  },
+  required: ['questions'],
+};
+
+const QUIZ_SYSTEM = `You are Popcard's quiz generator. Turn a deck of study cards into 8–12 multiple-choice questions that test real understanding, not just memorisation.
+
+Rules:
+- Mix difficulty: about a third easy recall, a third applied/conceptual, a third harder synthesis.
+- For multiple_choice questions: 4 options (correctIndex 0–3). Distractors must be plausible — based on common confusions, near-misses, or related concepts from the source material. No silly options.
+- For true_false questions: exactly 2 options ["True", "False"]; correctIndex is 0 or 1; use sparingly (max 2 of these per quiz).
+- Every question must be answerable from the source cards alone.
+- Explanation should be one or two sentences and tell the learner why the correct answer is right (and ideally why the distractor they likely picked is wrong).
+- No question/answer should duplicate another question's content.
+- Output strict JSON matching the provided schema.`;
+
+export async function generateQuiz({ deckTitle, cards }) {
+  const cardSummary = cards.map((c, i) => {
+    const parts = [`[Card ${i + 1}] ${c.question}`, `Answer: ${c.answer}`];
+    if (c.hint) parts.push(`Hint: ${c.hint}`);
+    return parts.join('\n');
+  }).join('\n\n');
+
+  const userPrompt = `Deck title: ${deckTitle || 'Untitled'}\n\nSource cards:\n${cardSummary}\n\nGenerate the quiz now.`;
+
+  const completion = await openai.chat.completions.create({
+    model: MODEL,
+    messages: [
+      { role: 'system', content: QUIZ_SYSTEM },
+      { role: 'user', content: userPrompt },
+    ],
+    response_format: {
+      type: 'json_schema',
+      json_schema: { name: 'popcard_quiz', schema: QUIZ_SCHEMA, strict: true },
+    },
+  });
+
+  const raw = completion.choices[0]?.message?.content;
+  if (!raw) throw new Error('Empty response from model');
+  const parsed = JSON.parse(raw);
+
+  // Defensive: clamp correctIndex to options bounds, dedupe questions
+  const seen = new Set();
+  const questions = (parsed.questions || []).filter((q) => {
+    if (!q?.options?.length) return false;
+    if (q.correctIndex < 0 || q.correctIndex >= q.options.length) return false;
+    const key = q.question.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return { questions, model: MODEL };
+}
+
 export async function refineCard({ action, question, answer }) {
   const instr = REFINE_INSTRUCTIONS[action];
   if (!instr) throw new Error(`Unknown refine action: ${action}`);

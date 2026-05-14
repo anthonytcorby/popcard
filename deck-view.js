@@ -52,6 +52,30 @@
   const next = $('deck-next');
   const showAllBtn = $('deck-show-all');
   const gridBack = $('deck-grid-back');
+  const startQuizBtn = $('deck-start-quiz');
+
+  // Quiz refs
+  const quizWrap = $('deck-quiz-wrap');
+  const quizLoading = $('deck-quiz-loading');
+  const quizError = $('deck-quiz-error');
+  const quizActive = $('deck-quiz-active');
+  const quizResults = $('deck-quiz-results');
+  const quizQuestionEl = $('quiz-question');
+  const quizOptionsEl = $('quiz-options');
+  const quizFeedback = $('quiz-feedback');
+  const quizFeedbackStatus = $('quiz-feedback-status');
+  const quizFeedbackText = $('quiz-feedback-text');
+  const quizNextBtn = $('quiz-next');
+  const quizCurrentNum = $('quiz-current-num');
+  const quizTotalNum = $('quiz-total-num');
+  const quizProgressFill = $('quiz-progress-fill');
+  const quizScoreEmoji = $('quiz-score-emoji');
+  const quizScoreNum = $('quiz-score-num');
+  const quizScoreLabel = $('quiz-score-label');
+  const quizScoreSub = $('quiz-score-sub');
+  const quizRetake = $('quiz-retake');
+  const quizBackDeck = $('quiz-back-deck');
+  const quizMissedList = $('quiz-missed-list');
 
   function showError(msg) {
     loading.hidden = true;
@@ -188,6 +212,7 @@
     function showGrid(reason) {
       renderGrid();
       wrap.hidden = true;
+      if (quizWrap) quizWrap.hidden = true;
       gridWrap.hidden = false;
       window.scrollTo({ top: 0, behavior: 'smooth' });
       window.PopcardAnalytics?.track('Deck Grid View', { reason: reason || 'manual' });
@@ -196,6 +221,7 @@
     function showCards() {
       wrap.hidden = false;
       gridWrap.hidden = true;
+      if (quizWrap) quizWrap.hidden = true;
     }
 
     function renderGrid() {
@@ -255,6 +281,182 @@
 
     showAllBtn.addEventListener('click', () => showGrid('manual'));
     gridBack.addEventListener('click', () => showCards());
+
+    // ---------- Quiz Mode (Study decks only) ----------
+    let quizQuestions = null;       // cached so Retake doesn't re-pay
+    let quizIdx = 0;
+    let quizMissed = [];            // array of { q, given, correct, explanation }
+    let quizAnswered = false;       // whether current question has been answered
+
+    if (!isSimple) {
+      startQuizBtn.hidden = false;
+      startQuizBtn.addEventListener('click', () => startQuiz());
+      quizNextBtn.addEventListener('click', () => advanceQuiz());
+      quizRetake.addEventListener('click', () => resetQuiz());
+      quizBackDeck.addEventListener('click', () => hideQuiz());
+    }
+
+    function showQuizSection() {
+      wrap.hidden = true;
+      gridWrap.hidden = true;
+      quizWrap.hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function hideQuiz() {
+      quizWrap.hidden = true;
+      gridWrap.hidden = true;
+      wrap.hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function startQuiz() {
+      showQuizSection();
+      quizLoading.hidden = false;
+      quizActive.hidden = true;
+      quizResults.hidden = true;
+      quizError.hidden = true;
+
+      if (quizQuestions) {
+        // Already cached
+        kickOffQuiz();
+        return;
+      }
+
+      try {
+        const r = await fetch('/api/quiz', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deckId: deck.id }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.message || data.error || 'Quiz failed');
+        if (!data.questions?.length) throw new Error('No quiz questions returned');
+        quizQuestions = data.questions;
+        kickOffQuiz();
+        window.PopcardAnalytics?.track('Quiz Started', { questions: String(quizQuestions.length) });
+      } catch (e) {
+        quizLoading.hidden = true;
+        quizError.hidden = false;
+        quizError.textContent = e.message || 'Could not generate quiz. Try again.';
+      }
+    }
+
+    function kickOffQuiz() {
+      quizLoading.hidden = true;
+      quizError.hidden = true;
+      quizResults.hidden = true;
+      quizActive.hidden = false;
+      quizIdx = 0;
+      quizMissed = [];
+      quizTotalNum.textContent = quizQuestions.length;
+      renderQuizQuestion();
+    }
+
+    function resetQuiz() {
+      kickOffQuiz();
+      window.PopcardAnalytics?.track('Quiz Retake');
+    }
+
+    function renderQuizQuestion() {
+      const q = quizQuestions[quizIdx];
+      quizCurrentNum.textContent = quizIdx + 1;
+      quizProgressFill.style.width = `${((quizIdx) / quizQuestions.length) * 100}%`;
+      quizQuestionEl.textContent = q.question;
+      quizFeedback.hidden = true;
+      quizAnswered = false;
+      quizOptionsEl.innerHTML = '';
+      q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'deck-quiz-option';
+        btn.textContent = opt;
+        btn.dataset.index = String(i);
+        btn.addEventListener('click', () => selectQuizOption(i, btn));
+        quizOptionsEl.appendChild(btn);
+      });
+    }
+
+    function selectQuizOption(idx, btn) {
+      if (quizAnswered) return;
+      quizAnswered = true;
+      const q = quizQuestions[quizIdx];
+      const correct = idx === q.correctIndex;
+      Array.from(quizOptionsEl.children).forEach((b, i) => {
+        b.disabled = true;
+        if (i === q.correctIndex) b.classList.add('is-correct');
+        if (i === idx && !correct) b.classList.add('is-wrong');
+      });
+      quizFeedback.hidden = false;
+      quizFeedbackStatus.textContent = correct ? '✓ Correct' : '✗ Not quite';
+      quizFeedbackStatus.className = 'deck-quiz-feedback-status ' + (correct ? 'is-correct' : 'is-wrong');
+      quizFeedbackText.textContent = q.explanation || '';
+      quizNextBtn.textContent = (quizIdx === quizQuestions.length - 1) ? 'See results →' : 'Next question →';
+      if (!correct) {
+        quizMissed.push({
+          q: q.question,
+          given: q.options[idx],
+          correct: q.options[q.correctIndex],
+          explanation: q.explanation,
+        });
+      }
+      window.PopcardAnalytics?.track('Quiz Answer', { correct: String(correct) });
+      // Scroll feedback into view if needed
+      quizFeedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function advanceQuiz() {
+      if (quizIdx < quizQuestions.length - 1) {
+        quizIdx++;
+        renderQuizQuestion();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function showQuizResults() {
+      quizActive.hidden = true;
+      quizResults.hidden = false;
+      quizProgressFill.style.width = '100%';
+      const total = quizQuestions.length;
+      const right = total - quizMissed.length;
+      const pct = Math.round((right / total) * 100);
+      quizScoreNum.textContent = `${right} / ${total}`;
+      quizScoreEmoji.textContent = pct === 100 ? '🏆' : pct >= 80 ? '🎉' : pct >= 60 ? '💪' : pct >= 40 ? '📚' : '🌱';
+      quizScoreLabel.textContent =
+        pct === 100 ? "Perfect — you've got this." :
+        pct >= 80 ? "Strong work." :
+        pct >= 60 ? "Solid, with a couple to revisit." :
+        pct >= 40 ? "A few to brush up on." :
+        "Worth another pass through the cards.";
+      quizScoreSub.textContent = pct === 100
+        ? 'Nothing to review.'
+        : `${quizMissed.length} card${quizMissed.length === 1 ? '' : 's'} worth revisiting.`;
+
+      if (quizMissed.length) {
+        quizMissedList.hidden = false;
+        quizMissedList.innerHTML = `
+          <h3 class="deck-quiz-missed-title">Worth revisiting</h3>
+          ${quizMissed.map((m) => `
+            <article class="deck-quiz-missed-card">
+              <div class="deck-quiz-missed-q">${escapeHtml(m.q)}</div>
+              <div class="deck-quiz-missed-row"><span class="deck-quiz-missed-label deck-quiz-missed-label-wrong">You said</span> ${escapeHtml(m.given)}</div>
+              <div class="deck-quiz-missed-row"><span class="deck-quiz-missed-label deck-quiz-missed-label-right">Correct</span> ${escapeHtml(m.correct)}</div>
+              <p class="deck-quiz-missed-why">${escapeHtml(m.explanation || '')}</p>
+            </article>
+          `).join('')}
+        `;
+      } else {
+        quizMissedList.hidden = true;
+      }
+
+      window.PopcardAnalytics?.track('Quiz Completed', {
+        score: String(right),
+        total: String(total),
+        pct: String(pct),
+      });
+    }
 
     document.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;

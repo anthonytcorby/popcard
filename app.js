@@ -69,6 +69,30 @@ function setStatus(msg, isError) {
   popStatus.classList.toggle('error', !!isError);
 }
 
+function startPopProgress(input) {
+  const isYoutube = /youtube\.com|youtu\.be/.test(input);
+  const youtubeMsgs = [
+    "Pulling the YouTube transcript…",
+    "Reading what they said…",
+    "Picking the ideas worth keeping…",
+    "Writing your cards…",
+    "Almost there — making them shine…",
+  ];
+  const textMsgs = [
+    "Reading your text…",
+    "Picking the key ideas…",
+    "Writing your cards…",
+    "Almost there — making them shine…",
+  ];
+  const msgs = isYoutube ? youtubeMsgs : textMsgs;
+  let i = 0;
+  setStatus(msgs[0]);
+  return setInterval(() => {
+    i = Math.min(i + 1, msgs.length - 1);
+    setStatus(msgs[i]);
+  }, 3200);
+}
+
 if (popBtn && heroInput) {
   popBtn.addEventListener('click', async () => {
     const input = heroInput.value.trim();
@@ -82,6 +106,7 @@ if (popBtn && heroInput) {
     popBtn.disabled = true;
     popLabel.textContent = 'Popping…';
     setStatus('');
+    const progressTimer = startPopProgress(input);
 
     try {
       const res = await fetch('/api/pop', {
@@ -113,6 +138,7 @@ if (popBtn && heroInput) {
     } catch (e) {
       setStatus('Network error. Try again.', true);
     } finally {
+      clearInterval(progressTimer);
       popBtn.classList.remove('loading');
       popBtn.disabled = false;
       popLabel.textContent = 'Pop it into cards';
