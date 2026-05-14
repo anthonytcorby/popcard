@@ -54,6 +54,7 @@
         <a class="deck-source" id="deck-source" target="_blank" rel="noopener" hidden></a>
       </div>
 
+      <!-- Single-card view -->
       <div class="deck-card-wrap" id="deck-card-wrap" hidden>
         <div class="deck-card-flip" id="deck-card">
           <div class="deck-card-side deck-card-q">
@@ -65,13 +66,20 @@
               </div>
             </div>
             <div class="deck-card-question" id="deck-card-question"></div>
+            <!-- Inline answer + actions for simple mode -->
+            <div class="deck-card-answer-inline" id="deck-card-answer-inline" hidden></div>
             <div class="deck-card-hint" id="deck-card-hint" hidden></div>
+            <div class="deck-card-actions" id="deck-card-actions-front" hidden>
+              <button type="button" class="deck-action" data-refine="simplify">Simplify</button>
+              <button type="button" class="deck-action" data-refine="eli15">Explain like I'm 15</button>
+              <button type="button" class="deck-action" data-refine="why">Why does this matter?</button>
+            </div>
             <div class="deck-card-bottom">
               <a class="deck-card-timestamp" id="deck-card-timestamp" target="_blank" rel="noopener" hidden>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 <span id="deck-card-timestamp-label">Watch this moment</span>
               </a>
-              <div class="deck-card-tap">Tap to reveal</div>
+              <div class="deck-card-tap" id="deck-card-tap-reveal">Tap to reveal</div>
             </div>
           </div>
           <div class="deck-card-side deck-card-a">
@@ -82,7 +90,7 @@
               </div>
             </div>
             <div class="deck-card-answer" id="deck-card-answer"></div>
-            <div class="deck-card-actions" id="deck-card-actions">
+            <div class="deck-card-actions" id="deck-card-actions-back">
               <button type="button" class="deck-action" data-refine="simplify">Simplify</button>
               <button type="button" class="deck-action" data-refine="eli15">Explain like I'm 15</button>
               <button type="button" class="deck-action" data-refine="why">Why does this matter?</button>
@@ -106,6 +114,30 @@
         </div>
 
         <div class="deck-actions">
+          <button type="button" class="deck-action-link deck-show-all" id="deck-show-all">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            See all cards
+          </button>
+          <span class="deck-action-sep">·</span>
+          <a class="deck-action-link" href="/">Pop another</a>
+        </div>
+      </div>
+
+      <!-- All-cards grid view -->
+      <div class="deck-grid-wrap" id="deck-grid-wrap" hidden>
+        <div class="deck-grid-header">
+          <h2 class="deck-grid-title">All <span id="deck-grid-count">0</span> cards</h2>
+          <button type="button" class="deck-grid-back" id="deck-grid-back">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5"/><path d="m11 18-6-6 6-6"/>
+            </svg>
+            Back to cards
+          </button>
+        </div>
+        <div class="deck-grid" id="deck-grid"></div>
+        <div class="deck-actions deck-actions-bottom">
           <a class="deck-action-link" href="/">Pop another</a>
         </div>
       </div>
