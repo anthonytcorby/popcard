@@ -224,9 +224,19 @@
       if (quizWrap) quizWrap.hidden = true;
     }
 
+    const GRID_PALETTE = [
+      { bg: '#6E3DEA', tone: 'light' },  // purple
+      { bg: '#FF3DA0', tone: 'light' },  // pink
+      { bg: '#FF8A3D', tone: 'light' },  // orange
+      { bg: '#FFD338', tone: 'dark'  },  // yellow
+      { bg: '#2BC489', tone: 'light' },  // green
+      { bg: '#3DAEFF', tone: 'light' },  // blue
+    ];
+
     function renderGrid() {
       gridCountEl.textContent = cards.length;
       gridEl.innerHTML = cards.map((c, i) => {
+        const color = GRID_PALETTE[i % GRID_PALETTE.length];
         const typeLabel = TYPE_LABELS[c.type] || c.type || 'Card';
         const impLabel = IMPORTANCE_LABELS[c.importance] || c.importance || 'Good to know';
         const tsUrl = ytTimestampUrl(deck.sourceUrl, c.sourceTimestampSeconds);
@@ -237,11 +247,11 @@
           ? `<div class="deck-grid-hint">💡 ${escapeHtml(c.hint)}</div>`
           : '';
         return `
-          <article class="deck-grid-card" data-importance="${c.importance || 'good_to_know'}">
+          <article class="deck-grid-card" data-importance="${c.importance || 'good_to_know'}" data-tone="${color.tone}" style="background:${color.bg}">
             <div class="deck-grid-card-top">
               <span class="deck-grid-num">${i + 1} / ${cards.length}</span>
               <div class="deck-grid-card-badges">
-                <span class="deck-grid-badge deck-grid-badge-type" data-kind="${c.type || 'idea'}">${escapeHtml(typeLabel)}</span>
+                <span class="deck-grid-badge deck-grid-badge-type">${escapeHtml(typeLabel)}</span>
                 <span class="deck-grid-badge deck-grid-badge-importance" data-kind="${c.importance || 'good_to_know'}">${escapeHtml(impLabel)}</span>
               </div>
             </div>
