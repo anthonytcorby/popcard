@@ -1,3 +1,34 @@
+// ---------- Hero deck cycling ----------
+(function () {
+  const stack = document.getElementById('hero-deck-stack');
+  const prev = document.getElementById('hero-prev');
+  const next = document.getElementById('hero-next');
+  if (!stack || !prev || !next) return;
+
+  const cards = Array.from(stack.querySelectorAll('.deck-card'));
+  const TOTAL = cards.length;
+  let busy = false;
+
+  function cycle(dir) {
+    if (busy) return;
+    busy = true;
+    cards.forEach((card) => {
+      const m = card.className.match(/\bl(\d)\b/);
+      if (!m) return;
+      const cur = parseInt(m[1], 10);
+      const next_ = dir === 'next'
+        ? (cur - 1 + TOTAL) % TOTAL  // front → back: 0→5, 1→0, 2→1, …
+        : (cur + 1) % TOTAL;         // back → front: 5→0, 0→1, …
+      card.className = card.className.replace(/\bl\d\b/, 'l' + next_);
+    });
+    window.PopcardAnalytics?.track('Hero Deck Cycle', { direction: dir });
+    setTimeout(() => { busy = false; }, 600);
+  }
+
+  next.addEventListener('click', (e) => { e.stopPropagation(); cycle('next'); });
+  prev.addEventListener('click', (e) => { e.stopPropagation(); cycle('prev'); });
+})();
+
 const modeButtons = document.querySelectorAll('.mode');
 let currentMode = 'simple';
 modeButtons.forEach((btn) => {

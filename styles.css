@@ -368,21 +368,37 @@ a { color: inherit; text-decoration: none; }
   height: 360px;
   left: 0;
   top: 0;
-}
-.deck-card.l0 {
-  background: #6E3DEA;
-  z-index: 10;
-  transform: translateZ(0);
-  box-shadow: 0 30px 60px rgba(110,61,234,0.35), 0 12px 20px rgba(15,15,20,0.18);
   padding: 32px;
   color: #fff;
   font-family: var(--font-display);
+  box-shadow: 0 18px 36px rgba(15,15,20,0.18), 0 6px 12px rgba(15,15,20,0.10);
+  transition: transform .55s cubic-bezier(.22,.61,.36,1), box-shadow .4s ease-out, z-index 0s;
+  overflow: hidden;
 }
-.deck-card.l1 { background: #FF3DA0; transform: translate(28px, 14px) translateZ(-20px); z-index: 9; }
-.deck-card.l2 { background: #FF8A3D; transform: translate(46px, 30px) translateZ(-40px); z-index: 8; }
-.deck-card.l3 { background: #FFD338; transform: translate(60px, 48px) translateZ(-60px); z-index: 7; }
-.deck-card.l4 { background: #2BC489; transform: translate(72px, 68px) translateZ(-80px); z-index: 6; }
-.deck-card.l5 { background: #3DAEFF; transform: translate(82px, 90px) translateZ(-100px); z-index: 5; }
+/* When a card is below the top, hide its content cleanly so colored edges are all you see */
+.deck-card:not(.l0) .q,
+.deck-card:not(.l0) .body,
+.deck-card:not(.l0) .ph-icon,
+.deck-card:not(.l0) .count { opacity: 0; transition: opacity .25s ease-out; }
+.deck-card.l0 .q,
+.deck-card.l0 .body,
+.deck-card.l0 .ph-icon,
+.deck-card.l0 .count { opacity: 1; transition: opacity .35s ease-in .15s; }
+
+.deck-card.l0 {
+  z-index: 10;
+  transform: translateZ(0);
+  box-shadow: 0 30px 60px rgba(110,61,234,0.35), 0 12px 20px rgba(15,15,20,0.18);
+}
+.deck-card.l1 { transform: translate(28px, 14px) translateZ(-20px); z-index: 9; }
+.deck-card.l2 { transform: translate(46px, 30px) translateZ(-40px); z-index: 8; }
+.deck-card.l3 { transform: translate(60px, 48px) translateZ(-60px); z-index: 7; }
+.deck-card.l4 { transform: translate(72px, 68px) translateZ(-80px); z-index: 6; }
+.deck-card.l5 { transform: translate(82px, 90px) translateZ(-100px); z-index: 5; }
+/* Yellow card needs dark text for legibility */
+.deck-card[data-tone="dark"] { color: var(--ink-2); }
+.deck-card[data-tone="dark"] .q { border-color: rgba(31,31,42,0.22) !important; }
+.deck-card[data-tone="dark"] .ph-icon { background: rgba(31,31,42,0.12); color: rgba(31,31,42,0.55); }
 
 .deck-card .count {
   font-size: 14px;
