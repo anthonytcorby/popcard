@@ -20,6 +20,7 @@ export default async function handler(req, res) {
       sourceType: deck.source_type,
       sourceUrl: deck.source_url,
       createdAt: deck.created_at,
+      fromCache: deck.from_cache,
     },
     cards: deck.cards || [],
   });

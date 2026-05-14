@@ -35,7 +35,7 @@ export default async function handler(req, res) {
   if (used >= limit) {
     return res.status(402).json({
       error: 'quota_exceeded',
-      message: `You've used ${used} of ${limit} pops this month. Upgrade for more.`,
+      message: `You've hit ${used} of ${limit} pops this month. Upgrade for more, or your allowance resets next month.`,
       tier: user.tier,
     });
   }
@@ -75,7 +75,7 @@ export default async function handler(req, res) {
   // Cache lookup
   const cached = await findCachedDeck({ sourceHash, mode: safeMode });
   if (cached) {
-    const deck = await createDeck({
+    const { deck } = await createDeck({
       userId: user.id,
       sourceType: source.sourceType,
       sourceUrl: source.sourceUrl,
@@ -87,7 +87,15 @@ export default async function handler(req, res) {
       cards: cached.cards,
     });
     return res.status(200).json({
-      deck: { id: deck.id, title: deck.title, mode: deck.mode, cardCount: deck.card_count, fromCache: true },
+      deck: {
+        id: deck.id,
+        title: deck.title,
+        mode: deck.mode,
+        cardCount: deck.card_count,
+        sourceUrl: deck.source_url,
+        sourceType: deck.source_type,
+        fromCache: true,
+      },
       cards: cached.cards,
     });
   }
@@ -99,13 +107,14 @@ export default async function handler(req, res) {
       text: trimmed,
       mode: safeMode,
       sourceUrl: source.sourceUrl,
+      segments: source.segments,
     });
   } catch (e) {
     console.error('LLM error', e);
     return res.status(502).json({ error: 'llm_error', message: e.message });
   }
 
-  const deck = await createDeck({
+  const { deck, cards: normalized } = await createDeck({
     userId: user.id,
     sourceType: source.sourceType,
     sourceUrl: source.sourceUrl,
@@ -118,7 +127,16 @@ export default async function handler(req, res) {
   });
 
   res.status(200).json({
-    deck: { id: deck.id, title: deck.title, mode: deck.mode, cardCount: deck.card_count, fromCache: false },
-    cards: generated.cards.map((c, i) => ({ position: i, ...c })),
+    deck: {
+      id: deck.id,
+      title: deck.title,
+      summary: generated.summary,
+      mode: deck.mode,
+      cardCount: deck.card_count,
+      sourceUrl: deck.source_url,
+      sourceType: deck.source_type,
+      fromCache: false,
+    },
+    cards: normalized,
   });
 }

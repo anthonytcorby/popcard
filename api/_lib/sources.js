@@ -14,39 +14,52 @@ export function detectYouTubeId(input) {
 
 async function tryYoutubeTranscript(videoId) {
   const segments = await YoutubeTranscript.fetchTranscript(videoId);
-  return segments.map((s) => s.text).join(' ').replace(/\s+/g, ' ').trim();
+  return segments.map((s) => ({
+    text: (s.text || '').replace(/\s+/g, ' ').trim(),
+    offsetSeconds: (s.offset || 0) / 1000,
+    durationSeconds: (s.duration || 0) / 1000,
+  })).filter((s) => s.text.length > 0);
 }
 
 async function trySupadata(videoId) {
   const key = process.env.SUPADATA_API_KEY;
   if (!key) throw new Error('No SUPADATA_API_KEY configured');
 
-  const url = `https://api.supadata.ai/v1/youtube/transcript?videoId=${encodeURIComponent(videoId)}&text=true`;
+  // Supadata supports both `text=true` (concatenated) and segmented mode (default = segments).
+  const url = `https://api.supadata.ai/v1/youtube/transcript?videoId=${encodeURIComponent(videoId)}`;
   const r = await fetch(url, { headers: { 'x-api-key': key } });
   if (!r.ok) {
     const body = await r.text().catch(() => '');
     throw new Error(`Supadata ${r.status}: ${body.slice(0, 200)}`);
   }
   const data = await r.json();
-  const text = (data.content || data.text || '').trim();
+  // Supadata response shape: { content: [{ text, offset, duration }] } when segmented
+  const items = Array.isArray(data.content) ? data.content : null;
+  if (items) {
+    return items.map((s) => ({
+      text: (s.text || '').replace(/\s+/g, ' ').trim(),
+      offsetSeconds: (s.offset || 0) / 1000,
+      durationSeconds: (s.duration || 0) / 1000,
+    })).filter((s) => s.text.length > 0);
+  }
+  // Fallback: plain string content
+  const text = typeof data.content === 'string' ? data.content : data.text || '';
   if (!text) throw new Error('Supadata returned empty transcript');
-  return text;
+  return [{ text: text.trim(), offsetSeconds: 0, durationSeconds: 0 }];
 }
 
 export async function fetchYouTubeTranscript(videoId) {
-  // Try the cheap path first (scrapes manual + auto captions if present)
-  let text = '';
+  let segments = [];
   let primaryError = null;
   try {
-    text = await tryYoutubeTranscript(videoId);
+    segments = await tryYoutubeTranscript(videoId);
   } catch (e) {
     primaryError = e;
   }
 
-  // Fallback to Supadata (handles videos with no captions by generating them)
-  if (!text) {
+  if (!segments.length) {
     try {
-      text = await trySupadata(videoId);
+      segments = await trySupadata(videoId);
     } catch (fallbackError) {
       const msg = primaryError?.message?.includes('Transcript is disabled')
         ? 'This video has no captions and the transcription fallback also failed.'
@@ -55,8 +68,11 @@ export async function fetchYouTubeTranscript(videoId) {
     }
   }
 
+  const text = segments.map((s) => s.text).join(' ').replace(/\s+/g, ' ').trim();
+
   return {
     text,
+    segments,
     sourceUrl: `https://www.youtube.com/watch?v=${videoId}`,
     sourceType: 'youtube',
     title: null,
@@ -66,6 +82,7 @@ export async function fetchYouTubeTranscript(videoId) {
 export function normalizeText(text) {
   return {
     text: text.replace(/\s+/g, ' ').trim(),
+    segments: null,
     sourceUrl: null,
     sourceType: 'text',
     title: null,

@@ -51,9 +51,13 @@ package.json
 ```sql
 users (id text PK, email, name, picture, tier, stripe_customer_id, stripe_subscription_id, created_at, updated_at)
 decks (id uuid PK, user_id, source_type, source_url, source_hash, title, mode, card_count, model, from_cache, created_at)
-cards (id uuid PK, deck_id, position, question, answer, hint, created_at)
+cards (id uuid PK, deck_id, position, type, importance, question, answer, hint, source_timestamp_seconds, created_at)
 ```
 Indexes on `decks(user_id, created_at)`, `decks(source_hash, mode)`, `cards(deck_id, position)`.
+
+**Card type enum** (`cards.type`): `idea` (default), `definition`, `example`, `analogy`, `mistake`, `comparison`, `formula`, `action`.
+**Importance enum** (`cards.importance`): `must_know`, `good_to_know` (default), `extra_context`.
+**Source timestamp** (`cards.source_timestamp_seconds`): integer seconds offset for YouTube cards; null otherwise. Used to deep-link "Watch this moment" on the deck UI.
 
 ## How "popping" works
 1. User submits `{ input: <url-or-text>, mode: 'simple'|'study' }` to `POST /api/pop`.
@@ -69,7 +73,8 @@ Quota: free = 10 pops/month, pro/team = 1000/month soft cap. Enforced before the
 ## Environment variables (set in Vercel + mirrored in local `.env.local`)
 - `GOOGLE_CLIENT_ID` — OAuth client (popcard project on Google Cloud, project ID `popcard-496213`)
 - `STRIPE_SECRET_KEY` — test mode (`sk_test_…`)
-- `STRIPE_PRICE_ID_PRO`, `STRIPE_PRICE_ID_TEAM`
+- `STRIPE_PRICE_ID_STUDY` — Study tier £3.99/mo GBP (current launch tier)
+- `STRIPE_PRICE_ID_PRO`, `STRIPE_PRICE_ID_TEAM` — legacy USD-priced tiers; kept so any existing subscriptions still resolve via `api/checkout.js`. New customers should always go to Study.
 - `STRIPE_WEBHOOK_SECRET` (`whsec_…`)
 - `SESSION_SECRET` — 32 hex bytes for HMAC
 - `POSTGRES_URL` — Neon (auto-injected by Vercel marketplace integration, marked Sensitive)
@@ -98,14 +103,28 @@ export VERCEL_TOKEN=<short-lived token from vercel.com/account/tokens>
 Vercel auto-detected this as Next.js until I set `framework: null` in `vercel.json` — don't undo that.
 
 ## What's done
-- Marketing site (hero, pricing, examples, how-it-works, trust bar)
+- Marketing site: hero, **modes comparison**, **why-not-ChatGPT comparison table**, **ADHD-friendly section**, how-it-works, trust bar
+- Pricing page rewritten: Free + Study £3.99 (Team tier dropped)
 - Cookie banner + Vercel Web Analytics integration
 - Google sign-in with HMAC session cookie
-- Stripe Checkout (Pro/Team) with webhook → tier update
-- Neon Postgres schema for users/decks/cards
-- `/api/pop` end-to-end: YouTube + text → LLM → cards
+- Stripe Checkout (Study tier active, legacy Pro/Team kept for any existing subs) with webhook → tier update
+- Neon Postgres schema for users/decks/cards with **typed cards** + **importance labels** + **source timestamps**
+- `/api/pop` end-to-end: YouTube + text → LLM → typed cards with timestamps
+- `/api/refine` for per-card actions: Simplify, Explain like I'm 15, Why does this matter
 - Cache-by-source-hash dedupe (saves LLM cost on duplicate sources)
-- `/deck/<id>` page with flip-card UI, keyboard nav
+- `/deck/<id>` page with flip-card UI, type+importance badges, "Watch this moment" YouTube links, per-card refine actions, keyboard nav
+
+## Phase 2 — next session priorities (from `/Users/anthonycorby/Desktop/popcard_competitor_feature_brief.md`)
+1. **Quiz Mode** inside Study Mode — generated alongside cards, multiple-choice + short-answer, instant feedback, weak-area tracking, retake, results screen. Brief sections 5 + 13.1.6.
+2. **Deck library page** — list of past decks for signed-in users. `account.html` can grow into this.
+3. **Exports**: Anki `.apkg`, PDF, Markdown.
+4. **Spaced repetition** layer over Study decks.
+
+## Phase 3 — later
+- PDF / ebook input (file upload + extraction)
+- SEO landing pages targeting "YouTube to flashcards", "Quizlet alternative", "ADHD study tool" etc.
+- Browser extension "Pop this"
+- Tutor / classroom accounts (paused at launch per brief §10)
 
 ## Known issues / open follow-ups
 - **Live UI sign-in test never completed via automation** (popup/iframe quirks in browser MCP). Backend smoke-tested: `/api/auth/google` returns 400 / 401 / 200 correctly for malformed / invalid / valid credentials. Real human sign-in should work.

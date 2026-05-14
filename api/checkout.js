@@ -5,6 +5,8 @@ import { getSession } from './_lib/session.js';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const PRICE_BY_TIER = {
+  study: process.env.STRIPE_PRICE_ID_STUDY,
+  // Legacy — kept so existing subs still resolve
   pro: process.env.STRIPE_PRICE_ID_PRO,
   team: process.env.STRIPE_PRICE_ID_TEAM,
 };
