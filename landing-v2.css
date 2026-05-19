@@ -1,0 +1,1412 @@
+/* ======================================================================
+   Popcard Landing V2 — Duolingo-style scene-based redesign.
+   Loaded ONLY on index.html (after styles.css) so it can override the
+   base header / hero / button rules without affecting other pages.
+   Scoping: rules that share a class name with the rest of the site
+   (.header, .brand, .btn-*, .lang-picker*) are scoped to body.landing-v2.
+   Landing-only classes (.scene, .float-card, .mascot-stage, .footer,
+   .testimonial-big, .cta-band, .greeting-wall) are unscoped.
+====================================================================== */
+
+/* Extra brand-colour variables the design uses */
+:root {
+  --yellow-deep: #E5B30E;
+  --yellow-soft: #FFF8DD;
+  --yellow-ring: #FFE89B;
+  --pink-deep:   #DB1F7E;
+  --pink-soft:   #FFEEF6;
+  --pink-ring:   #FFD1E5;
+  --orange-deep: #DB6A1F;
+  --green-deep:  #1B9E69;
+  --blue-deep:   #1F8DDB;
+}
+
+body.landing-v2 { scroll-padding-top: 0; }
+
+/* Snap-scroll: each coloured section behaves like its own page. The nav bar
+   is overlaid (sticky + translucent), so sections snap flush to the viewport
+   top and scroll behind it. */
+html:has(body.landing-v2) {
+  scroll-snap-type: y proximity;
+  scroll-padding-top: 0;
+  scroll-behavior: smooth;
+}
+body.landing-v2 .hero,
+body.landing-v2 .scene,
+body.landing-v2 .cta-band-page {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Header — sticky glassy bar (overrides base header) */
+body.landing-v2 .header {
+  position: fixed;            /* overlay over the page — doesn't push hero down */
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 2px solid var(--line);
+  z-index: 50;
+  padding: 0;
+  display: block;
+  transform: translateY(0);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  will-change: transform;
+}
+/* Auto-hide nav: scrolling DOWN slides the bar up out of view; scrolling
+   UP slides it back in. Triggered by landing-snap.js toggling this class. */
+body.landing-v2 .header.is-hidden {
+  transform: translateY(-100%);
+}
+body.landing-v2 .header-inner {
+  display: flex;
+  align-items: center;        /* logo + lang picker + buttons vertically centred */
+  justify-content: space-between;
+  padding: 18px 32px;
+  gap: 26px;
+  max-width: 1244px;
+  margin: 0 auto;
+  min-height: 92px;           /* gentle floor — about 30% taller than the original ~74px bar */
+}
+body.landing-v2 .brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+body.landing-v2 .brand-icon {
+  width: 40px; height: 40px;  /* +~10%: 36 → 40 */
+  object-fit: contain;
+  display: block;
+}
+body.landing-v2 .brand-word {
+  font-family: "Outfit", var(--font-display);   /* dedicated wordmark font */
+  font-weight: 800;
+  font-size: 29px;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: baseline;
+}
+body.landing-v2 .nav-links {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  gap: 8px;
+}
+body.landing-v2 .header-right { display: flex; align-items: center; gap: 12px; }
+
+/* Language picker — restyled to match design (using existing markup IDs) */
+body.landing-v2 .lang-picker {
+  position: relative;
+  display: inline-flex;
+}
+body.landing-v2 .lang-picker-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 6px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink-2);
+  background: #fff;
+  transition: background .12s, border-color .12s;
+  height: auto;
+  box-shadow: none;
+}
+body.landing-v2 .lang-picker-trigger:hover {
+  background: var(--line-2);
+  border-color: var(--purple-ring);
+  transform: none;
+  box-shadow: none;
+}
+body.landing-v2 .lang-picker-trigger[aria-expanded="true"] {
+  border-color: var(--purple-ring);
+  background: var(--line-2);
+  box-shadow: none;
+}
+body.landing-v2 .lang-picker-trigger .lang-picker-flag {
+  width: 24px; height: 24px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+  background-size: cover !important;
+  background-position: 50% 50% !important;
+  font-size: 0;
+  line-height: 0;
+}
+body.landing-v2 .lang-picker-chevron {
+  width: 10px; height: 10px; color: var(--mute);
+}
+body.landing-v2 .lang-picker-menu[hidden] { display: none; }
+body.landing-v2 .lang-picker-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 60;
+}
+body.landing-v2 .lang-picker-menu button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  width: 100%;
+  background: none;
+  border: none;
+}
+body.landing-v2 .lang-picker-menu button:hover { background: var(--purple-soft); color: var(--purple); }
+body.landing-v2 .lang-picker-menu button[aria-current="true"] { background: var(--purple-soft); color: var(--purple); font-weight: 700; }
+body.landing-v2 .lang-picker-menu .lang-picker-flag {
+  width: 22px; height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-size: cover !important;
+  background-position: 50% 50% !important;
+}
+body.landing-v2 .lang-picker-menu .lang-picker-native { flex: 1; }
+
+/* User chip (signed-in) — minimal pill */
+body.landing-v2 .user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 14px 4px 4px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink-2);
+  background: #fff;
+}
+body.landing-v2 .user-chip:hover { border-color: var(--purple-ring); background: var(--line-2); }
+body.landing-v2 .user-chip img {
+  width: 28px; height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+/* Buttons — chunky pills with depth shadows */
+body.landing-v2 .btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 16px 28px;
+  border-radius: var(--r-pill);
+  border: 2px solid transparent;
+  transition: transform .08s ease, box-shadow .08s ease, background-color .12s, color .12s;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+  line-height: 1;
+}
+body.landing-v2 .btn:active { transform: translateY(2px); }
+body.landing-v2 .btn-primary {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+  box-shadow: 0 4px 0 var(--purple-deep);
+}
+body.landing-v2 .btn-primary:hover {
+  background: #7d4ff0; color: #fff;
+  transform: none;
+  box-shadow: 0 4px 0 var(--purple-deep);   /* keep the depth shadow on hover; override the soft-glow shadow from base styles.css */
+}
+body.landing-v2 .btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--purple-deep);
+}
+body.landing-v2 .btn-secondary {
+  background: #fff;
+  color: var(--purple);
+  border-color: var(--purple-ring);
+  box-shadow: 0 4px 0 var(--purple-ring);
+}
+body.landing-v2 .btn-secondary:hover { background: var(--purple-soft); }
+body.landing-v2 .btn-secondary:active { box-shadow: 0 2px 0 var(--purple-ring); }
+body.landing-v2 .btn-yellow {
+  background: var(--yellow);
+  color: #6E4900;
+  border-color: var(--yellow);
+  box-shadow: 0 4px 0 var(--yellow-deep);
+}
+body.landing-v2 .btn-yellow:hover { background: #FFDA52; color: #6E4900; }
+body.landing-v2 .btn-yellow:active { box-shadow: 0 2px 0 var(--yellow-deep); }
+body.landing-v2 .btn-pink {
+  background: var(--pink);
+  color: #fff;
+  border-color: var(--pink);
+  box-shadow: 0 4px 0 var(--pink-deep);
+}
+body.landing-v2 .btn-pink:hover { background: #FF52AC; color: #fff; }
+body.landing-v2 .btn-pink:active { box-shadow: 0 2px 0 var(--pink-deep); }
+body.landing-v2 .btn-white {
+  background: #fff;
+  color: var(--purple);
+  border-color: #fff;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+}
+body.landing-v2 .btn-white:hover { background: #FFFADE; color: var(--purple); }
+body.landing-v2 .btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+  box-shadow: 0 2px 0 var(--line);
+  padding: 12px 18px;
+  font-size: 13px;
+}
+body.landing-v2 .btn-ghost:hover { background: var(--line-2); color: var(--ink); }
+body.landing-v2 .btn-lg { font-size: 17px; padding: 20px 36px; }
+body.landing-v2 .btn-block { display: flex; width: 100%; }
+
+/* Header-right: shrink SIGN UP to match LOG IN so the two sit at the same
+   dimensions. The chunky primary button is the right look in-page (hero,
+   scenes, CTA band) but feels oversized next to a compact LOG IN ghost. */
+body.landing-v2 .header-right .btn-primary {
+  padding: 12px 18px;
+  font-size: 13px;
+  box-shadow: 0 2px 0 var(--purple-deep);
+}
+body.landing-v2 .header-right .btn-primary:hover {
+  box-shadow: 0 2px 0 var(--purple-deep);
+}
+body.landing-v2 .header-right .btn-primary:active {
+  box-shadow: 0 1px 0 var(--purple-deep);
+  transform: translateY(1px);
+}
+
+/* Page wrapper */
+body.landing-v2 .page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative;
+}
+
+/* Hero */
+body.landing-v2 .hero {
+  padding: 96px 0;            /* generous so centered content clears the overlay nav */
+  min-height: 100vh;          /* full viewport — section background extends behind the translucent nav */
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+}
+body.landing-v2 .hero > .page { width: 100%; }
+body.landing-v2 .duo-mascot {
+  max-width: 460px;
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 20px 40px rgba(15,15,20,0.10));
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+body.landing-v2 .hero-visual {
+  /* Reset the old absolute-positioned deck-stack rules from styles.css */
+  position: static;
+  right: auto;
+  top: auto;
+  transform: none;
+  width: auto;
+  height: auto;
+  pointer-events: auto;
+  /* New layout */
+  display: grid;
+  place-items: center;
+  min-height: 480px;
+}
+
+/* Scenes — full-bleed coloured sections */
+body.landing-v2 .scene {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;          /* full viewport — coloured background extends behind the overlay nav */
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: 96px 0;
+}
+body.landing-v2 .scene > .page { width: 100%; }
+body.landing-v2 .scene-yellow { background: #fff; }
+body.landing-v2 .scene-purple { background: #fff; }
+body.landing-v2 .scene-pink   { background: #fff; }
+
+body.landing-v2 .scene-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 64px;
+  min-height: 520px;
+}
+body.landing-v2 .scene-row.reverse > :first-child { order: 2; }
+body.landing-v2 .scene-row.reverse > :last-child { order: 1; }
+
+body.landing-v2 .scene-text {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+}
+body.landing-v2 .scene-text.center {
+  align-items: center;
+  text-align: center;
+  margin: 0 auto;
+}
+
+body.landing-v2 .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--purple);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--purple-soft);
+  border: 2px solid var(--purple-ring);
+  width: auto;
+}
+body.landing-v2 .eyebrow.yellow { color: #8C5C00; background: #FFE89B; border-color: var(--yellow-deep); }
+body.landing-v2 .eyebrow.pink   { color: var(--pink-deep); background: #FFD1E5; border-color: var(--pink); }
+body.landing-v2 .eyebrow.green  { color: var(--green-deep); background: #C9F2DF; border-color: var(--green); }
+
+body.landing-v2 .h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(44px, 5.6vw, 68px);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  margin: 0;
+  text-wrap: balance;
+  max-width: none;
+}
+body.landing-v2 .h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(36px, 4.6vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  margin: 0;
+  text-wrap: balance;
+}
+body.landing-v2 .lede {
+  font-size: 19px;
+  color: var(--mute);
+  line-height: 1.5;
+  max-width: 46ch;
+  margin: 0;
+  font-weight: 500;
+}
+body.landing-v2 .scene-text.center .lede { margin: 0 auto; }
+
+/* Purple inline emphasis — replaces the eyebrow chips above each h2 with a
+   subtler in-paragraph mention. */
+body.landing-v2 .mode-name {
+  color: var(--purple);
+  font-weight: 700;
+}
+
+body.landing-v2 .cta-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 440px;        /* was 320 — wider hero CTAs */
+  max-width: 100%;
+}
+body.landing-v2 .cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Mascot stage & floating decoration — landing-only, unscoped */
+.mascot-stage {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  display: grid;
+  place-items: center;
+}
+.mascot-stage img.mascot {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 30px 30px rgba(15,15,20,0.10));
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+}
+.blob-yellow { background: var(--yellow); opacity: 0.18; }
+.blob-purple { background: var(--purple); opacity: 0.12; }
+.blob-pink   { background: var(--pink);   opacity: 0.14; }
+.blob-green  { background: var(--green);  opacity: 0.14; }
+
+.float-card {
+  position: absolute;
+  z-index: 3;
+  border-radius: 18px;
+  padding: 14px 16px;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  box-shadow: 0 8px 0 rgba(0,0,0,0.10), 0 18px 36px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.float-card.purple { background: var(--purple); }
+.float-card.pink   { background: var(--pink); }
+.float-card.orange { background: var(--orange); }
+.float-card.yellow { background: var(--yellow); color: #4F3500; }
+.float-card.green  { background: var(--green); }
+.float-card.blue   { background: var(--blue); }
+.float-card .fc-tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.75;
+  font-weight: 700;
+}
+.float-card .fc-q { font-size: 16px; font-weight: 800; }
+.float-card .fc-lines { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.float-card .fc-line { height: 4px; background: rgba(255,255,255,0.55); border-radius: 2px; width: 100%; }
+.float-card .fc-line.short { width: 60%; }
+.float-card.yellow .fc-line { background: rgba(79,53,0,0.35); }
+
+.sparkle { position: absolute; color: var(--purple); z-index: 4; }
+.sparkle.yellow { color: var(--yellow-deep); }
+.sparkle.pink { color: var(--pink); }
+.sparkle.green { color: var(--green); }
+
+/* Scene-paste — extra gap between the (heavily scaled) illustration and text */
+body.landing-v2 .scene-paste .scene-row {
+  gap: 140px;                  /* was 64px — gives the 2.1x scaled image room to breathe before the text column starts */
+}
+
+/* Drop / Quick / Study / Busy — full illustration replaces the busy mascot-stage */
+.drop-illustration,
+.quick-illustration,
+.study-illustration,
+.busy-illustration {
+  width: 100%;
+  display: grid;
+  place-items: center;
+  overflow: visible;           /* let the scaled image extend past the column */
+}
+.busy-illustration img,
+.study-illustration img {
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+  display: block;
+  transform: scale(1.4);
+  transform-origin: center;
+  filter: drop-shadow(0 24px 40px rgba(15,15,20,0.10));
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+/* Study scene specifically — shift the bullseye image further left */
+.study-illustration img {
+  transform: translateX(-12%) scale(1.4);
+}
+/* Busy scene specifically — shift the progress image further right */
+.busy-illustration img {
+  transform: translateX(12%) scale(1.4);
+}
+.drop-illustration img {
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+  display: block;
+  transform: scale(2.1);       /* +50% bigger than the previous 1.4x */
+  transform-origin: center;
+  filter: drop-shadow(0 24px 40px rgba(15,15,20,0.10));
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.quick-illustration img {
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+  display: block;
+  transform: scale(1.4);       /* Quick-mode image stays at the previous size */
+  transform-origin: center;
+  filter: drop-shadow(0 24px 40px rgba(15,15,20,0.10));
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* Scene-paste-specific decorations (kept in case other scenes still use them) */
+.scene-paste .mascot-stage { height: 540px; }
+.scene-paste .float-input {
+  position: absolute;
+  top: 6%; left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 2.5px solid var(--purple-ring);
+  border-radius: 999px;
+  padding: 14px 18px 14px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 360px;
+  max-width: 92%;
+  box-shadow: 0 6px 0 var(--purple-ring), 0 18px 32px rgba(110,61,234,0.10);
+  z-index: 4;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+}
+.scene-paste .float-input .yt {
+  width: 30px; height: 22px;
+  background: #FF0033;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.scene-paste .float-input .url { color: var(--mute); font-weight: 600; }
+
+/* Quick-mode "Skim in 5" badge */
+.skim-badge {
+  position: absolute;
+  right: 8%; bottom: 14%;
+  background: #fff;
+  border: 2.5px solid var(--yellow-deep);
+  border-radius: 16px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  color: #6E4900;
+  box-shadow: 0 4px 0 var(--yellow-deep);
+  z-index: 3;
+  transform: rotate(-3deg);
+}
+
+/* Languages scene */
+.greeting-wall {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  height: 220px;
+}
+.greeting {
+  position: absolute;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 42px;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  padding: 8px 18px;
+  border-radius: 16px;
+  background: #fff;
+  border: 2.5px solid;
+  box-shadow: 0 5px 0 currentColor;
+}
+.greeting .gflag {
+  width: 28px; height: 28px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+  background-size: cover !important;
+  background-position: 50% 50% !important;
+}
+
+.lang-illustration {
+  width: 100%;
+  display: grid;
+  place-items: center;
+  margin-top: 32px;
+}
+.lang-illustration img {
+  width: 100%;
+  max-width: 570px;            /* +50%: 380 → 570 */
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 20px 32px rgba(15,15,20,0.10));
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.lang-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+.lang-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 3px 0 var(--line);
+  transition: transform .12s;
+}
+.lang-chip:hover { transform: translateY(-2px); }
+.lang-chip .flag {
+  width: 22px; height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: inline-block;
+  background-size: cover !important;
+  background-position: 50% 50% !important;
+  flex-shrink: 0;
+}
+
+/* Testimonial card */
+.testimonial-big {
+  background: var(--yellow);
+  border-radius: 36px;
+  padding: 56px 64px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 36px;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 8px 0 var(--yellow-deep);
+  border: 2.5px solid var(--yellow-deep);
+}
+.testimonial-mascot {
+  width: 200px;
+  height: 200px;
+  display: grid;
+  place-items: center;
+}
+.testimonial-mascot img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 12px rgba(0,0,0,0.10));
+}
+.testimonial-content { display: flex; flex-direction: column; gap: 16px; }
+.testimonial-stars { display: inline-flex; gap: 2px; color: #4F3500; }
+.testimonial-quote {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: #2A1B00;
+  margin: 0;
+  text-wrap: balance;
+}
+.testimonial-author { display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+.testimonial-author .who  { font-weight: 800; font-size: 15px; color: #4F3500; }
+.testimonial-author .role { color: #8C5C00; font-size: 14px; font-weight: 600; }
+.testimonial-dot { width: 4px; height: 4px; border-radius: 999px; background: #8C5C00; }
+
+/* Big CTA band */
+.cta-band-page {
+  padding: 96px 0;
+  min-height: 100vh;          /* full viewport — purple band fills the screen behind the overlay nav */
+  min-height: 100svh;
+  display: flex;
+  align-items: center;        /* band centred vertically within the section */
+  position: relative;         /* anchor for the top-left brand mark */
+}
+
+/* (Section-corner brand mark removed — the global top nav handles branding for this section) */
+.cta-band-page > .page { width: 100%; }
+.cta-band {
+  background: transparent;
+  color: var(--ink);
+  padding: 64px 32px 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+  position: relative;
+}
+
+/* Form wrap — anchors the peeking mascot behind the bar */
+.cta-form-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  justify-content: center;
+}
+/* Mascot peeks up from behind the search bar (looking down at it) */
+.cta-mascot-peek {
+  position: absolute;
+  left: 50%;
+  bottom: -4px;                 /* moved 20px down from previous +16px so mascot peeks deeper behind the bar */
+  transform: translateX(-50%);
+  width: 220px;
+  height: auto;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 16px 24px rgba(15,15,20,0.12));
+}
+@media (max-width: 720px) {
+  .cta-mascot-peek { width: 160px; bottom: -10px; }
+}
+/* Mobile rules (≤480px) live at the very end of this file so they win
+   the cascade against the 980px / 720px / 600px breakpoints below. */
+
+/* Source-type chips */
+.cta-source-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  z-index: 2;
+  position: relative;
+}
+.cta-source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+  transition: border-color .12s, background .12s, box-shadow .12s, transform .08s;
+  box-shadow: 0 2px 0 var(--line);
+}
+.cta-source-chip:hover {
+  border-color: var(--purple-ring);
+  background: var(--line-2);
+}
+.cta-source-chip.is-active {
+  border-color: var(--purple);
+  background: var(--purple-soft);
+  color: var(--purple);
+  box-shadow: 0 2px 0 var(--purple);
+}
+.cta-source-chip:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 var(--line);
+}
+.cta-source-chip-emoji { font-size: 16px; line-height: 1; }
+.cta-band-heading {
+  max-width: 640px;
+  margin-bottom: 96px;
+  transform: translateY(-80px);  /* visually lifts ONLY the heading; layout flow unchanged so the form below stays put */
+}
+body.landing-v2 .cta-band .h2 { color: var(--ink); font-size: clamp(32px, 4vw, 48px); }
+.cta-band p { color: var(--mute); max-width: 50ch; margin: 12px auto 0; font-size: 18px; font-weight: 500; }
+.cta-band .cta-stars { display: none; }   /* decorative stars were white-on-purple; not needed on white */
+
+/* Paste-and-go bar — brand mark left of a white pill input with POP IT submit */
+.cta-paste-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 760px;        /* narrower now that the brand mark has moved to the section corner */
+  position: relative;
+  z-index: 1;              /* in front of the peeking mascot */
+}
+.cta-paste-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cta-paste-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 2px solid var(--purple-ring);
+  border-radius: 999px;
+  padding: 8px 8px 8px 18px;
+  box-shadow: 0 4px 0 var(--purple-ring);
+  min-width: 0;
+  transition: border-color .12s, box-shadow .12s;
+}
+.cta-paste-input:focus-within {
+  border-color: var(--purple);
+  box-shadow: 0 4px 0 var(--purple);
+}
+.cta-paste-yt {
+  width: 26px; height: 20px;
+  background: #FF0033;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.cta-paste-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  min-width: 0;
+  padding: 8px 0;
+}
+.cta-paste-input input::placeholder { color: var(--mute-2); font-weight: 500; }
+.cta-paste-pop {
+  background: var(--purple);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 24px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .12s, transform .08s, box-shadow .12s;
+  box-shadow: 0 3px 0 var(--purple-deep);
+  flex-shrink: 0;
+  line-height: 1;
+}
+.cta-paste-pop:hover { background: #7d4ff0; }
+.cta-paste-pop:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 var(--purple-deep);
+}
+
+@media (max-width: 720px) {
+  .cta-paste-form {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    justify-items: center;
+  }
+  .cta-paste-input { width: 100%; }
+  .cta-paste-brand-icon { width: 44px; height: 44px; }
+  .cta-paste-brand-word { font-size: 28px; }
+}
+
+/* Trust signals row */
+.cta-trust {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--mute);
+  font-weight: 600;
+  margin-top: 4px;
+  z-index: 2;
+  position: relative;
+}
+.cta-trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cta-trust-icon {
+  color: var(--green);
+}
+.cta-trust-item:nth-child(5) .cta-trust-icon {
+  color: var(--yellow-deep);     /* zap icon — warm accent */
+}
+.cta-trust-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--mute-2);
+}
+@media (max-width: 600px) {
+  .cta-trust { gap: 10px; font-size: 12px; }
+}
+
+/* Footer — chromeless. No background fill, no top border. Lifted upward
+   by a negative margin so the brand + link columns sit higher on the page,
+   overlapping into the empty space at the bottom of the CTA band above. */
+.footer {
+  background: transparent;
+  padding: 0 0 24px;          /* removed 40px top padding */
+  margin-top: -120px;          /* lift the whole footer ~30% upward */
+  position: relative;
+  overflow: hidden;
+}
+/* Decorative skyline image anchored to the bottom of the footer behind the content */
+.footer-skyline {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100%;
+  min-width: 1200px;       /* keep buildings legible even on narrow viewports */
+  max-width: 1800px;
+  height: auto;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  opacity: 0.85;
+}
+.footer > .page { position: relative; z-index: 1; }
+.footer > .page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(4, 1fr);
+  gap: 32px;
+  /* Bigger gap below the link columns so they sit visibly higher above the
+     copyright / language picker row. */
+  margin-bottom: 96px;
+}
+.footer-brand { display: flex; flex-direction: column; gap: 14px; }
+.footer-brand .brand { display: flex; align-items: center; gap: 10px; }
+.footer-brand .brand-icon { width: 36px; height: 36px; object-fit: contain; }
+.footer-brand .brand-word {
+  font-family: "Outfit", var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+}
+.footer-tagline { font-size: 14px; color: var(--mute); max-width: 28ch; margin: 0; }
+.footer-col h5 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 18px;
+  color: var(--ink);
+}
+.footer-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.footer-col a { font-size: 14px; color: var(--ink-2); font-weight: 600; }
+.footer-col a:hover { color: var(--purple); }
+.footer-bottom {
+  padding-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--ink);              /* black copyright + language row */
+}
+.footer-bottom a { color: var(--ink); }   /* match the language picker links */
+.footer-socials { display: flex; gap: 8px; }
+.footer-socials a {
+  width: 36px; height: 36px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--line);
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  transition: background .12s, color .12s, border-color .12s;
+}
+.footer-socials a:hover { background: var(--purple); color: #fff; border-color: var(--purple); }
+
+/* RTL — flip reverse-order rows so design alternation keeps working */
+html[dir="rtl"] body.landing-v2 .scene-row.reverse > :first-child { order: 1; }
+html[dir="rtl"] body.landing-v2 .scene-row.reverse > :last-child  { order: 2; }
+
+/* Responsive — collapse to single column at ≤980px */
+@media (max-width: 980px) {
+  html:has(body.landing-v2) { scroll-snap-type: none; }
+  body.landing-v2 .scene,
+  body.landing-v2 .hero,
+  body.landing-v2 .cta-band-page { min-height: 0; padding: 80px 0; }
+  body.landing-v2 .scene-row {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    min-height: 0;
+  }
+  body.landing-v2 .scene-row.reverse > :first-child { order: 1; }
+  body.landing-v2 .scene-row.reverse > :last-child  { order: 2; }
+  body.landing-v2 .scene-text { align-items: center; text-align: center; }
+  body.landing-v2 .scene-text .lede { margin-left: auto; margin-right: auto; }
+  body.landing-v2 .cta-stack { margin: 0 auto; }
+  body.landing-v2 .mascot-stage { height: 380px; }
+  body.landing-v2 .hero-visual { min-height: 0; }
+  body.landing-v2 .duo-mascot { max-width: 280px; }
+  .testimonial-big { grid-template-columns: 1fr; padding: 40px; text-align: center; }
+  .testimonial-mascot { margin: 0 auto; }
+  .testimonial-author { justify-content: center; }
+  .cta-band { grid-template-columns: 1fr; text-align: center; padding: 48px 32px; }
+  .cta-band p { margin-left: auto; margin-right: auto; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  body.landing-v2 .nav-links { display: none; }
+  .greeting-wall { height: 320px; }
+  .greeting { font-size: 28px; }
+}
+@media (max-width: 600px) {
+  body.landing-v2 .page { padding: 0 20px; }
+  .footer-grid { grid-template-columns: 1fr; }
+  body.landing-v2 .header-right .btn-ghost { display: none; }
+  .testimonial-mascot { width: 140px; height: 140px; }
+}
+
+/* =========================================================================
+   Phone breakpoint (≤480px). Targets 375–430px portrait phones.
+
+   Placed at the very END of this file on purpose — the 980/720/600 blocks
+   above all match at 375px too, and same-specificity rules are won by
+   source order. Putting this block last guarantees mobile rules win.
+
+   Also overrides a handful of legacy `.hero-visual`, `.testimonial-mascot
+   img` rules that leak in from styles.css and have higher source priority
+   when CSS files cascade.
+   ========================================================================= */
+@media (max-width: 480px) {
+  /* ----- Foundation ----- */
+  body.landing-v2 .page { padding: 0 16px; }
+
+  /* ----- Header ----- */
+  body.landing-v2 .header-inner {
+    padding: 12px 16px;
+    gap: 10px;
+    min-height: 60px;
+  }
+  body.landing-v2 .brand { gap: 8px; }
+  body.landing-v2 .brand-icon { width: 32px; height: 32px; }
+  body.landing-v2 .brand-word { font-size: 22px; }
+  body.landing-v2 .header-right { gap: 8px; }
+  body.landing-v2 .header-right .btn-primary {
+    padding: 10px 14px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    box-shadow: 0 2px 0 var(--purple-deep);
+  }
+  body.landing-v2 .lang-picker-trigger {
+    padding: 4px 10px 4px 4px;
+    font-size: 12px;
+    gap: 6px;
+  }
+  body.landing-v2 .lang-picker-trigger .lang-picker-flag {
+    width: 20px; height: 20px;
+  }
+
+  /* ----- One scene per viewport (mobile snap-scroll) -----
+     Restore the desktop "each scene = one screen" feel on mobile. The
+     980px block disabled snap-scroll and dropped min-height to 0; we
+     re-enable both here so vertical scrolling lands on whole scenes.
+
+     - Snap-scroll is MANDATORY on mobile: each scroll lands on a scene.
+     - Viewport-height ladder: `vh` (fallback) → `svh` (small viewport,
+       accounts for mobile address bar showing) → `dvh` (dynamic, adapts
+       as the bar shows/hides). Browsers pick the last unit they support.
+     - Each scene fills the viewport vertically and centres its content.
+     - Padding-top clears the 60px sticky header so content isn't hidden
+       behind it. */
+  /* iOS Safari + Android Chrome compatibility:
+     - Snap container MUST be a real scroll container (`overflow-y: scroll`)
+       for snap to engage on touch — proximity alone won't fire on iOS.
+     - `-webkit-overflow-scrolling: touch` keeps momentum scrolling.
+     - `scroll-behavior: smooth` makes programmatic scrolls glide. */
+  html:has(body.landing-v2) {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  body.landing-v2 { overflow-x: hidden; }
+  /* Footer becomes the 9th snap target so users can land on it cleanly
+     after the CTA band instead of fighting the mandatory snap. */
+  body.landing-v2 .footer {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  body.landing-v2 .hero,
+  body.landing-v2 .scene,
+  body.landing-v2 .cta-band-page {
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
+    height: 100vh;
+    height: 100svh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 72px 0 24px;
+    overflow: hidden;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* Hide the in-section brand mark on mobile — it's redundant with the
+     sticky header brand and complicates the flex layout. */
+  .cta-band-brand { display: none; }
+
+  /* ----- Hero — reorder so it's headline → mascot → CTAs -----
+     `display: contents` lets the headline/lede/CTAs become direct
+     children of the row so we can sequence them between the mascot via
+     `order`. Otherwise we'd need an HTML change. */
+  body.landing-v2 .hero { padding: 72px 0 24px; }
+  body.landing-v2 .hero .scene-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    min-height: 0;
+  }
+  body.landing-v2 .hero .scene-text { display: contents; }
+  body.landing-v2 .hero .h1         { order: 1; margin: 0; }
+  body.landing-v2 .hero .lede       { order: 2; margin: 0; max-width: 32ch; }
+  body.landing-v2 .hero .hero-visual {
+    order: 3;
+    /* defeat legacy styles.css order:3 / max-width:360 leak */
+    max-width: none;
+    height: auto;
+    min-height: 0;
+    margin: 4px auto 0;
+  }
+  body.landing-v2 .hero .cta-stack  { order: 4; }
+
+  body.landing-v2 .duo-mascot {
+    max-width: 188px;
+    filter: drop-shadow(0 8px 14px rgba(15,15,20,0.10));
+  }
+  body.landing-v2 .h1 {
+    font-size: clamp(26px, 6.8vw, 32px);
+    line-height: 1.08;
+  }
+  body.landing-v2 .lede {
+    font-size: 15px;
+    line-height: 1.45;
+    max-width: 100%;
+  }
+  body.landing-v2 .cta-stack {
+    width: 100%;
+    gap: 10px;
+  }
+  body.landing-v2 .btn-lg {
+    font-size: 13px;
+    padding: 14px 18px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ----- Scenes — content centred, fits in one viewport ----- */
+  body.landing-v2 .scene-row {
+    gap: 18px;
+    min-height: 0;
+    text-align: center;
+    align-items: center;
+  }
+  body.landing-v2 .scene-paste .scene-row { gap: 18px; }
+  body.landing-v2 .h2 {
+    font-size: clamp(22px, 7vw, 30px);
+    line-height: 1.1;
+  }
+
+  /* Scene illustrations: defeat the desktop scale(1.4)/(2.1) and side
+     translates. Cap height to 36vh so combined with text/CTA the scene
+     always fits a single viewport. */
+  .drop-illustration img,
+  .quick-illustration img,
+  .study-illustration img,
+  .busy-illustration img {
+    transform: none;
+    max-width: 469px;
+    max-height: 70vh;
+    object-fit: contain;
+  }
+  .scene-paste .mascot-stage { height: auto; }
+
+  /* ----- Languages scene ----- */
+  .greeting-wall { display: none; }
+  .lang-illustration { margin-top: 8px; }
+  .lang-illustration img { max-width: 469px; }
+  .lang-strip { gap: 8px; }
+  .lang-chip {
+    padding: 8px 12px;
+    font-size: 13px;
+    box-shadow: 0 2px 0 var(--line);
+  }
+  .lang-chip .flag { width: 18px; height: 18px; }
+
+  /* ----- Testimonial -----
+     The base rule .testimonial-mascot img has `width:100%; height:100%;
+     object-fit:contain`. Modern browsers set img element's intrinsic
+     aspect-ratio from the source dimensions, which then overrides
+     height:100% — the IMG renders at full natural height even though the
+     wrap is 96×96. The fix: force `aspect-ratio: auto` and pin the IMG
+     to fit the wrap by height. */
+  .testimonial-big {
+    padding: 24px 18px;
+    border-radius: 22px;
+    gap: 14px;
+    box-shadow: 0 5px 0 var(--yellow-deep);
+  }
+  /* Drop the desktop wrap/img sizing dance entirely. The wrap is just an
+     auto-sized box around the IMG; IMG gets a fixed pixel width and lets
+     height follow the natural aspect ratio. No object-fit, no percent
+     height. The IMG is the mascot — the wrap is just for centering. */
+  .testimonial-mascot {
+    width: auto;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+  }
+  .testimonial-mascot img {
+    width: 188px;
+    height: auto;
+    max-width: 100%;
+    display: block;
+    object-fit: initial;
+  }
+  .testimonial-stars { justify-content: center; }
+  .testimonial-stars svg { width: 18px; height: 18px; }
+  .testimonial-quote { font-size: 17px; line-height: 1.3; }
+  .testimonial-author { gap: 6px; justify-content: center; }
+  .testimonial-author .who { font-size: 13px; }
+  .testimonial-author .role { font-size: 12px; }
+  .testimonial-dot { width: 3px; height: 3px; }
+
+  /* ----- CTA band -----
+     The brand mark is `position: absolute; top: 78px; left: 16px` which
+     overlaps the heading on a 375px screen (heading starts ~80px). Drop
+     it into normal flow above the band content. Also switch the section
+     from `display: flex` (base) to `block` so the brand mark stacks above
+     the band instead of becoming a sibling flex item that squeezes the
+     paste bar off the side. */
+  .cta-band-page {
+    padding: 32px 0 56px;
+    min-height: 0;
+    display: block;
+  }
+  .cta-band-brand {
+    position: static;
+    top: auto;
+    left: auto;
+    margin: 0 0 20px 16px;
+  }
+  .cta-band-brand-icon { width: 28px; height: 28px; }
+  .cta-band-brand-word { font-size: 18px; }
+  .cta-band {
+    padding: 0 8px 40px;
+    gap: 16px;
+    justify-content: flex-start;   /* push content toward the top so heading clears the mascot */
+  }
+  .cta-band-heading {
+    /* Drop the desktop translateY(-80px) lift — pure normal flow on phone.
+       Large bottom margin pushes the mascot + search bar well below the
+       heading so the two don't overlap on 375–430px screens. */
+    transform: none;
+    margin-bottom: 64px;
+  }
+  body.landing-v2 .cta-band .h2 {
+    font-size: clamp(24px, 7vw, 30px);
+  }
+  .cta-band p { font-size: 15px; margin-top: 8px; max-width: 36ch; }
+  .cta-mascot-peek { width: 188px; bottom: -4px; }
+  .cta-form-wrap { max-width: 100%; }
+  .cta-paste-form { max-width: 100%; }
+  .cta-paste-input {
+    padding: 6px 6px 6px 12px;
+    gap: 8px;
+    box-shadow: 0 3px 0 var(--purple-ring);
+  }
+  /* 16px input font prevents iOS Safari from auto-zooming when focused. */
+  .cta-paste-input input { font-size: 16px; padding: 8px 0; }
+  .cta-paste-yt { width: 22px; height: 16px; }
+  .cta-paste-pop {
+    padding: 11px 16px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    box-shadow: 0 2px 0 var(--purple-deep);
+  }
+  .cta-source-chips { gap: 6px; }
+  .cta-source-chip {
+    padding: 8px 12px;
+    font-size: 12px;
+    box-shadow: 0 2px 0 var(--line);
+  }
+  .cta-source-chip-emoji { font-size: 14px; }
+  .cta-trust { gap: 8px; font-size: 11px; }
+
+  /* ----- Footer ----- */
+  .footer { padding: 40px 0 24px; }
+  .footer > .page { padding: 0 16px; }
+  .footer-grid { gap: 24px; margin-bottom: 32px; }
+  .footer-tagline { font-size: 13px; }
+  .footer-col h5 { font-size: 12px; margin-bottom: 12px; }
+  .footer-col a { font-size: 13px; }
+  .footer-bottom { font-size: 12px; gap: 10px; }
+  .footer-socials a { width: 32px; height: 32px; }
+}
+
+@media (max-width: 480px) {
+  html, body { overflow: hidden !important; height: 100dvh; height: 100vh; }
+  .snap-container {
+    height: 100dvh;
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .snap-container > * {
+    height: 100dvh;
+    height: 100vh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    overflow: hidden;
+  }
+}

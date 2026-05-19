@@ -3,73 +3,135 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sign in — Popcard</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Log in &mdash; Popcard</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png?v=3" />
+  <link rel="apple-touch-icon" href="/images/favicon.png?v=3" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
 
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="login.css?v=3" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body>
-  <div class="page">
-    <header class="header">
-      <a href="/" class="brand">
-        <div class="brand-logo" aria-label="Popcard logo">
-          <svg viewBox="0 0 56 56" width="44" height="44">
-            <g>
-              <rect x="3" y="6" width="14" height="44" rx="6" fill="#FF3DA0" transform="rotate(-12 10 28)"/>
-              <rect x="6" y="6" width="14" height="44" rx="6" fill="#FF8A3D" transform="rotate(-7 13 28)"/>
-              <rect x="9" y="6" width="14" height="44" rx="6" fill="#FFD338" transform="rotate(-2 16 28)"/>
-              <rect x="12" y="6" width="14" height="44" rx="6" fill="#2BC489" transform="rotate(3 19 28)"/>
-              <rect x="15" y="6" width="14" height="44" rx="6" fill="#3DAEFF" transform="rotate(8 22 28)"/>
-            </g>
-            <path d="M14 6 H40 A8 8 0 0 1 48 14 V38 A8 8 0 0 1 40 46 H28 L18 54 L20 46 A6 6 0 0 1 14 40 V6 Z" fill="#6E3DEA"/>
-            <circle cx="22" cy="22" r="2.4" fill="#fff"/>
-            <circle cx="34" cy="22" r="2.4" fill="#fff"/>
-            <path d="M22 30 Q28 36 34 30" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-          </svg>
+<body class="login-v2">
+
+  <header class="login-header">
+    <a href="/" class="login-brand" aria-label="Back to home">
+      <img class="login-brand-icon" src="/images/popcard-icon.png" alt="" />
+      <span class="login-brand-word">popcard</span>
+    </a>
+    <a href="/onboarding" class="login-header-cta">Sign up</a>
+  </header>
+
+  <main class="login-main">
+    <div class="login-card">
+      <h1 class="login-h1">Welcome back.</h1>
+      <p class="login-sub">Sign in to keep your streak going.</p>
+
+      <!-- Email / Password -->
+      <form class="login-form" id="login-form" autocomplete="on" novalidate>
+        <label class="login-field">
+          <span class="login-field-label">Email or username</span>
+          <input type="text" name="identifier" id="login-id" class="ph-no-capture" autocomplete="username"
+                 placeholder="you@example.com" />
+        </label>
+        <label class="login-field">
+          <span class="login-field-label">Password</span>
+          <div class="login-pw-wrap">
+            <input type="password" name="password" id="login-pw" class="ph-no-capture" autocomplete="current-password"
+                   placeholder="At least 8 characters" />
+            <button type="button" class="login-pw-toggle" id="login-pw-toggle" aria-label="Show password">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </label>
+        <div class="login-row-between">
+          <label class="login-remember">
+            <input type="checkbox" id="login-remember" />
+            <span>Remember me</span>
+          </label>
+          <a href="#" class="login-forgot" data-action="forgot">Forgot password?</a>
         </div>
-        <span class="brand-name">popcard<sup>&reg;</sup></span>
-      </a>
-      <nav class="nav">
-        <a href="/#how">How it works</a>
-        <a href="/examples">Examples</a>
-        <a href="/pricing">Pricing</a>
-      </nav>
-    </header>
+        <button type="submit" class="login-submit">LOG IN</button>
+      </form>
 
-    <main class="auth-card">
-      <h1 class="auth-h1">Welcome to <span class="accent">Popcard</span>.</h1>
-      <p class="auth-sub">Sign in with Google to start popping cards. No password to remember.</p>
+      <div class="login-divider" aria-hidden="true"><span>or continue with</span></div>
 
+      <!-- GSI bootstrap (no visible UI; needed for the overlay iframe to render) -->
       <div id="g_id_onload"
            data-client_id="61959955783-pjfsl2pf4r3l38qdh864b5kod2nr7f60.apps.googleusercontent.com"
            data-callback="onGoogleCredential"
            data-auto_prompt="false"
            data-context="signin"
            data-ux_mode="popup"></div>
-      <div class="g_id_signin"
-           data-type="standard"
-           data-shape="pill"
-           data-theme="outline"
-           data-text="continue_with"
-           data-size="large"
-           data-logo_alignment="left"></div>
 
-      <p class="auth-fine">By continuing you agree to our <a href="#">Terms</a> and <a href="#">Privacy</a>. We use a small essential cookie to keep you signed in.</p>
+      <!-- Social auth — identical chunky-pill design across all three providers.
+           Google uses a custom button with the real GSI iframe overlaid invisibly
+           on top so the click triggers the official auth flow. -->
+      <div class="login-social">
+        <div class="login-google-stack">
+          <button type="button" class="login-social-btn login-social-google" tabindex="-1" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
+              <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+              <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+              <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+              <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-0.792 2.237-2.231 4.166-4.087 5.571.001-.001.002-.001.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+          <div class="g_id_signin login-google-overlay"
+               data-type="standard"
+               data-shape="pill"
+               data-theme="outline"
+               data-text="continue_with"
+               data-size="large"
+               data-logo_alignment="left"
+               data-width="360"></div>
+        </div>
 
-      <div id="auth-error" class="auth-error" hidden></div>
-    </main>
-  </div>
+        <!-- Apple (visual stub) -->
+        <button type="button" class="login-social-btn login-social-apple" data-provider="apple">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
+            <path d="M17.05 12.05a4.4 4.4 0 0 1 2.1-3.7 4.5 4.5 0 0 0-3.55-1.92c-1.5-.16-2.93.88-3.7.88-.78 0-1.95-.85-3.21-.83a4.72 4.72 0 0 0-3.98 2.42c-1.7 2.95-.43 7.3 1.22 9.7.81 1.16 1.77 2.47 3.04 2.42 1.22-.05 1.68-.79 3.16-.79 1.46 0 1.9.79 3.2.76 1.32-.02 2.16-1.18 2.97-2.36a10.4 10.4 0 0 0 1.34-2.78 4.27 4.27 0 0 1-2.59-3.8zM14.61 4.4a4.2 4.2 0 0 0 .97-3.07 4.3 4.3 0 0 0-2.82 1.46 4 4 0 0 0-1 3.02 3.55 3.55 0 0 0 2.85-1.41z"/>
+          </svg>
+          <span>Continue with Apple</span>
+        </button>
+
+        <!-- Facebook (visual stub) -->
+        <button type="button" class="login-social-btn login-social-facebook" data-provider="facebook">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
+            <path d="M22 12a10 10 0 1 0-11.56 9.88V14.9H7.9V12h2.54V9.8c0-2.5 1.5-3.9 3.78-3.9 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.57V12h2.78l-.45 2.9h-2.33v6.98A10 10 0 0 0 22 12z"/>
+          </svg>
+          <span>Continue with Facebook</span>
+        </button>
+      </div>
+
+      <div id="login-error" class="login-error" hidden></div>
+
+      <p class="login-signup-link">
+        Don&rsquo;t have an account? <a href="/onboarding">Sign up</a>
+      </p>
+
+      <p class="login-fine">By continuing you agree to our Terms and Privacy.</p>
+    </div>
+  </main>
 
   <script src="analytics.js"></script>
   <script src="cookies.js"></script>
   <script src="auth.js"></script>
+  <script src="lang-picker.js"></script>
+  <script src="i18n.js"></script>
   <script>
+    // Google credential handler — same as the old login.html
     function onGoogleCredential(response) {
-      const errEl = document.getElementById('auth-error');
+      const errEl = document.getElementById('login-error');
       errEl.hidden = true;
       window.PopcardAuth.signInWithGoogle(response.credential).then((data) => {
         if (data && data.user) {
@@ -85,6 +147,49 @@
         errEl.hidden = false;
       });
     }
+
+    // Stub handlers for Apple / Facebook — show a friendly "coming soon" message
+    // until the OAuth flows are wired up server-side.
+    (function () {
+      const err = document.getElementById('login-error');
+      function comingSoon(provider) {
+        err.textContent = `${provider} sign-in is coming soon. For now, please use Google or email.`;
+        err.hidden = false;
+        window.PopcardAnalytics?.track('Sign In Click', { method: provider.toLowerCase(), status: 'coming_soon' });
+      }
+      document.querySelectorAll('[data-provider]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const p = btn.dataset.provider;
+          comingSoon(p === 'apple' ? 'Apple' : p === 'facebook' ? 'Facebook' : p);
+        });
+      });
+
+      // Password show/hide toggle
+      const pw = document.getElementById('login-pw');
+      const tog = document.getElementById('login-pw-toggle');
+      tog?.addEventListener('click', () => {
+        const isPw = pw.type === 'password';
+        pw.type = isPw ? 'text' : 'password';
+        tog.setAttribute('aria-label', isPw ? 'Hide password' : 'Show password');
+      });
+
+      // Email/password form — wired to a stub for now. Real email auth needs
+      // a backend route + password hashing.
+      const form = document.getElementById('login-form');
+      form?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        err.textContent = 'Email sign-in is coming soon. For now, please use Google.';
+        err.hidden = false;
+        window.PopcardAnalytics?.track('Sign In Click', { method: 'email', status: 'coming_soon' });
+      });
+
+      // Forgot-password stub
+      document.querySelector('[data-action="forgot"]')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        err.textContent = 'Password reset is coming soon. Email us if you need help.';
+        err.hidden = false;
+      });
+    })();
   </script>
 </body>
 </html>

@@ -6,8 +6,19 @@ const YT_PATTERNS = [
 ];
 
 export function detectYouTubeId(input) {
+  const trimmed = (input || '').trim();
+  // Reject anything that obviously isn't a single URL pasted on its own.
+  // URLs have no whitespace inside them and are short. Books / articles
+  // / pasted-text bodies fail at least one of these checks.
+  if (trimmed.length > 300) return null;
+  if (/\s/.test(trimmed)) return null;
+  // Require the input to BE a YouTube URL, not just contain one somewhere.
+  // Accepts with/without protocol, with/without www, mobile subdomain.
+  if (!/^(?:https?:\/\/|\/\/)?(?:www\.|m\.)?(?:youtube\.com|youtu\.be)\//i.test(trimmed)) {
+    return null;
+  }
   for (const re of YT_PATTERNS) {
-    const m = input.match(re);
+    const m = trimmed.match(re);
     if (m) return m[1];
   }
   return null;

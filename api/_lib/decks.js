@@ -27,8 +27,12 @@ function normalizeCard(c, i) {
   };
 }
 
-export function hashSource({ sourceUrl, text, mode }) {
-  const key = `${mode}::${sourceUrl || `text:${text}`}`;
+// Bump PROMPT_VERSION when changing llm.js prompt/sizing so cached decks
+// don't shadow the new generation behaviour.
+const PROMPT_VERSION = 'v13';
+
+export function hashSource({ sourceUrl, text, mode, language = 'en' }) {
+  const key = `${PROMPT_VERSION}::${mode}::${language}::${sourceUrl || `text:${text}`}`;
   return crypto.createHash('sha256').update(key).digest('hex');
 }
 

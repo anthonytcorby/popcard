@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Welcome to Popcard</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png?v=3" />
+  <link rel="apple-touch-icon" href="/images/favicon.png?v=3" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Roboto:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
+
+  <link rel="stylesheet" href="styles.css?v=2" />
+  <link rel="stylesheet" href="onboarding.css?v=21" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="onboarding">
+
+  <header class="ob-header">
+    <a href="/" class="ob-brand" aria-label="Back to home">
+      <img class="ob-brand-icon" src="/images/popcard-icon.png" alt="" />
+      <span class="ob-brand-word">popcard</span>
+    </a>
+    <div class="ob-progress" aria-hidden="true">
+      <div class="ob-progress-fill" id="ob-progress-fill"></div>
+    </div>
+    <a href="/login" class="ob-skip" id="ob-skip">Skip</a>
+  </header>
+
+  <main class="ob-main">
+
+    <!-- ============== STEP 1: WELCOME ============== -->
+    <section class="ob-step is-active" data-step="1">
+      <div class="ob-welcome">
+        <video class="ob-mascot ob-mascot-wave" autoplay loop muted playsinline aria-hidden="true">
+          <source src="/images/mascot-wave.webm?v=6" type="video/webm" />
+          <source src="/images/mascot-wave.mp4?v=6" type="video/mp4" />
+        </video>
+        <div class="ob-bubble" role="status" aria-label="Hi, I&rsquo;m Pop. Let&rsquo;s get you started.">
+          <span class="ob-bubble-text" id="ob-bubble-text" aria-hidden="true"></span><span class="ob-bubble-cursor" aria-hidden="true"></span>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block ob-cta" data-action="next">CONTINUE</button>
+    </section>
+
+    <!-- ============== STEP 2: TOPIC INTERESTS ============== -->
+    <section class="ob-step" data-step="2" hidden>
+      <img class="ob-mascot ob-mascot-point" src="/images/popcard-mascot.png" alt="" />
+      <h1 class="ob-h1">What do you want to remember?</h1>
+      <p class="ob-lede">Pick as many as apply.</p>
+      <div class="ob-chips" id="ob-topics">
+        <button type="button" class="ob-chip" data-value="books">
+          <span class="ob-chip-emoji">&#128218;</span>
+          <span class="ob-chip-label">Books &amp; ebooks</span>
+        </button>
+        <button type="button" class="ob-chip" data-value="videos">
+          <span class="ob-chip-emoji">&#127909;</span>
+          <span class="ob-chip-label">YouTube videos</span>
+        </button>
+        <button type="button" class="ob-chip" data-value="articles">
+          <span class="ob-chip-emoji">&#128196;</span>
+          <span class="ob-chip-label">Articles</span>
+        </button>
+        <button type="button" class="ob-chip" data-value="podcasts">
+          <span class="ob-chip-emoji">&#127908;</span>
+          <span class="ob-chip-label">Podcasts</span>
+        </button>
+        <button type="button" class="ob-chip" data-value="lectures">
+          <span class="ob-chip-emoji">&#127891;</span>
+          <span class="ob-chip-label">Lectures &amp; notes</span>
+        </button>
+        <button type="button" class="ob-chip" data-value="study">
+          <span class="ob-chip-emoji">&#128221;</span>
+          <span class="ob-chip-label">Schoolwork</span>
+        </button>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block ob-cta" data-action="next" disabled>CONTINUE</button>
+    </section>
+
+    <!-- ============== STEP 3: MODE ============== -->
+    <section class="ob-step" data-step="3" hidden>
+      <img class="ob-mascot ob-mascot-point" src="/images/popcard-mascot.png" alt="" />
+      <h1 class="ob-h1">What suits you best?</h1>
+      <p class="ob-lede">Pick a default &mdash; you can switch any time.</p>
+      <div class="ob-modes" id="ob-mode">
+        <button type="button" class="ob-mode-card" data-value="quick">
+          <span class="ob-mode-emoji">&#9889;</span>
+          <span class="ob-mode-body">
+            <span class="ob-mode-label">Quick Mode</span>
+            <span class="ob-mode-sub">Just the gist from videos, articles, and books. Perfect for ADHD, busy days, or when you just want the value &mdash; fast.</span>
+          </span>
+        </button>
+        <button type="button" class="ob-mode-card" data-value="study">
+          <span class="ob-mode-emoji">&#127891;</span>
+          <span class="ob-mode-body">
+            <span class="ob-mode-label">Study Mode</span>
+            <span class="ob-mode-sub">Quizzes, spaced reviews, reveal cards, mastery tracking. For when you really need to remember it.</span>
+          </span>
+        </button>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block ob-cta" data-action="next" disabled>CONTINUE</button>
+    </section>
+
+    <!-- ============== STEP 4: LANGUAGE ============== -->
+    <section class="ob-step" data-step="4" hidden>
+      <img class="ob-mascot ob-mascot-point" src="/images/popcard-mascot.png" alt="" />
+      <h1 class="ob-h1">Which language for your cards?</h1>
+      <p class="ob-lede">The whole app will switch to this language.</p>
+      <div class="ob-langs" id="ob-lang">
+        <button type="button" class="ob-lang" data-value="en"><span class="flag fi fi-gb"></span><span>English</span></button>
+        <button type="button" class="ob-lang" data-value="es"><span class="flag fi fi-es"></span><span>Espa&ntilde;ol</span></button>
+        <button type="button" class="ob-lang" data-value="zh"><span class="flag fi fi-cn"></span><span>&#20013;&#25991;</span></button>
+        <button type="button" class="ob-lang" data-value="hi"><span class="flag fi fi-in"></span><span>&#2361;&#2367;&#2344;&#2381;&#2342;&#2368;</span></button>
+        <button type="button" class="ob-lang" data-value="ar"><span class="flag fi fi-sa"></span><span>&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;</span></button>
+        <button type="button" class="ob-lang" data-value="pt"><span class="flag fi fi-br"></span><span>Portugu&ecirc;s</span></button>
+        <button type="button" class="ob-lang" data-value="fr"><span class="flag fi fi-fr"></span><span>Fran&ccedil;ais</span></button>
+        <button type="button" class="ob-lang" data-value="de"><span class="flag fi fi-de"></span><span>Deutsch</span></button>
+        <button type="button" class="ob-lang" data-value="ja"><span class="flag fi fi-jp"></span><span>&#26085;&#26412;&#35486;</span></button>
+        <button type="button" class="ob-lang" data-value="ru"><span class="flag fi fi-ru"></span><span>&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</span></button>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block ob-cta" data-action="next" disabled>CONTINUE</button>
+    </section>
+
+    <!-- ============== STEP 5: AUTH ============== -->
+    <section class="ob-step" data-step="5" hidden>
+      <img class="ob-mascot ob-mascot-cheer" src="/images/mascot-cheer.png" alt="Popcard mascot celebrating" />
+      <h1 class="ob-h1">Save your progress.</h1>
+      <p class="ob-lede">Sign up so we can save your decks and streak.</p>
+
+      <!-- GSI bootstrap (no visible UI; needed for the overlay iframe to render) -->
+      <div id="g_id_onload"
+           data-client_id="61959955783-pjfsl2pf4r3l38qdh864b5kod2nr7f60.apps.googleusercontent.com"
+           data-callback="onGoogleCredential"
+           data-auto_prompt="false"
+           data-context="signup"
+           data-ux_mode="popup"></div>
+
+      <div class="ob-social">
+        <!-- Google: custom button styled to match the others, with Google's
+             real auth iframe overlaid invisibly on top so the click triggers
+             the official sign-in flow. -->
+        <div class="ob-google-stack">
+          <button type="button" class="ob-social-btn ob-social-google" tabindex="-1" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
+              <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+              <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+              <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+              <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-0.792 2.237-2.231 4.166-4.087 5.571.001-.001.002-.001.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+          <div class="g_id_signin ob-google-overlay"
+               data-type="standard"
+               data-shape="pill"
+               data-theme="outline"
+               data-text="continue_with"
+               data-size="large"
+               data-logo_alignment="left"
+               data-width="360"></div>
+        </div>
+
+        <!-- Apple (visual stub) -->
+        <button type="button" class="ob-social-btn ob-social-apple" data-provider="apple">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
+            <path d="M17.05 12.05a4.4 4.4 0 0 1 2.1-3.7 4.5 4.5 0 0 0-3.55-1.92c-1.5-.16-2.93.88-3.7.88-.78 0-1.95-.85-3.21-.83a4.72 4.72 0 0 0-3.98 2.42c-1.7 2.95-.43 7.3 1.22 9.7.81 1.16 1.77 2.47 3.04 2.42 1.22-.05 1.68-.79 3.16-.79 1.46 0 1.9.79 3.2.76 1.32-.02 2.16-1.18 2.97-2.36a10.4 10.4 0 0 0 1.34-2.78 4.27 4.27 0 0 1-2.59-3.8zM14.61 4.4a4.2 4.2 0 0 0 .97-3.07 4.3 4.3 0 0 0-2.82 1.46 4 4 0 0 0-1 3.02 3.55 3.55 0 0 0 2.85-1.41z"/>
+          </svg>
+          <span>Continue with Apple</span>
+        </button>
+
+        <!-- Facebook (visual stub) -->
+        <button type="button" class="ob-social-btn ob-social-facebook" data-provider="facebook">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
+            <path d="M22 12a10 10 0 1 0-11.56 9.88V14.9H7.9V12h2.54V9.8c0-2.5 1.5-3.9 3.78-3.9 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.57V12h2.78l-.45 2.9h-2.33v6.98A10 10 0 0 0 22 12z"/>
+          </svg>
+          <span>Continue with Facebook</span>
+        </button>
+      </div>
+
+      <p class="ob-fine">By continuing you agree to our Terms and Privacy.</p>
+      <div id="ob-auth-error" class="ob-error" hidden></div>
+    </section>
+
+  </main>
+
+  <!-- back button — appears on steps 2+ -->
+  <button type="button" class="ob-back" id="ob-back" hidden aria-label="Back">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+  </button>
+
+  <script src="analytics.js"></script>
+  <script src="cookies.js"></script>
+  <script src="auth.js"></script>
+  <script src="lang-picker.js"></script>
+  <script src="i18n.js"></script>
+  <script src="onboarding.js?v=5"></script>
+</body>
+</html>

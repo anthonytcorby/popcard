@@ -6,6 +6,11 @@ export default async function handler(req, res) {
   const session = getSession(req);
   if (!session) return res.status(401).json({ error: 'Not signed in' });
 
+  if (req.method === 'DELETE') return handleDeleteAll(req, res, session);
+  return handleList(req, res, session);
+}
+
+async function handleList(req, res, session) {
   const limit = Math.min(parseInt(req.query?.limit, 10) || 30, 50);
 
   const rows = await sql`
@@ -29,4 +34,14 @@ export default async function handler(req, res) {
       createdAt: d.created_at,
     })),
   });
+}
+
+// Bulk-delete every deck owned by the current user.
+// Cards cascade via the ON DELETE CASCADE foreign key set in the initial
+// schema, so we only need to delete the decks themselves.
+async function handleDeleteAll(req, res, session) {
+  const result = await sql`
+    DELETE FROM decks WHERE user_id = ${session.uid} RETURNING id
+  `;
+  res.status(200).json({ deleted: result.length });
 }

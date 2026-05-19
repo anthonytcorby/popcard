@@ -53,6 +53,8 @@
   const showAllBtn = $('deck-show-all');
   const gridBack = $('deck-grid-back');
   const startQuizBtn = $('deck-start-quiz');
+  const startReviewBtn = $('deck-start-review');
+  const startReviewLabel = $('deck-start-review-label');
 
   // Deck-level action refs
   const pinBtn = $('deck-pin');
@@ -83,6 +85,25 @@
   const quizBackDeck = $('quiz-back-deck');
   const quizMissedList = $('quiz-missed-list');
 
+  // Review-mode refs (spaced repetition)
+  const reviewWrap = $('deck-review-wrap');
+  const reviewEmpty = $('deck-review-empty');
+  const reviewActive = $('deck-review-active');
+  const reviewDone = $('deck-review-done');
+  const reviewQSide = $('deck-review-q-side');
+  const reviewASide = $('deck-review-a-side');
+  const reviewMastery = $('deck-review-mastery');
+  const reviewQuestionEl = $('review-question');
+  const reviewQuestionSmall = $('review-question-small');
+  const reviewAnswerEl = $('review-answer');
+  const reviewRevealBtn = $('deck-review-reveal');
+  const reviewCurrentNum = $('review-current-num');
+  const reviewTotalNum = $('review-total-num');
+  const reviewProgressFill = $('review-progress-fill');
+  const reviewDoneCount = $('review-done-count');
+  const reviewDoneBack = $('deck-review-done-back');
+  const reviewEmptyBack = $('deck-review-empty-back');
+
   function showError(msg) {
     loading.hidden = true;
     errBox.hidden = false;
@@ -93,6 +114,75 @@
     return String(s).replace(/[&<>"']/g, (c) => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
     }[c]));
+  }
+
+  // Render answer text into structured HTML.
+  //   Blocks separated by blank lines  → <p>
+  //   Blocks where every line starts with "• " → <ul><li>
+  //   A block where the FIRST line starts with `"` AND a later line starts
+  //   with "— " is a quote block — rendered as <blockquote>.
+  //   Single newlines inside a paragraph become <br> (keeps quote attribution
+  //   on the next visual line). `**bold**` becomes <strong>.
+  // Safe from injection: every non-pattern character is HTML-escaped, so the
+  // only HTML the LLM can introduce is <p>, <blockquote>, <ul>, <li>,
+  // <strong>, <br>, and our own attribution <span>.
+  function richTextToHtml(s) {
+    if (!s) return '';
+    const blocks = String(s).trim().split(/\n{2,}/);
+    const out = [];
+    for (const block of blocks) {
+      const lines = block.split('\n').map((l) => l.trim()).filter(Boolean);
+      if (!lines.length) continue;
+      const isBullets = lines.every((l) => l.startsWith('•'));
+      if (isBullets) {
+        out.push(
+          '<ul class="card-answer-list">' +
+            lines
+              .map((l) => `<li>${renderInline(l.replace(/^•\s*/, ''))}</li>`)
+              .join('') +
+            '</ul>'
+        );
+        continue;
+      }
+      const looksLikeQuote =
+        lines[0].startsWith('"') && lines.some((l) => /^[—-]\s/.test(l));
+      const rendered = lines
+        .map((l) => {
+          if (/^[—-]\s/.test(l)) {
+            return `<span class="card-answer-attr">${renderInline(l)}</span>`;
+          }
+          return renderInline(l);
+        })
+        .join('<br>');
+      if (looksLikeQuote) {
+        out.push(`<blockquote class="card-answer-quote">${rendered}</blockquote>`);
+      } else {
+        out.push(`<p class="card-answer-p">${rendered}</p>`);
+      }
+    }
+    return out.join('');
+  }
+
+  function renderInline(s) {
+    return escapeHtml(s).replace(/\*\*([^*\n][^*]*?)\*\*/g, '<strong>$1</strong>');
+  }
+
+  // Extract the YouTube video ID from any URL shape we accept (watch?v=, youtu.be/, shorts/, embed/).
+  function youtubeIdFromUrl(url) {
+    if (!url) return null;
+    try {
+      const u = new URL(url);
+      const host = u.hostname.toLowerCase();
+      if (host.includes('youtu.be')) {
+        return (u.pathname.slice(1).split(/[?#]/)[0]) || null;
+      }
+      if (host.includes('youtube.com')) {
+        if (u.pathname === '/watch') return u.searchParams.get('v');
+        const parts = u.pathname.split('/').filter(Boolean);
+        if ((parts[0] === 'shorts' || parts[0] === 'embed') && parts[1]) return parts[1];
+      }
+    } catch {}
+    return null;
   }
 
   function ytTimestampUrl(sourceUrl, seconds) {
@@ -173,8 +263,22 @@
     function render() {
       const c = cards[idx];
       qEl.textContent = c.question;
-      aEl.textContent = c.answer;
-      aInlineEl.textContent = c.answer;
+      let answerHtml = richTextToHtml(c.answer);
+      // Prepend the YouTube thumbnail on the overview card (first card) for
+      // YouTube-sourced decks so the reader sees the video they're studying.
+      if (idx === 0 && deck.sourceType === 'youtube' && deck.sourceUrl) {
+        const ytId = youtubeIdFromUrl(deck.sourceUrl);
+        if (ytId) {
+          const thumbUrl = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+          answerHtml =
+            `<a class="card-yt-thumb" href="${escapeHtml(deck.sourceUrl)}" target="_blank" rel="noopener" aria-label="Open video on YouTube">` +
+              `<img src="${thumbUrl}" alt="Video thumbnail" loading="lazy">` +
+              `<span class="card-yt-thumb-play" aria-hidden="true">▶</span>` +
+            `</a>` + answerHtml;
+        }
+      }
+      aEl.innerHTML = answerHtml;
+      aInlineEl.innerHTML = answerHtml;
       countEl.textContent = countBackEl.textContent = `${idx + 1} / ${cards.length}`;
 
       setBadge(typeBadge, TYPE_LABELS[c.type] || null, c.type || 'idea');
@@ -219,6 +323,7 @@
       renderGrid();
       wrap.hidden = true;
       if (quizWrap) quizWrap.hidden = true;
+      if (reviewWrap) reviewWrap.hidden = true;
       gridWrap.hidden = false;
       window.scrollTo({ top: 0, behavior: 'smooth' });
       window.PopcardAnalytics?.track('Deck Grid View', { reason: reason || 'manual' });
@@ -228,6 +333,7 @@
       wrap.hidden = false;
       gridWrap.hidden = true;
       if (quizWrap) quizWrap.hidden = true;
+      if (reviewWrap) reviewWrap.hidden = true;
     }
 
     const GRID_PALETTE = [
@@ -262,7 +368,7 @@
               </div>
             </div>
             <h3 class="deck-grid-q">${escapeHtml(c.question)}</h3>
-            <p class="deck-grid-a">${escapeHtml(c.answer)}</p>
+            <div class="deck-grid-a">${richTextToHtml(c.answer)}</div>
             ${hintBlock}
             ${tsBlock}
           </article>
@@ -304,7 +410,10 @@
     let quizMissed = [];            // array of { q, given, correct, explanation }
     let quizAnswered = false;       // whether current question has been answered
 
-    if (!isSimple) {
+    // Quiz Mode is now available on every deck (Simple + Study). Cards from
+    // Simple mode are now rich enough (200-400 for a book) that a quiz adds
+    // real value, not just a Study-mode add-on.
+    if (cards.length >= 3) {
       startQuizBtn.hidden = false;
       startQuizBtn.addEventListener('click', () => startQuiz());
       quizNextBtn.addEventListener('click', () => advanceQuiz());
@@ -383,12 +492,17 @@
       quizFeedback.hidden = true;
       quizAnswered = false;
       quizOptionsEl.innerHTML = '';
+      quizOptionsEl.classList.remove('has-selected');
       q.options.forEach((opt, i) => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'deck-quiz-option';
-        btn.textContent = opt;
         btn.dataset.index = String(i);
+        btn.dataset.letter = String.fromCharCode(65 + i); // A, B, C, D, ...
+        const textSpan = document.createElement('span');
+        textSpan.className = 'deck-quiz-option-text';
+        textSpan.textContent = opt;
+        btn.appendChild(textSpan);
         btn.addEventListener('click', () => selectQuizOption(i, btn));
         quizOptionsEl.appendChild(btn);
       });
@@ -399,6 +513,7 @@
       quizAnswered = true;
       const q = quizQuestions[quizIdx];
       const correct = idx === q.correctIndex;
+      quizOptionsEl.classList.add('has-selected');
       Array.from(quizOptionsEl.children).forEach((b, i) => {
         b.disabled = true;
         if (i === q.correctIndex) b.classList.add('is-correct');
@@ -474,6 +589,120 @@
       });
     }
 
+    // ---------- Review Mode (spaced repetition) ----------
+    let reviewQueue = [];
+    let reviewIdx = 0;
+    let reviewCompletedCount = 0;
+
+    if (startReviewBtn && reviewWrap) {
+      startReviewBtn.hidden = false;
+      // Surface "X due" badge on the button if we can ping the queue summary.
+      fetch(`/api/review-queue?deckId=${encodeURIComponent(deck.id)}`, { credentials: 'same-origin' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d?.cards?.length) {
+            startReviewLabel.textContent = `Review ${d.cards.length} due`;
+          }
+        })
+        .catch(() => {});
+
+      startReviewBtn.addEventListener('click', () => startReview());
+      reviewRevealBtn.addEventListener('click', () => revealReviewAnswer());
+      reviewDoneBack.addEventListener('click', () => exitReview());
+      reviewEmptyBack.addEventListener('click', () => exitReview());
+      document.querySelectorAll('.deck-review-rating').forEach((btn) => {
+        btn.addEventListener('click', () => rateCurrentReview(btn.dataset.rating));
+      });
+    }
+
+    async function startReview() {
+      wrap.hidden = true;
+      gridWrap.hidden = true;
+      if (quizWrap) quizWrap.hidden = true;
+      reviewWrap.hidden = false;
+      reviewActive.hidden = true;
+      reviewEmpty.hidden = true;
+      reviewDone.hidden = true;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      try {
+        const r = await fetch(`/api/review-queue?deckId=${encodeURIComponent(deck.id)}`, {
+          credentials: 'same-origin',
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.message || 'Could not load review queue');
+        reviewQueue = data.cards || [];
+        reviewIdx = 0;
+        reviewCompletedCount = 0;
+        if (!reviewQueue.length) {
+          reviewEmpty.hidden = false;
+          return;
+        }
+        reviewTotalNum.textContent = reviewQueue.length;
+        reviewActive.hidden = false;
+        renderReviewCard();
+        window.PopcardAnalytics?.track('Review Started', { due: String(reviewQueue.length) });
+      } catch (e) {
+        reviewEmpty.hidden = false;
+      }
+    }
+
+    function exitReview() {
+      reviewWrap.hidden = true;
+      gridWrap.hidden = true;
+      wrap.hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderReviewCard() {
+      const c = reviewQueue[reviewIdx];
+      reviewMastery.textContent = c.mastery || 'new';
+      reviewMastery.dataset.mastery = c.mastery || 'new';
+      reviewQuestionEl.textContent = c.question;
+      reviewQuestionSmall.textContent = c.question;
+      reviewAnswerEl.innerHTML = richTextToHtml(c.answer);
+      reviewQSide.hidden = false;
+      reviewASide.hidden = true;
+      reviewCurrentNum.textContent = String(reviewIdx + 1);
+      reviewProgressFill.style.width = `${(reviewIdx / reviewQueue.length) * 100}%`;
+    }
+
+    function revealReviewAnswer() {
+      reviewQSide.hidden = true;
+      reviewASide.hidden = false;
+    }
+
+    async function rateCurrentReview(rating) {
+      const c = reviewQueue[reviewIdx];
+      if (!c) return;
+      // Disable buttons to prevent double-submit
+      document.querySelectorAll('.deck-review-rating').forEach((b) => (b.disabled = true));
+      try {
+        await fetch('/api/review', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cardId: c.id, rating }),
+        });
+        reviewCompletedCount++;
+        window.PopcardAnalytics?.track('Card Reviewed', { rating, mastery: c.mastery || 'new' });
+      } catch {
+        // Silent — they can re-rate if needed
+      }
+      document.querySelectorAll('.deck-review-rating').forEach((b) => (b.disabled = false));
+
+      if (reviewIdx < reviewQueue.length - 1) {
+        reviewIdx++;
+        renderReviewCard();
+      } else {
+        reviewActive.hidden = true;
+        reviewDone.hidden = false;
+        reviewDoneCount.textContent = String(reviewCompletedCount);
+        reviewProgressFill.style.width = '100%';
+        window.PopcardAnalytics?.track('Review Session Complete', { count: String(reviewCompletedCount) });
+      }
+    }
+
     document.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       // Only handle keys while in single-card view
@@ -511,8 +740,8 @@
           if (!r.ok) throw new Error('refine failed');
           const data = await r.json();
           // Update both visible answer slots (we may be on either side)
-          aEl.textContent = data.answer;
-          aInlineEl.textContent = data.answer;
+          aEl.innerHTML = richTextToHtml(data.answer);
+          aInlineEl.innerHTML = richTextToHtml(data.answer);
           // Persist on the in-memory card so it sticks across navigation
           cards[idx].answer = data.answer;
           window.PopcardAnalytics?.track('Card Refine', { action });
@@ -726,6 +955,105 @@
       return lines;
     }
 
+    // ---- Rich-text canvas rendering for the TikTok carousel ----
+    // Parse `**bold**` into segments so we can swap font weight per word
+    // during canvas rendering. Also strip newlines + bullet glyphs so the
+    // carousel image stays as one flowing paragraph (cards are too small
+    // for paragraph + bullet layout at carousel scale).
+    function parseBoldSegments(text) {
+      // Collapse newlines / bullets to spaces; then split on `**...**`.
+      const cleaned = String(text || '')
+        .replace(/\s*\n+\s*/g, ' ')
+        .replace(/[ \t]*•[ \t]*/g, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      const segs = [];
+      const re = /\*\*([^*\n]+)\*\*/g;
+      let last = 0;
+      let m;
+      while ((m = re.exec(cleaned)) !== null) {
+        if (m.index > last) segs.push({ text: cleaned.slice(last, m.index), bold: false });
+        segs.push({ text: m[1], bold: true });
+        last = m.index + m[0].length;
+      }
+      if (last < cleaned.length) segs.push({ text: cleaned.slice(last), bold: false });
+      return segs;
+    }
+
+    // Wraps mixed-weight tokens onto lines, measuring each word with the
+    // appropriate font so bold words contribute their wider widths.
+    // Returns { lines: [[{text,bold,width}]], truncated: bool }.
+    function wrapBoldLines(ctx, segs, maxWidth, fontReg, fontBold, maxLines) {
+      const lines = [[]];
+      let lineWidth = 0;
+      const spaceWidth = (font) => { ctx.font = font; return ctx.measureText(' ').width; };
+      const regSpace = spaceWidth(fontReg);
+      let truncated = false;
+
+      for (const seg of segs) {
+        const font = seg.bold ? fontBold : fontReg;
+        ctx.font = font;
+        // Tokenize the segment by whitespace, preserving order.
+        const words = seg.text.split(/\s+/).filter(Boolean);
+        for (const w of words) {
+          const wWidth = ctx.measureText(w).width;
+          const curLine = lines[lines.length - 1];
+          const needSpace = curLine.length > 0;
+          const proposedWidth = lineWidth + (needSpace ? regSpace : 0) + wWidth;
+          if (proposedWidth > maxWidth && curLine.length > 0) {
+            if (maxLines && lines.length >= maxLines) {
+              truncated = true;
+              return { lines, truncated };
+            }
+            lines.push([]);
+            lineWidth = 0;
+            lines[lines.length - 1].push({ text: w, bold: seg.bold, width: wWidth, leadingSpace: 0 });
+            lineWidth = wWidth;
+          } else {
+            curLine.push({
+              text: w,
+              bold: seg.bold,
+              width: wWidth,
+              leadingSpace: needSpace ? regSpace : 0,
+            });
+            lineWidth = proposedWidth;
+          }
+        }
+      }
+      // Drop a trailing empty line, if any
+      if (lines.length && lines[lines.length - 1].length === 0) lines.pop();
+      return { lines, truncated };
+    }
+
+    function drawBoldLines(ctx, wrapped, x, y, lineHeight, fontReg, fontBold) {
+      for (const line of wrapped.lines) {
+        let cx = x;
+        for (const seg of line) {
+          if (seg.leadingSpace) cx += seg.leadingSpace;
+          ctx.font = seg.bold ? fontBold : fontReg;
+          ctx.fillText(seg.text, cx, y);
+          cx += seg.width;
+        }
+        y += lineHeight;
+      }
+      if (wrapped.truncated) {
+        ctx.font = fontReg;
+        ctx.fillText('…', x, y);
+        y += lineHeight;
+      }
+      return y;
+    }
+
+    function loadImageCors(url) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null); // soft-fail: continue without thumb
+        img.src = url;
+      });
+    }
+
     function fillRoundedRect(ctx, x, y, w, h, r) {
       ctx.beginPath();
       ctx.moveTo(x + r, y);
@@ -737,7 +1065,7 @@
       ctx.fill();
     }
 
-    async function renderCardPng({ kind, card, index, total, title, color }) {
+    async function renderCardPng({ kind, card, index, total, title, color, thumbnail }) {
       const W = 1080, H = 1350;
       const canvas = document.createElement('canvas');
       canvas.width = W; canvas.height = H;
@@ -753,7 +1081,9 @@
       const lineColor = color.tone === 'dark' ? 'rgba(15,15,20,0.22)' : 'rgba(255,255,255,0.26)';
 
       if (kind === 'cover') {
-        // Centered cover
+        // Cover layout: brand pill at top, big title, optional YouTube
+        // thumbnail underneath (if the deck was YouTube-sourced), then a
+        // "N cards · swipe →" hint and branding at the bottom.
         ctx.fillStyle = inkSoft;
         ctx.font = `700 30px ${fontStack}`;
         ctx.fillText('POPCARD', 80, 110);
@@ -761,12 +1091,59 @@
         ctx.fillStyle = tx;
         ctx.font = `800 76px ${fontStack}`;
         const lines = wrapTextLines(ctx, title || 'Untitled deck', W - 160);
-        let y = 380;
+        let y = 280;
         for (const ln of lines) { ctx.fillText(ln, 80, y); y += 96; }
+
+        // Optional YouTube thumbnail inserted on the cover for video decks.
+        if (thumbnail) {
+          const thumbW = W - 160;            // 920px
+          const thumbH = Math.round(thumbW * 9 / 16); // 16:9 letterbox
+          const thumbX = 80;
+          const thumbY = y + 30;
+          // Rounded clip
+          ctx.save();
+          const r = 24;
+          ctx.beginPath();
+          ctx.moveTo(thumbX + r, thumbY);
+          ctx.arcTo(thumbX + thumbW, thumbY, thumbX + thumbW, thumbY + thumbH, r);
+          ctx.arcTo(thumbX + thumbW, thumbY + thumbH, thumbX, thumbY + thumbH, r);
+          ctx.arcTo(thumbX, thumbY + thumbH, thumbX, thumbY, r);
+          ctx.arcTo(thumbX, thumbY, thumbX + thumbW, thumbY, r);
+          ctx.closePath();
+          ctx.clip();
+          // Cover-fit the image (YouTube hqdefault is 480x360 = 4:3 with black bars)
+          const ir = thumbnail.naturalWidth / thumbnail.naturalHeight;
+          const tr = thumbW / thumbH;
+          let sx = 0, sy = 0, sw = thumbnail.naturalWidth, sh = thumbnail.naturalHeight;
+          if (ir > tr) {
+            sw = thumbnail.naturalHeight * tr;
+            sx = (thumbnail.naturalWidth - sw) / 2;
+          } else if (ir < tr) {
+            sh = thumbnail.naturalWidth / tr;
+            sy = (thumbnail.naturalHeight - sh) / 2;
+          }
+          ctx.drawImage(thumbnail, sx, sy, sw, sh, thumbX, thumbY, thumbW, thumbH);
+          // Play-button overlay
+          const pcx = thumbX + thumbW / 2;
+          const pcy = thumbY + thumbH / 2;
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.beginPath();
+          ctx.arc(pcx, pcy, 70, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.moveTo(pcx - 22, pcy - 32);
+          ctx.lineTo(pcx + 40, pcy);
+          ctx.lineTo(pcx - 22, pcy + 32);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+          y = thumbY + thumbH + 50;
+        }
 
         ctx.fillStyle = inkSoft;
         ctx.font = `600 40px ${bodyFont}`;
-        ctx.fillText(`${total} cards · swipe →`, 80, y + 40);
+        ctx.fillText(`${total} cards · swipe →`, 80, y + 30);
 
         ctx.fillStyle = inkSoft;
         ctx.font = `700 26px ${fontStack}`;
@@ -806,15 +1183,21 @@
         ctx.fillRect(80, y, W - 160, 3);
         y += 60;
 
-        // Answer
+        // Answer — render with **bold** support, cleanly truncated.
+        // Carousel cards aren't tall enough for paragraphs + bullets, so
+        // parseBoldSegments flattens those to a single flowing paragraph,
+        // then wrapBoldLines caps total lines and adds an ellipsis if the
+        // answer is too long for the available space.
         ctx.fillStyle = tx;
         ctx.globalAlpha = 0.96;
-        ctx.font = `500 40px ${bodyFont}`;
-        const aLines = wrapTextLines(ctx, card.answer, W - 160);
-        for (const ln of aLines) {
-          if (y > H - 160) break; // don't run into branding
-          ctx.fillText(ln, 80, y); y += 56;
-        }
+        const ansFontReg = `500 40px ${bodyFont}`;
+        const ansFontBold = `800 40px ${bodyFont}`;
+        const lineHeight = 56;
+        const availableHeight = H - 160 - y;          // room before branding
+        const maxLines = Math.max(4, Math.floor(availableHeight / lineHeight));
+        const segs = parseBoldSegments(card.answer);
+        const wrapped = wrapBoldLines(ctx, segs, W - 160, ansFontReg, ansFontBold, maxLines);
+        drawBoldLines(ctx, wrapped, 80, y, lineHeight, ansFontReg, ansFontBold);
         ctx.globalAlpha = 1;
 
         // Importance badge (top-right) — only if must_know
@@ -920,8 +1303,20 @@
         const files = [];
         // Cap at 35 cards (TikTok carousel max) + cover + outro = 37, leave room.
         const limit = Math.min(cards.length, 33);
+
+        // For YouTube decks, fetch the video thumbnail and stamp it onto the
+        // cover slide. Loads cross-origin so the canvas stays exportable; on
+        // failure we fall through with no thumb instead of breaking the export.
+        let thumbnail = null;
+        if (deck.sourceType === 'youtube' && deck.sourceUrl) {
+          const ytId = youtubeIdFromUrl(deck.sourceUrl);
+          if (ytId) {
+            thumbnail = await loadImageCors(`https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`);
+          }
+        }
+
         const coverBlob = await renderCardPng({
-          kind: 'cover', total: limit, title, color: TIKTOK_PALETTE[0],
+          kind: 'cover', total: limit, title, color: TIKTOK_PALETTE[0], thumbnail,
         });
         files.push({ name: '00-cover.png', data: new Uint8Array(await coverBlob.arrayBuffer()) });
 

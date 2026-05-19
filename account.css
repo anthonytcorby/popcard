@@ -1,0 +1,1041 @@
+/* Popcard — Account / Study dashboard.
+   3-column layout: sidebar (nav) · main (welcome + pop + decks) · right rail
+   (mascot greeting, streak, quests, friends, achievements).
+   Collapses to single column on tablet/mobile. */
+
+body.dashboard {
+  background: #fff;
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--ink);
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Top bar ----------------------------------------------------- */
+.dash-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 32px;
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 2px solid var(--line);
+}
+.dash-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+.dash-brand-icon { width: 36px; height: 36px; object-fit: contain; }
+.dash-brand-word {
+  font-family: "Outfit", var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+}
+
+.dash-stats { display: flex; align-items: center; gap: 14px; justify-content: center; }
+.dash-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  background: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background .12s, border-color .12s, transform .08s;
+}
+.dash-stat:hover { background: var(--line-2); border-color: var(--purple-ring); }
+.dash-stat:active { transform: translateY(1px); }
+.dash-stat-icon { display: inline-grid; place-items: center; line-height: 0; }
+.dash-streak .dash-stat-icon { color: #FF9600; }
+.dash-sparks .dash-stat-icon { color: #FFC800; }
+
+.dash-user-wrap {
+  position: relative;
+  /* Pin to the third (rightmost) header column so the chip stays on the
+     right even in Quick mode, where .dash-stats is display:none and would
+     otherwise let the user-wrap auto-flow into the middle column. */
+  grid-column: 3;
+  justify-self: end;
+}
+.dash-user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 14px 4px 4px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  background: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+  /* Strip browser default focus outline — replaced by the explicit
+     :focus-visible rule below so keyboard users still get a focus ring
+     while mouse/touch clicks don't leave a stuck blue outline. */
+  outline: none;
+  transition: background .12s, border-color .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Hover only fires on devices with a true pointer. Without this gate, tapping
+   the chip on touch/trackpad-tap leaves the hover styles applied until the
+   user taps somewhere else, which reads as the button being "stuck on". */
+@media (hover: hover) {
+  .dash-user-chip:hover { background: var(--line-2); border-color: var(--purple-ring); }
+}
+/* Programmatic "open" state — set by JS while the dropdown is visible.
+   This is the SAME look as hover but explicit/intentional so it clears the
+   instant the menu closes. */
+.dash-user-chip.is-open { background: var(--line-2); border-color: var(--purple-ring); }
+.dash-user-chip:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+.dash-user-pic { width: 30px; height: 30px; border-radius: 999px; object-fit: cover; }
+.dash-user-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 40;
+}
+/* CRITICAL: the rule above sets `display: flex` on .dash-user-menu, which
+   overrides the browser's default `[hidden] { display: none }` (same
+   specificity, author rule wins). Without this override-the-override, the
+   `hidden` attribute had no visual effect — menu was always visible no
+   matter what JS did. This rule is class+attribute (specificity 0,2,0)
+   so it beats the plain class rule above (specificity 0,1,0). */
+.dash-user-menu[hidden] { display: none; }
+.dash-user-menu a, .dash-user-menu button {
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+}
+.dash-user-menu a:hover, .dash-user-menu button:hover {
+  background: var(--purple-soft);
+  color: var(--purple);
+}
+
+/* ---------- Layout (Duolingo-style) ------------------------------------
+   BOTH the left sidebar AND the right rail are position: fixed against
+   the viewport edges, pulled out of the grid. The main column is the
+   only thing in the grid now, with padding-left + padding-right reserving
+   room for the two fixed panels so content never slides under either. */
+.dash-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 285px 64px 285px;       /* sidebar (253) + 32 gap on each side */
+  box-sizing: border-box;
+}
+
+/* ---------- Sidebar (fixed, far-left) ---------------------------------
+   Pinned to the viewport's left edge, starts below the sticky header,
+   stretches to the bottom. Own scroll if the nav grows past viewport. */
+.dash-sidebar {
+  position: fixed;
+  left: 0;
+  top: 64px;                /* just under the dash-header */
+  bottom: 0;
+  width: 253px;             /* 220 + 15% = wider sidebar */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 18px;
+  background: #fff;
+  border-right: 2px solid var(--line);
+  overflow-y: auto;
+  z-index: 20;
+}
+/* Duolingo-style left nav — chunky pill items, no wrapping card chrome,
+   bold uppercase labels, strong active state with ring + soft purple fill,
+   subtle press-down on click. */
+.dash-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dash-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--ink-2);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: background .12s, color .12s, border-color .12s, transform .08s, box-shadow .12s;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (hover: hover) {
+  .dash-nav-item:hover {
+    background: var(--purple-soft);
+    color: var(--purple);
+    border-color: var(--purple-ring);
+  }
+}
+.dash-nav-item:active { transform: translateY(1px); }
+.dash-nav-item.is-active {
+  background: var(--purple-soft);
+  color: var(--purple);
+  border-color: var(--purple);
+  box-shadow: 0 3px 0 var(--purple-ring);
+}
+.dash-nav-item.is-active .dash-nav-icon { color: var(--purple); }
+.dash-nav-item.is-locked {
+  color: var(--mute-2);
+  cursor: not-allowed;
+  position: relative;
+}
+.dash-nav-item.is-locked:hover { background: transparent; color: var(--mute-2); border-color: transparent; }
+.dash-nav-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  stroke-width: 2.4;
+}
+.dash-nav-soon {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  background: var(--line);
+  color: var(--mute);
+  padding: 3px 7px;
+  border-radius: 999px;
+}
+
+/* ---------- Main column ------------------------------------------------ */
+.dash-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.dash-h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* Mode switch — segmented control. Sliding indicator under the active option. */
+.dash-mode-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  align-self: flex-start;
+}
+.dash-mode-switch-label {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.dash-mode-switch-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background: var(--line-2);
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 4px;
+  gap: 2px;
+}
+.dash-mode-switch-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background: #fff;
+  border-radius: var(--r-pill);
+  box-shadow: 0 2px 6px rgba(15,15,20,0.10), 0 0 0 1.5px var(--purple-ring);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+}
+.dash-mode-switch[data-current="study"] .dash-mode-switch-indicator {
+  transform: translateX(100%);
+}
+.dash-mode-switch-btn {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 22px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mute);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--r-pill);
+  transition: color .2s;
+  min-width: 110px;
+  justify-content: center;
+}
+.dash-mode-switch-btn.is-active { color: var(--purple); }
+.dash-mode-switch-btn:hover:not(.is-active) { color: var(--ink); }
+.dash-mode-switch-emoji { font-size: 15px; line-height: 1; }
+
+/* ---------- Quick-mode collapses the dashboard to bare utility -----------
+   When body has .is-quick-mode (set by the toggle), hide every gamification
+   widget so Casual users get a clean pop-and-save surface only. */
+body.dashboard.is-quick-mode .dash-stats,                     /* streak + sparks counters in header */
+body.dashboard.is-quick-mode .dash-today,                     /* daily goal progress */
+body.dashboard.is-quick-mode .rail-streak,                    /* right rail streak card */
+body.dashboard.is-quick-mode .rail-quests,                    /* right rail daily quests */
+body.dashboard.is-quick-mode .rail-achievements,              /* right rail achievements */
+body.dashboard.is-quick-mode .rail-friends,                   /* friends leaderboard (Study metric) */
+body.dashboard.is-quick-mode .dash-welcome {                  /* personalised streak greeting */
+  display: none;
+}
+/* In Quick mode, swap the deck-listing's "Pop another" anchor for a friendly title */
+body.dashboard.is-quick-mode .dash-pop-tier::after {
+  content: " · Quick";
+  opacity: 0.7;
+}
+
+.dash-link-btn {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--purple);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+.dash-link-btn:hover { text-decoration: underline; }
+
+/* Welcome hero */
+.dash-welcome {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(135deg, var(--purple-soft) 0%, #fff 60%);
+  border: 2px solid var(--purple-ring);
+  border-radius: var(--r-2xl);
+  padding: 28px 28px 28px 32px;
+}
+.dash-welcome-h {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(22px, 2.8vw, 30px);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+.dash-welcome-sub {
+  font-size: 15px;
+  color: var(--mute);
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.dash-welcome-mascot-wrap {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.dash-welcome-mascot {
+  width: auto;
+  height: 150px;                 /* portrait mascots render at natural ~3:2 */
+  object-fit: contain;
+  filter: drop-shadow(0 12px 20px rgba(15,15,20,0.08));
+}
+
+/* Pop something new */
+.dash-pop {
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dash-pop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dash-pop-tier {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple);
+  background: var(--purple-soft);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.dash-pop-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 2px solid var(--purple-ring);
+  border-radius: 999px;
+  padding: 6px 6px 6px 14px;
+  transition: border-color .12s, box-shadow .12s;
+}
+.dash-pop-form:focus-within { border-color: var(--purple); box-shadow: 0 0 0 3px var(--purple-soft); }
+.dash-pop-yt {
+  width: 26px; height: 20px;
+  background: #FF0033;
+  border-radius: 5px;
+  display: grid; place-items: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.dash-pop-form input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  padding: 8px 0;
+  min-width: 0;
+}
+.dash-pop-form input::placeholder { color: var(--mute-2); font-weight: 500; }
+.dash-pop-btn {
+  background: var(--purple);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--purple-deep);
+  transition: background .12s, transform .08s, box-shadow .12s;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.dash-pop-btn:hover { background: #7d4ff0; }
+.dash-pop-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--purple-deep); }
+.dash-pop-btn.is-loading .dash-pop-btn-label { display: none; }
+.dash-pop-btn-spinner {
+  display: none;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff;
+  border-radius: 999px;
+  animation: dash-spin .7s linear infinite;
+}
+.dash-pop-btn.is-loading .dash-pop-btn-spinner { display: inline-block; }
+@keyframes dash-spin { to { transform: rotate(360deg); } }
+
+.dash-pop-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dash-pop-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+}
+.dash-pop-chip:hover { border-color: var(--purple-ring); background: var(--line-2); }
+.dash-pop-chip.is-active {
+  border-color: var(--purple);
+  background: var(--purple-soft);
+  color: var(--purple);
+}
+.dash-pop-chip-emoji { font-size: 14px; line-height: 1; }
+.dash-pop-status {
+  font-size: 13px;
+  color: var(--mute);
+  font-weight: 600;
+  padding: 8px 12px;
+  background: var(--purple-soft);
+  border-radius: var(--r-md);
+}
+.dash-pop-status.is-error { background: #FEF2F2; color: #B91C1C; }
+
+/* Today / daily goal */
+.dash-today {
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dash-today-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dash-goal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dash-goal-bar {
+  height: 14px;
+  background: var(--line-2);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.dash-goal-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--green), #1FE79E);
+  border-radius: 999px;
+  transition: width .4s cubic-bezier(.4,0,.2,1);
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.10);
+}
+.dash-goal-label {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--ink);
+}
+.dash-goal-divider { color: var(--mute-2); font-weight: 500; }
+.dash-goal-unit {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--mute);
+  font-weight: 500;
+}
+
+/* Decks */
+.dash-decks {
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dash-decks-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dash-decks-loading,
+.dash-decks-empty {
+  font-size: 14px;
+  color: var(--mute);
+  padding: 24px;
+  text-align: center;
+}
+.dash-decks-empty p { margin: 0; }
+.dash-decks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.dash-decks-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+.dash-decks-delete-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1.5px solid var(--line);
+  color: var(--mute);
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color .12s, color .12s;
+}
+.dash-decks-delete-all:hover { border-color: #FCA5A5; color: #B91C1C; }
+
+/* Use a clean card style for individual decks (replaces older account-deck-card rules) */
+.account-deck-card {
+  position: relative;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .12s, transform .08s, box-shadow .12s;
+  box-shadow: 0 3px 0 var(--line);
+}
+.account-deck-card:hover { border-color: var(--purple-ring); transform: translateY(-2px); }
+.account-deck-card.is-pinned { border-color: var(--yellow); box-shadow: 0 3px 0 var(--yellow); }
+.account-deck-link {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+  min-height: 100px;
+}
+.account-deck-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.account-deck-mode {
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  background: var(--purple-soft);
+  color: var(--purple);
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: 800;
+}
+.account-deck-mode[data-mode="quick"] { background: #FFF8DD; color: #8C5C00; }
+.account-deck-time { font-size: 12px; color: var(--mute-2); font-weight: 600; }
+.account-deck-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.account-deck-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--mute);
+  font-weight: 600;
+}
+.account-deck-source { display: inline-flex; align-items: center; gap: 5px; }
+.account-deck-source-icon {
+  width: 16px; height: 12px;
+  border-radius: 3px;
+  display: grid; place-items: center;
+  color: #fff;
+}
+.account-deck-actions {
+  display: flex;
+  gap: 6px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  opacity: 0;
+  transition: opacity .12s;
+}
+.account-deck-card:hover .account-deck-actions,
+.account-deck-card:focus-within .account-deck-actions { opacity: 1; }
+.account-deck-card.is-pinned .account-deck-actions { opacity: 1; }
+.account-deck-action {
+  width: 28px; height: 28px;
+  border-radius: var(--r-sm);
+  display: grid; place-items: center;
+  background: rgba(255,255,255,0.95);
+  border: 1.5px solid var(--line);
+  color: var(--mute);
+  cursor: pointer;
+  transition: color .12s, border-color .12s;
+}
+.account-deck-pin:hover { color: var(--yellow); border-color: var(--yellow); }
+.account-deck-card.is-pinned .account-deck-pin { color: var(--yellow); border-color: var(--yellow); }
+.account-deck-delete:hover { color: #B91C1C; border-color: #FCA5A5; }
+
+/* Upsell strip */
+.dash-upsell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  background: linear-gradient(135deg, var(--purple) 0%, #8B5CF6 100%);
+  color: #fff;
+  border-radius: var(--r-xl);
+  padding: 24px 28px;
+  box-shadow: 0 6px 0 var(--purple-deep);
+}
+.dash-upsell-paid {
+  background: var(--surface);
+  color: var(--ink);
+  border: 2px solid var(--line);
+  box-shadow: none;
+}
+.dash-upsell .dash-h2 { color: #fff; }
+.dash-upsell-paid .dash-h2 { color: var(--ink); }
+.dash-upsell-text { display: flex; flex-direction: column; gap: 4px; }
+.dash-upsell-text p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255,255,255,0.9);
+  font-weight: 500;
+  line-height: 1.4;
+  max-width: 50ch;
+}
+.dash-upsell-paid .dash-upsell-text p { color: var(--mute); }
+.dash-upsell-cta {
+  background: #fff;
+  color: var(--purple);
+  border: none;
+  border-radius: 999px;
+  padding: 14px 22px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.15);
+  transition: transform .08s, box-shadow .12s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.dash-upsell-cta:hover { transform: translateY(-1px); }
+.dash-upsell-cta:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,0.15); }
+.dash-upsell-cta-quiet { background: var(--ink); color: #fff; box-shadow: 0 3px 0 #000; }
+
+.dash-loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--mute);
+  font-weight: 500;
+}
+
+/* ---------- Right rail (fixed, far-right — matches the left sidebar) --
+   Same treatment as .dash-sidebar but anchored to the viewport's right
+   edge: fixed, white background, border on the inside (left), own scroll
+   when content overflows. Width and padding match the left sidebar so the
+   two columns are visually symmetric. */
+.dash-rail {
+  position: fixed;
+  right: 0;
+  top: 64px;
+  bottom: 0;
+  width: 253px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 18px;
+  background: #fff;
+  border-left: 2px solid var(--line);
+  overflow-y: auto;
+  z-index: 20;
+}
+.dash-rail::-webkit-scrollbar { width: 6px; }
+.dash-rail::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+/* ---------- Plan / Tier rail card --------------------------------------- */
+.rail-plan { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+.rail-plan-tier {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--line);
+  color: var(--mute);
+  margin: 0 0 10px;
+}
+.rail-plan-tier[data-tier="study"],
+.rail-plan-tier[data-tier="pro"],
+.rail-plan-tier[data-tier="team"] {
+  background: var(--purple-soft);
+  color: var(--purple);
+}
+.rail-plan-meta {
+  font-size: 13px;
+  color: var(--mute);
+  margin: 0 0 14px;
+  line-height: 1.45;
+}
+.rail-plan-cta {
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--purple);
+  text-decoration: none;
+  padding: 10px 14px;
+  border: 2px solid var(--purple-ring);
+  border-radius: 999px;
+  transition: background .12s, border-color .12s, transform .08s;
+}
+@media (hover: hover) {
+  .rail-plan-cta:hover { background: var(--purple-soft); border-color: var(--purple); }
+}
+.rail-plan-cta:active { transform: translateY(1px); }
+
+.rail-card {
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 16px;
+}
+.rail-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.rail-card-head h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* Mascot rail card */
+.rail-mascot {
+  background: var(--purple-soft);
+  border-color: var(--purple-ring);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rail-mascot-img {
+  width: auto;
+  height: 88px;                  /* portrait — natural aspect ratio */
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(15,15,20,0.08));
+}
+.rail-mascot-bubble {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.35;
+  flex: 1;
+}
+
+/* Streak rail card */
+.rail-streak { display: flex; flex-direction: column; gap: 4px; }
+.rail-shield {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--purple);
+}
+.rail-streak-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 32px;
+  letter-spacing: -0.03em;
+  color: #FF9600;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.rail-streak-unit {
+  font-size: 12px;
+  color: var(--mute);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.rail-streak-best { font-size: 12px; color: var(--mute); font-weight: 600; }
+
+/* Quests rail card */
+.rail-quest-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.rail-quest {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--r-md);
+  background: var(--line-2);
+}
+.rail-quest.is-done { background: #E7FBF1; }
+.rail-quest-icon { font-size: 14px; line-height: 1; text-align: center; }
+.rail-quest-text { font-size: 13px; color: var(--ink-2); font-weight: 600; }
+.rail-quest-prog {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--mute);
+}
+.rail-quest.is-done .rail-quest-prog { color: var(--green-deep); }
+
+/* Friends rail card */
+.rail-friends-empty p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--mute);
+  line-height: 1.4;
+}
+.rail-friends-cta {
+  background: var(--purple);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-pill);
+  padding: 10px 14px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  box-shadow: 0 3px 0 var(--purple-deep);
+  transition: background .12s, transform .08s, box-shadow .12s;
+}
+.rail-friends-cta:hover { background: #7d4ff0; }
+.rail-friends-cta:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--purple-deep); }
+
+/* Achievements rail card */
+.rail-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.rail-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: var(--r-md);
+  background: var(--line-2);
+  text-align: center;
+}
+.rail-badge.is-locked { opacity: 0.55; filter: grayscale(0.6); }
+.rail-badge-emoji { font-size: 22px; line-height: 1; }
+.rail-badge-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* ---------- Responsive ------------------------------------------------- */
+@media (max-width: 1180px) {
+  /* Rail hides at narrower widths — main column gets the right-side padding
+     back. Sidebar stays fixed. */
+  .dash-rail { display: none; }
+  .dash-layout { padding-right: 32px; }
+}
+@media (max-width: 880px) {
+  /* Mobile: sidebar un-fixes and collapses into a horizontal row of pills
+     at the top of the main column. Both side paddings drop back to normal
+     so we don't reserve space for fixed panels that aren't there. */
+  .dash-layout { grid-template-columns: 1fr; padding: 20px; gap: 18px; }
+  .dash-sidebar {
+    position: static;
+    width: auto;
+    height: auto;
+    border-right: none;
+    padding: 0;
+    background: transparent;
+    overflow: visible;
+  }
+  .dash-nav { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+  .dash-nav-item { padding: 8px 12px; font-size: 12px; }
+  .dash-nav-item.is-locked { display: none; }
+  .dash-nav-footer { display: none; }
+  .dash-welcome { grid-template-columns: 1fr; text-align: left; padding: 22px; }
+  .dash-welcome-mascot-wrap { align-self: flex-end; margin-top: -40px; }
+  .dash-welcome-mascot { height: 100px; }
+  .dash-stats { gap: 8px; }
+  .dash-stat { padding: 6px 10px; font-size: 14px; }
+  .dash-user-name { display: none; }
+  .dash-upsell { flex-direction: column; align-items: stretch; text-align: center; }
+}
+@media (max-width: 600px) {
+  .dash-header { padding: 12px 16px; gap: 12px; }
+  .dash-brand-word { display: none; }
+}

@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Quizzes &mdash; Popcard</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png?v=3" />
+  <link rel="apple-touch-icon" href="/images/favicon.png?v=3" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="account.css?v=13" />
+  <link rel="stylesheet" href="quizzes.css?v=5" />
+</head>
+<body class="dashboard is-study-mode">
+
+  <header class="dash-header">
+    <a class="dash-brand" href="/account">
+      <img class="dash-brand-icon" src="/images/popcard-icon.png" alt="" />
+      <span class="dash-brand-word">popcard</span>
+    </a>
+    <div class="dash-stats" data-auth-only>
+      <button type="button" class="dash-stat dash-streak" title="Daily streak" aria-label="Daily streak">
+        <span class="dash-stat-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14a8 8 0 1 0 16 0c0-4.16-2-7.87-6.5-13.33z"/></svg></span>
+        <span class="dash-stat-num" id="dash-streak-num">0</span>
+      </button>
+      <button type="button" class="dash-stat dash-sparks" title="Sparks earned" aria-label="Sparks earned">
+        <span class="dash-stat-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 13.7 8.3 20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7z"/></svg></span>
+        <span class="dash-stat-num" id="dash-sparks-num">0</span>
+      </button>
+    </div>
+    <div class="dash-user-wrap" data-auth-only>
+      <button type="button" class="dash-user-chip" id="dash-user-chip">
+        <img class="dash-user-pic" data-auth-picture alt="" referrerpolicy="no-referrer" />
+        <span class="dash-user-name" data-auth-name>Account</span>
+      </button>
+      <div class="dash-user-menu" id="dash-user-menu" hidden role="menu">
+        <a href="/account" role="menuitem">Dashboard</a>
+        <a href="/pricing" role="menuitem">Plan &amp; billing</a>
+        <button type="button" role="menuitem" id="sign-out-btn">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="dash-layout">
+
+    <aside class="dash-sidebar">
+      <nav class="dash-nav">
+        <a href="/account" class="dash-nav-item">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12 12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+          <span>Home</span>
+        </a>
+        <a href="/account#decks" class="dash-nav-item">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="14" height="16" rx="2"/><path d="M21 8v12a1 1 0 0 1-1 1H8"/></svg>
+          <span>Decks</span>
+        </a>
+        <a href="/practice" class="dash-nav-item">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a10 10 0 1 1 10-10"/><path d="m16 12-4 4-2-2"/></svg>
+          <span>Practice</span>
+        </a>
+        <a href="/quizzes" class="dash-nav-item is-active">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11h6"/><path d="M9 15h4"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+          <span>Quizzes</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="dash-main">
+
+      <!-- ===== Deck picker (default) ===== -->
+      <section class="quiz-list" id="quiz-list">
+        <header class="quiz-hero">
+          <div class="quiz-hero-text">
+            <span class="quiz-eyebrow">QUIZZES</span>
+            <h1 class="quiz-h1">Test yourself.</h1>
+            <p class="quiz-sub">Pick a deck. 10 multiple-choice questions per quiz. Score is yours to keep.</p>
+          </div>
+          <img class="quiz-hero-mascot" src="/images/popcard-mascot.png" alt="" />
+        </header>
+
+        <div class="quiz-deck-grid" id="quiz-deck-grid">
+          <!-- decks rendered here -->
+        </div>
+
+        <div class="quiz-loading" id="quiz-loading">Loading your decks&hellip;</div>
+        <div class="quiz-empty" id="quiz-empty" hidden>
+          <img src="/images/popcard-mascot.png" alt="" class="quiz-empty-mascot" />
+          <h2>No decks to quiz on yet</h2>
+          <p>Pop a deck on your dashboard first &mdash; you need at least 4 cards in a deck to take a quiz.</p>
+          <a href="/account" class="quiz-empty-cta">Go to dashboard</a>
+        </div>
+      </section>
+
+      <!-- ===== Quiz session (full-screen overlay, Duolingo-style) ============
+           Layout: sticky top bar  |  centered main (mascot stage + question
+           bubble + vertical options)  |  sticky bottom action bar with
+           feedback panel + CHECK / CONTINUE button.
+
+           Mascot states use the same pattern as onboarding's ob-mascot-wave
+           video: each state element sits stacked inside .qz-stage, and JS
+           toggles .is-active to swap which one is visible. Each <img> can
+           be swapped to a <video> when motion is commissioned — see TODOs
+           inline below.
+      -->
+      <section class="quiz-session" id="quiz-session" hidden>
+        <header class="qz-head">
+          <button type="button" class="qz-quit" id="quiz-quit" aria-label="Quit quiz">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <div class="qz-progress" aria-hidden="true">
+            <div class="qz-progress-fill" id="quiz-progress-fill"></div>
+          </div>
+          <div class="qz-score" title="Score so far">
+            <span class="qz-score-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </span>
+            <span id="quiz-score-live">0</span>
+          </div>
+        </header>
+
+        <main class="qz-main">
+          <!-- Mascot stage: state-driven via data-state. JS swaps .is-active. -->
+          <div class="qz-stage" id="quiz-stage" data-state="ask">
+            <!-- IDLE / ASKING — quizmaster animation. Two variants picked
+                 at random each question. preload="auto" so the active variant
+                 is ready when a quiz starts; the popcard-mascot.png poster
+                 shows instantly while video frames load. -->
+            <video class="qz-mascot is-active" data-state="ask"
+                   muted loop playsinline preload="auto" autoplay
+                   poster="/images/popcard-mascot.png" aria-hidden="true">
+              <source src="/images/mascot-quizmaster.mp4?v=1" type="video/mp4" />
+            </video>
+            <video class="qz-mascot" data-state="ask2"
+                   muted loop playsinline preload="auto"
+                   poster="/images/popcard-mascot.png" aria-hidden="true">
+              <source src="/images/mascot-quizmaster2.mp4?v=1" type="video/mp4" />
+            </video>
+
+            <!-- CORRECT / CELEBRATE (still pose) -->
+            <img class="qz-mascot" data-state="correct" src="/images/mascot-cheer.png" alt="" />
+
+            <!-- CORRECT / DANCE variants (1, 2, 3). JS picks one at random on
+                 each correct answer so the reaction has variety. All are
+                 muted + loop + playsinline (iOS Safari requirement) and
+                 preload="none" so bandwidth is zero until one is actually
+                 rolled. -->
+            <video class="qz-mascot" data-state="correct-dance" muted loop playsinline preload="none" aria-hidden="true">
+              <source src="/images/mascot-dancing.mp4?v=1" type="video/mp4" />
+            </video>
+            <video class="qz-mascot" data-state="correct-dance2" muted loop playsinline preload="none" aria-hidden="true">
+              <source src="/images/mascot-dancing2.mp4?v=1" type="video/mp4" />
+            </video>
+            <video class="qz-mascot" data-state="correct-dance3" muted loop playsinline preload="none" aria-hidden="true">
+              <source src="/images/mascot-dancing3.mp4?v=1" type="video/mp4" />
+            </video>
+
+            <!-- WRONG / SAD -->
+            <img class="qz-mascot" data-state="wrong" src="/images/mascot-sad.png" alt="" />
+            <!-- TODO swap to mascot-sad.webm/mp4 when motion is ready -->
+          </div>
+
+          <div class="qz-bubble">
+            <span class="qz-tag" id="quiz-question-tag">Idea</span>
+            <h2 class="qz-question" id="quiz-question"></h2>
+          </div>
+
+          <div class="qz-options" id="quiz-options" role="radiogroup" aria-label="Answer options">
+            <!-- options rendered here -->
+          </div>
+        </main>
+
+        <footer class="qz-action" id="quiz-action">
+          <div class="qz-action-inner">
+            <!-- Feedback panel — hidden until graded. Slides in when CHECK clicked. -->
+            <div class="qz-feedback" id="quiz-feedback" hidden>
+              <div class="qz-feedback-icon" id="quiz-feedback-icon" aria-hidden="true"></div>
+              <div class="qz-feedback-body">
+                <h3 class="qz-feedback-h" id="quiz-feedback-text">Correct!</h3>
+                <p class="qz-feedback-detail" id="quiz-feedback-detail" hidden></p>
+              </div>
+            </div>
+            <!-- One CTA button: CHECK (when option picked) → CONTINUE (after grade) -->
+            <button type="button" class="qz-cta" id="quiz-cta" data-mode="check" disabled>CHECK</button>
+          </div>
+          <p class="qz-progress-text">
+            <span id="quiz-current">1</span> of <span id="quiz-total">10</span>
+          </p>
+        </footer>
+      </section>
+
+      <!-- ===== Quiz complete (full-screen overlay) =========================== -->
+      <section class="quiz-complete" id="quiz-complete" hidden>
+        <header class="qz-head qz-head-complete">
+          <a href="/quizzes" class="qz-quit" id="quiz-complete-close" aria-label="Close">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </a>
+        </header>
+
+        <main class="qz-complete-main">
+          <!-- Mascot stage for end-of-quiz reaction. JS sets data-state to one of:
+               grad (perfect), cheer (≥70%), idle (40-69%), sad (<40%) -->
+          <div class="qz-complete-stage" id="quiz-complete-stage" data-state="cheer">
+            <img class="qz-complete-mascot" data-state="grad"  src="/images/mascot-graduation.png" alt="" />
+            <img class="qz-complete-mascot is-active" data-state="cheer" src="/images/mascot-cheer.png" alt="" />
+            <img class="qz-complete-mascot" data-state="idle"  src="/images/popcard-mascot.png" alt="" />
+            <img class="qz-complete-mascot" data-state="sad"   src="/images/mascot-sad.png" alt="" />
+            <!--
+              TODO each of these can be swapped to a <video> later — e.g.:
+              <video class="qz-complete-mascot" data-state="grad" autoplay loop muted playsinline>
+                <source src="/images/mascot-graduation.webm" type="video/webm" />
+                <source src="/images/mascot-graduation.mp4" type="video/mp4" />
+              </video>
+            -->
+          </div>
+
+          <h1 class="qz-complete-h" id="quiz-complete-h">You finished.</h1>
+          <p class="qz-complete-sub" id="quiz-complete-sub"></p>
+
+          <div class="qz-complete-score">
+            <span class="qz-score-num" id="quiz-score-final">0</span>
+            <span class="qz-score-divider">/</span>
+            <span class="qz-score-total" id="quiz-score-total">10</span>
+          </div>
+
+          <div class="qz-complete-sparks">
+            <span class="qz-sparks-icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 13.7 8.3 20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7z"/></svg>
+            </span>
+            <span>+<span id="quiz-complete-sparks">0</span> Sparks</span>
+          </div>
+        </main>
+
+        <footer class="qz-action">
+          <div class="qz-action-inner qz-action-complete">
+            <button type="button" class="qz-cta" id="quiz-again">RETAKE</button>
+            <button type="button" class="qz-cta-ghost" id="quiz-different-deck">Different deck</button>
+            <a href="/account" class="qz-cta-link">Back to dashboard</a>
+          </div>
+        </footer>
+      </section>
+
+    </main>
+
+    <aside class="dash-rail" aria-label="Quiz rail">
+      <div class="rail-card rail-mascot">
+        <img class="rail-mascot-img" src="/images/popcard-mascot.png" alt="" />
+        <div class="rail-mascot-bubble" id="rail-mascot-bubble">
+          Quizzes shuffle wrong answers from other cards in the same deck — so context matters.
+        </div>
+      </div>
+      <div class="rail-card">
+        <div class="rail-card-head"><h3>Scoring</h3></div>
+        <ul class="quiz-scoring">
+          <li><strong>10 / 10</strong> &mdash; Trophy</li>
+          <li><strong>7&ndash;9</strong> &mdash; Strong</li>
+          <li><strong>4&ndash;6</strong> &mdash; Mid &mdash; review weak cards</li>
+          <li><strong>0&ndash;3</strong> &mdash; Practice this deck</li>
+        </ul>
+      </div>
+    </aside>
+
+  </div>
+
+  <script src="analytics.js"></script>
+  <script src="cookies.js"></script>
+  <script src="auth.js"></script>
+  <script src="lang-picker.js"></script>
+  <script src="i18n.js"></script>
+  <script src="quizzes.js?v=9"></script>
+</body>
+</html>

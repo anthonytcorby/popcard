@@ -4,10 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pricing — Popcard</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png?v=3" />
+  <link rel="apple-touch-icon" href="/images/favicon.png?v=3" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
 
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -15,29 +18,19 @@
   <div class="page">
     <header class="header">
       <a href="/" class="brand">
-        <div class="brand-logo" aria-label="Popcard logo">
-          <svg viewBox="0 0 56 56" width="44" height="44">
-            <g>
-              <rect x="3" y="6" width="14" height="44" rx="6" fill="#FF3DA0" transform="rotate(-12 10 28)"/>
-              <rect x="6" y="6" width="14" height="44" rx="6" fill="#FF8A3D" transform="rotate(-7 13 28)"/>
-              <rect x="9" y="6" width="14" height="44" rx="6" fill="#FFD338" transform="rotate(-2 16 28)"/>
-              <rect x="12" y="6" width="14" height="44" rx="6" fill="#2BC489" transform="rotate(3 19 28)"/>
-              <rect x="15" y="6" width="14" height="44" rx="6" fill="#3DAEFF" transform="rotate(8 22 28)"/>
-            </g>
-            <path d="M14 6 H40 A8 8 0 0 1 48 14 V38 A8 8 0 0 1 40 46 H28 L18 54 L20 46 A6 6 0 0 1 14 40 V6 Z" fill="#6E3DEA"/>
-            <circle cx="22" cy="22" r="2.4" fill="#fff"/>
-            <circle cx="34" cy="22" r="2.4" fill="#fff"/>
-            <path d="M22 30 Q28 36 34 30" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-          </svg>
-        </div>
+        <img class="brand-logo" src="/images/popcard-logo.png" alt="Popcard logo" width="96" height="96" />
         <span class="brand-name">popcard<sup>&reg;</sup></span>
       </a>
       <nav class="nav">
-        <a href="/#how">How it works</a>
-        <a href="/examples">Examples</a>
-        <a href="/pricing">Pricing</a>
-        <a href="/login" data-guest-only>Log in</a>
-        <a href="/login" class="btn-primary" data-guest-only data-track="Sign Up">Sign up free</a>
+        <div class="lang-picker">
+          <button type="button" id="lang-picker-trigger" class="lang-picker-trigger" aria-haspopup="menu" aria-expanded="false" aria-label="Change card language">
+            <span id="lang-picker-current-flag" class="lang-picker-flag fi fi-gb"></span>
+            <svg class="lang-picker-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div id="lang-picker-menu" class="lang-picker-menu" role="menu" hidden></div>
+        </div>
+        <a href="/login" data-guest-only data-i18n="nav.login">Log in</a>
+        <a href="/login" class="btn-primary" data-guest-only data-track="Sign Up" data-i18n="nav.signup">Sign up free</a>
         <a href="/account" class="user-chip" data-auth-only style="display:none">
           <img data-auth-picture alt="" referrerpolicy="no-referrer" />
           <span data-auth-name>Account</span>
@@ -46,21 +39,21 @@
     </header>
 
     <section class="subhero">
-      <div class="eyebrow">Pricing</div>
-      <h1>Simple when you need the gist. <span class="accent">Study Mode</span> when you need to remember it.</h1>
-      <p>Start free. Upgrade for unlimited Study Mode, quizzes, source-linked cards, and saved decks.</p>
+      <div class="eyebrow" data-i18n="pricing.eyebrow">Pricing</div>
+      <h1 data-i18n="pricing.h1">Simple when you need the gist. Study Mode when you need to remember it.</h1>
+      <p data-i18n="pricing.sub">Start free. Upgrade for unlimited Study Mode, quizzes, source-linked cards, and saved decks.</p>
     </section>
 
     <section class="pricing">
       <div class="pricing-grid pricing-grid-2">
         <div class="tier">
-          <div class="tier-name">Free</div>
-          <div class="tier-tag">For trying Popcard</div>
+          <div class="tier-name" data-i18n="tier.free">Free</div>
+          <div class="tier-tag" data-i18n="tier.free.tag">For trying Popcard</div>
           <div class="tier-price">
             <span class="amount">£0</span>
-            <span class="per">/ forever</span>
+            <span class="per" data-i18n="tier.free.per">/ forever</span>
           </div>
-          <a href="/" class="tier-cta" data-track="Pricing CTA" data-track-tier="Free">Get started</a>
+          <a href="/" class="tier-cta" data-track="Pricing CTA" data-track-tier="Free" data-i18n="tier.free.cta">Get started</a>
           <div class="tier-divider"></div>
           <ul class="tier-feats">
             <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>10 popcards per month</li>
@@ -71,14 +64,14 @@
         </div>
 
         <div class="tier featured">
-          <span class="tier-badge">Most popular</span>
-          <div class="tier-name">Study</div>
-          <div class="tier-tag">For students and serious learners</div>
+          <span class="tier-badge" data-i18n="tier.popular">Most popular</span>
+          <div class="tier-name" data-i18n="tier.study">Study</div>
+          <div class="tier-tag" data-i18n="tier.study.tag">For students and serious learners</div>
           <div class="tier-price">
             <span class="amount">£3.99</span>
-            <span class="per">/ month</span>
+            <span class="per" data-i18n="tier.study.per">/ month</span>
           </div>
-          <button type="button" class="tier-cta" data-checkout="study" data-track="Pricing CTA" data-track-tier="Study">Start free trial</button>
+          <button type="button" class="tier-cta" data-checkout="study" data-track="Pricing CTA" data-track-tier="Study" data-i18n="tier.study.cta">Start free trial</button>
           <div class="tier-divider"></div>
           <ul class="tier-feats">
             <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>100 popcards per month</li>
@@ -142,6 +135,8 @@
   <script src="cookies.js"></script>
   <script src="page.js"></script>
   <script src="auth.js"></script>
+  <script src="lang-picker.js"></script>
+  <script src="i18n.js"></script>
   <script>
     document.querySelectorAll('[data-checkout]').forEach((btn) => {
       btn.addEventListener('click', () => window.PopcardAuth.startCheckout(btn.dataset.checkout));

@@ -25,6 +25,8 @@ window.PopcardAuth = {
       method: 'POST',
       credentials: 'same-origin',
     });
+    // Reset analytics identity so the next visitor isn't merged with this user
+    window.PopcardAnalytics?.reset();
   },
 
   async startCheckout(tier) {
@@ -59,10 +61,28 @@ window.PopcardAuth = {
     });
     const nameEl = document.querySelector('[data-auth-name]');
     if (nameEl && user) nameEl.textContent = user.name || user.email;
-    const tierEl = document.querySelector('[data-auth-tier]');
-    if (tierEl && user) tierEl.textContent = user.tier;
+    // Update every element marked with data-auth-tier (the original code used
+    // querySelector singular, which only updated the first match — broke when
+    // we added a second tier badge in the dashboard rail). Also expose the
+    // tier as a data-tier attribute so CSS can colour the badge per plan.
+    document.querySelectorAll('[data-auth-tier]').forEach((el) => {
+      if (user) {
+        el.textContent = user.tier;
+        el.setAttribute('data-tier', user.tier);
+      }
+    });
     const picEl = document.querySelector('[data-auth-picture]');
     if (picEl && user && user.picture) picEl.src = user.picture;
+
+    // PostHog: identify the user so their events get attached to their profile.
+    // Only safe-to-track properties — never send the picture URL or other PII.
+    if (user) {
+      window.PopcardAnalytics?.identify(user.id, {
+        email: user.email,
+        name: user.name,
+        tier: user.tier,
+      });
+    }
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => paint(await window.PopcardAuth.me()));

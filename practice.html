@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Practice &mdash; Popcard</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png?v=3" />
+  <link rel="apple-touch-icon" href="/images/favicon.png?v=3" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="account.css?v=13" />
+  <link rel="stylesheet" href="practice.css?v=4" />
+</head>
+<body class="dashboard is-study-mode">
+
+  <header class="dash-header">
+    <a class="dash-brand" href="/account">
+      <img class="dash-brand-icon" src="/images/popcard-icon.png" alt="" />
+      <span class="dash-brand-word">popcard</span>
+    </a>
+    <div class="dash-stats" data-auth-only>
+      <button type="button" class="dash-stat dash-streak" title="Daily streak" aria-label="Daily streak">
+        <span class="dash-stat-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14a8 8 0 1 0 16 0c0-4.16-2-7.87-6.5-13.33z"/></svg></span>
+        <span class="dash-stat-num" id="dash-streak-num">0</span>
+      </button>
+      <button type="button" class="dash-stat dash-sparks" title="Sparks earned" aria-label="Sparks earned">
+        <span class="dash-stat-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 13.7 8.3 20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7z"/></svg></span>
+        <span class="dash-stat-num" id="dash-sparks-num">0</span>
+      </button>
+    </div>
+    <div class="dash-user-wrap" data-auth-only>
+      <button type="button" class="dash-user-chip" id="dash-user-chip">
+        <img class="dash-user-pic" data-auth-picture alt="" referrerpolicy="no-referrer" />
+        <span class="dash-user-name" data-auth-name>Account</span>
+      </button>
+      <div class="dash-user-menu" id="dash-user-menu" hidden role="menu">
+        <a href="/account" role="menuitem">Dashboard</a>
+        <a href="/pricing" role="menuitem">Plan &amp; billing</a>
+        <button type="button" role="menuitem" id="sign-out-btn">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="dash-layout">
+
+    <aside class="dash-sidebar">
+      <nav class="dash-nav">
+        <a href="/account" class="dash-nav-item">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12 12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+          <span>Home</span>
+        </a>
+        <a href="/account#decks" class="dash-nav-item">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="14" height="16" rx="2"/><path d="M21 8v12a1 1 0 0 1-1 1H8"/></svg>
+          <span>Decks</span>
+        </a>
+        <a href="/practice" class="dash-nav-item is-active">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a10 10 0 1 1 10-10"/><path d="m16 12-4 4-2-2"/></svg>
+          <span>Practice</span>
+        </a>
+        <a href="/quizzes" class="dash-nav-item">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11h6"/><path d="M9 15h4"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+          <span>Quizzes</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="dash-main">
+
+      <!-- ===== List view (default) ===== -->
+      <section class="prac-list" id="prac-list">
+
+        <header class="prac-hero">
+          <div class="prac-hero-text">
+            <span class="prac-eyebrow">PRACTICE</span>
+            <h1 class="prac-h1">Review what you&rsquo;ve learned.</h1>
+            <p class="prac-sub" id="prac-sub">Pop reshuffles cards based on what you know — review what&rsquo;s slipping, skip what&rsquo;s solid.</p>
+          </div>
+          <img class="prac-hero-mascot" src="/images/popcard-mascot.png" alt="" />
+        </header>
+
+        <div class="prac-stats" id="prac-stats">
+          <div class="prac-stat">
+            <span class="prac-stat-num" id="prac-due">&mdash;</span>
+            <span class="prac-stat-label">Ready to review</span>
+          </div>
+          <div class="prac-stat">
+            <span class="prac-stat-num" id="prac-mastered">&mdash;</span>
+            <span class="prac-stat-label">Mastered</span>
+          </div>
+          <div class="prac-stat">
+            <span class="prac-stat-num" id="prac-learning">&mdash;</span>
+            <span class="prac-stat-label">Still learning</span>
+          </div>
+          <div class="prac-stat">
+            <span class="prac-stat-num" id="prac-total">&mdash;</span>
+            <span class="prac-stat-label">Total cards</span>
+          </div>
+        </div>
+
+        <button type="button" class="prac-start" id="prac-start" data-track="Practice Start" disabled>
+          <span class="prac-start-label">START SESSION</span>
+          <span class="prac-start-count" id="prac-start-count"></span>
+        </button>
+
+        <div class="prac-empty" id="prac-empty" hidden>
+          <img src="/images/popcard-mascot.png" alt="" class="prac-empty-mascot" />
+          <h2>Nothing to practise yet</h2>
+          <p>Pop a deck on your dashboard, then come back to review.</p>
+          <a href="/account" class="prac-empty-cta">Go to dashboard</a>
+        </div>
+
+      </section>
+
+      <!-- ===== Session view (hidden until START) ===== -->
+      <section class="prac-session" id="prac-session" hidden>
+        <div class="prac-session-head">
+          <button type="button" class="prac-session-quit" id="prac-quit" aria-label="Quit session">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <div class="prac-progress">
+            <div class="prac-progress-bar"><div class="prac-progress-fill" id="prac-progress-fill" style="width:0%"></div></div>
+            <span class="prac-progress-text"><span id="prac-current">1</span> / <span id="prac-total-session">10</span></span>
+          </div>
+        </div>
+
+        <div class="prac-card" id="prac-card">
+          <div class="prac-card-inner" id="prac-card-inner">
+            <div class="prac-card-face prac-card-front">
+              <span class="prac-card-tag" id="prac-card-tag">Idea</span>
+              <p class="prac-card-question" id="prac-card-q"></p>
+              <button type="button" class="prac-card-reveal" id="prac-card-reveal">REVEAL ANSWER</button>
+            </div>
+            <div class="prac-card-face prac-card-back">
+              <span class="prac-card-tag" id="prac-card-tag-back">Idea</span>
+              <p class="prac-card-question prac-card-question-small" id="prac-card-q-back"></p>
+              <p class="prac-card-answer" id="prac-card-a"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="prac-grades" id="prac-grades" hidden>
+          <button type="button" class="prac-grade prac-grade-hard" data-grade="hard">
+            <span class="prac-grade-emoji">&#128557;</span>
+            <span class="prac-grade-label">Hard</span>
+            <span class="prac-grade-hint">Show again soon</span>
+          </button>
+          <button type="button" class="prac-grade prac-grade-good" data-grade="good">
+            <span class="prac-grade-emoji">&#128526;</span>
+            <span class="prac-grade-label">Good</span>
+            <span class="prac-grade-hint">Knew it</span>
+          </button>
+          <button type="button" class="prac-grade prac-grade-easy" data-grade="easy">
+            <span class="prac-grade-emoji">&#128293;</span>
+            <span class="prac-grade-label">Easy</span>
+            <span class="prac-grade-hint">Way too easy</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ===== Complete view (hidden until session ends) ===== -->
+      <section class="prac-complete" id="prac-complete" hidden>
+        <img src="/images/mascot-cheer.png" alt="" class="prac-complete-mascot" />
+        <h1 class="prac-complete-h">Great work!</h1>
+        <p class="prac-complete-sub" id="prac-complete-sub">You reviewed <span id="prac-complete-count">0</span> cards.</p>
+        <div class="prac-complete-stats">
+          <div><span id="prac-complete-easy">0</span> easy</div>
+          <div><span id="prac-complete-good">0</span> good</div>
+          <div><span id="prac-complete-hard">0</span> hard</div>
+        </div>
+        <div class="prac-complete-sparks">
+          <span class="prac-complete-spark-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 13.7 8.3 20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7z"/></svg></span>
+          +<span id="prac-complete-sparks">0</span> Sparks
+        </div>
+        <div class="prac-complete-actions">
+          <button type="button" class="prac-complete-again" id="prac-again">REVIEW MORE</button>
+          <a href="/account" class="prac-complete-home">Back to dashboard</a>
+        </div>
+      </section>
+
+    </main>
+
+    <aside class="dash-rail" aria-label="Practice rail">
+      <div class="rail-card rail-mascot">
+        <img class="rail-mascot-img" src="/images/popcard-mascot.png" alt="" />
+        <div class="rail-mascot-bubble" id="rail-mascot-bubble">
+          A 10-card session takes about 3 minutes. Try to be honest with the grades — that&rsquo;s how Pop learns what to bring back.
+        </div>
+      </div>
+
+      <div class="rail-card">
+        <div class="rail-card-head"><h3>How it works</h3></div>
+        <ol class="prac-howto">
+          <li>Read the question, think of the answer.</li>
+          <li>Reveal &amp; check yourself.</li>
+          <li>Grade <strong>Hard / Good / Easy</strong>.</li>
+          <li>Cards you marked Hard come back sooner.</li>
+        </ol>
+      </div>
+    </aside>
+
+  </div>
+
+  <script src="analytics.js"></script>
+  <script src="cookies.js"></script>
+  <script src="auth.js"></script>
+  <script src="lang-picker.js"></script>
+  <script src="i18n.js"></script>
+  <script src="practice.js?v=3"></script>
+</body>
+</html>

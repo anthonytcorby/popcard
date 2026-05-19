@@ -3,433 +3,319 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Popcard — Paste. Pop. Learn.</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Popcard — Remember what you watch and read.</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png?v=3" />
+  <link rel="apple-touch-icon" href="/images/favicon.png?v=3" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=2" />
+  <link rel="stylesheet" href="landing-v2.css?v=51" />
 </head>
-<body>
-  <div class="page">
-    <header class="header">
-      <a href="#" class="brand">
-        <div class="brand-logo" aria-label="Popcard logo">
-          <svg viewBox="0 0 56 56" width="44" height="44">
-            <g>
-              <rect x="3" y="6" width="14" height="44" rx="6" fill="#FF3DA0" transform="rotate(-12 10 28)"/>
-              <rect x="6" y="6" width="14" height="44" rx="6" fill="#FF8A3D" transform="rotate(-7 13 28)"/>
-              <rect x="9" y="6" width="14" height="44" rx="6" fill="#FFD338" transform="rotate(-2 16 28)"/>
-              <rect x="12" y="6" width="14" height="44" rx="6" fill="#2BC489" transform="rotate(3 19 28)"/>
-              <rect x="15" y="6" width="14" height="44" rx="6" fill="#3DAEFF" transform="rotate(8 22 28)"/>
-            </g>
-            <path d="M14 6 H40 A8 8 0 0 1 48 14 V38 A8 8 0 0 1 40 46 H28 L18 54 L20 46 A6 6 0 0 1 14 40 V6 Z" fill="#6E3DEA"/>
-            <circle cx="22" cy="22" r="2.4" fill="#fff"/>
-            <circle cx="34" cy="22" r="2.4" fill="#fff"/>
-            <path d="M22 30 Q28 36 34 30" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <span class="brand-name">popcard<sup>&reg;</sup></span>
+<body class="landing-v2">
+
+  <header class="header">
+    <div class="page header-inner">
+      <a class="brand" href="/">
+        <img class="brand-icon" src="/images/popcard-icon.png" alt="" />
+        <span class="brand-word">popcard</span>
       </a>
-      <nav class="nav">
-        <a href="#how">How it works</a>
-        <a href="/examples">Examples</a>
-        <a href="/pricing">Pricing</a>
-        <a href="/login" data-guest-only>Log in</a>
-        <a href="/login" class="btn-primary" data-guest-only data-track="Sign Up">Sign up free</a>
+      <nav class="nav-links" aria-hidden="true"></nav>
+      <div class="header-right">
+        <div class="lang-picker">
+          <button id="lang-picker-trigger" type="button" class="lang-picker-trigger" aria-haspopup="menu" aria-expanded="false" aria-label="Change language">
+            <span id="lang-picker-current-flag" class="lang-picker-flag fi fi-gb"></span>
+            <svg class="lang-picker-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div id="lang-picker-menu" class="lang-picker-menu" role="menu" hidden></div>
+        </div>
+        <a href="/login" class="btn btn-ghost" data-guest-only data-i18n="nav.login.short">LOG IN</a>
+        <a href="/login" class="btn btn-primary" data-guest-only data-track="Sign Up" data-i18n="nav.signup.short">SIGN UP</a>
         <a href="/account" class="user-chip" data-auth-only style="display:none">
           <img data-auth-picture alt="" referrerpolicy="no-referrer" />
           <span data-auth-name>Account</span>
         </a>
-      </nav>
-    </header>
-
-    <section class="hero">
-      <div class="hero-copy">
-        <h1 class="h1">
-          <span class="word">Paste.</span>
-          <span class="word pop">Pop.</span>
-          <span class="word">Learn.</span>
-        </h1>
-        <p class="subhead">
-          Turn long videos, articles, and notes into colourful cards you'll actually use — without the wall of text.
-        </p>
-
-        <div class="input-wrap">
-          <span class="yt-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          </span>
-          <input id="hero-input" type="text" placeholder="Paste a YouTube link or any text..." />
-          <button class="paste-btn" id="paste-btn" type="button" aria-label="Paste from clipboard">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2"/>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>
-          </button>
-        </div>
-
-        <button class="cta-pop" type="button" id="pop-btn" data-track="Pop CTA">
-          <span class="spark" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.7 5.3L19 9l-5.3 1.7L12 16l-1.7-5.3L5 9l5.3-1.7zM19 14l.9 2.6L22 18l-2.1.4L19 21l-.9-2.6L16 18l2.1-.4z"/></svg>
-          </span>
-          <span class="spinner" aria-hidden="true"></span>
-          <span id="pop-btn-label">Pop it into cards</span>
-        </button>
-        <div class="pop-status" id="pop-status"></div>
-
-        <div class="modes" role="tablist">
-          <button class="mode active" data-mode="simple" role="tab" aria-selected="true" type="button">
-            <span class="mode-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>
-            </span>
-            <span class="mode-text">
-              <span class="mode-title">Simple</span>
-              <span class="mode-sub">Quick understanding</span>
-            </span>
-          </button>
-          <button class="mode" data-mode="study" role="tab" aria-selected="false" type="button">
-            <span class="mode-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 10 12 4 2 10l10 6 10-6z"/>
-                <path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/>
-              </svg>
-            </span>
-            <span class="mode-text">
-              <span class="mode-title">Study</span>
-              <span class="mode-sub">Deep revision</span>
-            </span>
-          </button>
-        </div>
-
-        <div class="helper">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          Free with Google sign-in. No card required.
-        </div>
       </div>
-
-      <div class="hero-visual">
-        <svg class="spark-star" style="left:6%; top:12%; animation-delay:0s" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.4 4.4L18 9l-4.6 1.6L12 15l-1.4-4.4L6 9l4.6-1.6z"/></svg>
-        <svg class="spark-star" style="left:40%; top:6%; animation-delay:.4s" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.4 4.4L18 9l-4.6 1.6L12 15l-1.4-4.4L6 9l4.6-1.6z"/></svg>
-        <svg class="spark-star" style="left:92%; top:20%; animation-delay:.8s" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.4 4.4L18 9l-4.6 1.6L12 15l-1.4-4.4L6 9l4.6-1.6z"/></svg>
-        <svg class="spark-star" style="left:68%; top:40%; animation-delay:1.2s" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.4 4.4L18 9l-4.6 1.6L12 15l-1.4-4.4L6 9l4.6-1.6z"/></svg>
-        <svg class="spark-star" style="left:94%; top:56%; animation-delay:1.6s" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.4 4.4L18 9l-4.6 1.6L12 15l-1.4-4.4L6 9l4.6-1.6z"/></svg>
-        <svg class="spark-star" style="left:36%; top:56%; animation-delay:2s" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.4 4.4L18 9l-4.6 1.6L12 15l-1.4-4.4L6 9l4.6-1.6z"/></svg>
-        <svg class="spark-star" style="left:92%; top:74%; animation-delay:2.4s" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.4 4.4L18 9l-4.6 1.6L12 15l-1.4-4.4L6 9l4.6-1.6z"/></svg>
-
-        <div class="burst">
-          <div class="burst-card" style="background:#6E3DEA; width:86px; height:86px; left:14%; top:18%; --t:rotate(-8deg); transform:rotate(-8deg); animation-delay:0s">
-            <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-          <div class="burst-card" style="background:#FF3DA0; width:130px; height:130px; left:45%; top:4%; --t:rotate(6deg); transform:rotate(6deg); animation-delay:.3s">
-            <div class="lines"><div class="line"></div><div class="line"></div></div>
-          </div>
-          <div class="burst-card" style="background:#FF8A3D; width:120px; height:120px; left:78%; top:14%; --t:rotate(-4deg); transform:rotate(-4deg); animation-delay:.6s">
-            <div class="lines"><div class="line"></div><div class="line"></div></div>
-          </div>
-          <div class="burst-card" style="background:#FFD338; width:96px; height:96px; left:56%; top:32%; --t:rotate(10deg); transform:rotate(10deg); animation-delay:.9s">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>
-            </svg>
-          </div>
-          <div class="burst-card" style="background:#2BC489; width:84px; height:84px; left:24%; top:40%; --t:rotate(-10deg); transform:rotate(-10deg); animation-delay:1.2s">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>
-            </svg>
-          </div>
-          <div class="burst-card" style="background:#3DAEFF; width:78px; height:78px; left:82%; top:42%; --t:rotate(8deg); transform:rotate(8deg); animation-delay:1.5s">
-            <div class="lines"><div class="line"></div><div class="line"></div></div>
-          </div>
-          <div class="burst-card" style="background:#A78BFA; width:60px; height:60px; left:8%; top:60%; --t:rotate(12deg); transform:rotate(12deg); animation-delay:1.8s">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 17 9 11l4 4 8-8"/><path d="M14 7h7v7"/>
-            </svg>
-          </div>
-        </div>
-
-        <svg class="arrow-curve" viewBox="0 0 280 220" fill="none" aria-hidden="true">
-          <path d="M10 20 C 40 90, 120 180, 220 175" stroke="#A78BFA" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 8"/>
-          <path d="M210 165 L 225 178 L 212 188" stroke="#A78BFA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        </svg>
-
-        <div class="deck">
-          <div class="deck-stack" id="hero-deck-stack">
-            <div class="deck-card l5" style="background:#3DAEFF">
-              <div class="count">4 / 15</div>
-              <div class="q">Law of supply and demand?</div>
-              <div class="body">As price rises, supply grows and demand drops — the meeting point is the market equilibrium.</div>
-              <div class="ph-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>
-                </svg>
-              </div>
-            </div>
-            <div class="deck-card l4" style="background:#2BC489">
-              <div class="count">5 / 22</div>
-              <div class="q">Function of mitochondria?</div>
-              <div class="body">The powerhouse of the cell — it generates most of the cell's ATP through cellular respiration.</div>
-              <div class="ph-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>
-                </svg>
-              </div>
-            </div>
-            <div class="deck-card l3" data-tone="dark" style="background:#FFD338">
-              <div class="count">2 / 18</div>
-              <div class="q">Newton's third law?</div>
-              <div class="body">For every action there is an equal and opposite reaction — push a wall, the wall pushes back.</div>
-              <div class="ph-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>
-                </svg>
-              </div>
-            </div>
-            <div class="deck-card l2" style="background:#FF8A3D">
-              <div class="count">7 / 30</div>
-              <div class="q">When did the French Revolution start?</div>
-              <div class="body">14 July 1789 — the storming of the Bastille marked its beginning.</div>
-              <div class="ph-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>
-                </svg>
-              </div>
-            </div>
-            <div class="deck-card l1" style="background:#FF3DA0">
-              <div class="count">3 / 12</div>
-              <div class="q">Pythagorean theorem?</div>
-              <div class="body">In a right triangle, a² + b² = c² — the hypotenuse squared equals the sum of the other two sides squared.</div>
-              <div class="ph-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>
-                </svg>
-              </div>
-            </div>
-            <div class="deck-card l0" style="background:#6E3DEA">
-              <div class="count">1 / 24</div>
-              <div class="q">What is photosynthesis?</div>
-              <div class="body">Photosynthesis is the process plants, algae and some bacteria use to convert light energy into chemical energy.</div>
-              <div class="ph-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-          <button class="deck-nav prev" id="hero-prev" aria-label="Previous card" type="button">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 12H5"/><path d="m11 18-6-6 6-6"/>
-            </svg>
-          </button>
-          <button class="deck-nav next" id="hero-next" aria-label="Next card" type="button">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section class="how" id="how">
-      <h2>How Popcard works</h2>
-      <div class="how-grid">
-        <div class="step">
-          <div class="step-head">
-            <span class="step-num">1</span>
-            <span class="step-title">Paste content</span>
-          </div>
-          <div class="step-desc">Drop in a YouTube link, paste text, or add notes.</div>
-          <div class="step-visual">
-            <div class="mini-window">
-              <div class="mini-dots"><span></span><span></span><span></span></div>
-              <div class="mini-row">
-                <span class="mini-yt">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                </span>
-                <svg class="mini-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/>
-                  <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07L12.5 19.5"/>
-                </svg>
-                <span class="mini-line"></span>
-              </div>
-              <div class="mini-row">
-                <span class="mini-line" style="max-width:60%"></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="step-arrow">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>
-          </svg>
-        </div>
-
-        <div class="step">
-          <div class="step-head">
-            <span class="step-num">2</span>
-            <span class="step-title">Choose mode</span>
-          </div>
-          <div class="step-desc">Pick Simple for quick understanding or Study for deep revision.</div>
-          <div class="step-visual">
-            <div class="mini-modes">
-              <div class="mini-mode active">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>
-                Simple
-              </div>
-              <div class="mini-mode">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 10 12 4 2 10l10 6 10-6z"/>
-                  <path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/>
-                </svg>
-                Study
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="step-arrow">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>
-          </svg>
-        </div>
-
-        <div class="step">
-          <div class="step-head">
-            <span class="step-num">3</span>
-            <span class="step-title">Get cards</span>
-          </div>
-          <div class="step-desc">Instant, colourful cards that help you learn and remember.</div>
-          <div class="step-visual">
-            <div class="mini-deck">
-              <svg class="mini-burst" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.4 4.4L18 9l-4.6 1.6L12 15l-1.4-4.4L6 9l4.6-1.6z"/></svg>
-              <div class="mini-deck-card d"></div>
-              <div class="mini-deck-card c"></div>
-              <div class="mini-deck-card b"></div>
-              <div class="mini-deck-card a">
-                <div class="l l1"></div>
-                <div class="l l2"></div>
-                <div class="l l3"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="modes-compare" id="modes">
-      <h2>One <span class="accent">Pop</span>. Two ways to learn.</h2>
-      <p class="section-sub">Pick how you want to consume the same content — Popcard reshapes it accordingly.</p>
-      <div class="modes-compare-grid">
-        <article class="mode-card mode-card-simple">
-          <div class="mode-card-head">
-            <span class="mode-card-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>
-            </span>
-            <div>
-              <div class="mode-card-name">Simple Mode</div>
-              <div class="mode-card-tag">For when you just want the value, quickly.</div>
-            </div>
-          </div>
-          <ul class="mode-card-feats">
-            <li>Plain-English cards, no academic fluff</li>
-            <li>Key ideas, examples, and analogies</li>
-            <li>"Explain like I'm 15" feel</li>
-            <li>6–10 cards per pop</li>
-            <li>Made for casual learners and ADHD brains</li>
-          </ul>
-        </article>
-
-        <article class="mode-card mode-card-study">
-          <div class="mode-card-head">
-            <span class="mode-card-icon mode-card-icon-study">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 10 12 4 2 10l10 6 10-6z"/>
-                <path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/>
-              </svg>
-            </span>
-            <div>
-              <div class="mode-card-name">Study Mode</div>
-              <div class="mode-card-tag">For when you actually need to remember it.</div>
-            </div>
-          </div>
-          <ul class="mode-card-feats">
-            <li>15–22 cards: recall + applied + synthesis</li>
-            <li>Definitions, examples, analogies, mistakes, comparisons, formulas</li>
-            <li>Must-know vs good-to-know labels</li>
-            <li>Source-linked cards with timestamps</li>
-            <li>Quiz Mode (coming soon)</li>
-          </ul>
-        </article>
-      </div>
-    </section>
-
-    <section class="vs-chat">
-      <h2>Why not just ask <span class="accent">ChatGPT</span>?</h2>
-      <p class="section-sub">You can — but here's why Popcard wins for learning specifically.</p>
-      <div class="vs-table-wrap">
-        <table class="vs-table">
-          <thead>
-            <tr><th>ChatGPT / NotebookLM</th><th>Popcard</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>You write the prompt every time</td><td>One-click card generation</td></tr>
-            <tr><td>Generic walls of text</td><td>Designed, colourful cards</td></tr>
-            <tr><td>Easy to lose what you generated</td><td>Saved decks, ready to revise</td></tr>
-            <tr><td>Not study-ready</td><td>Flashcards + (soon) quizzes built in</td></tr>
-            <tr><td>Can feel overwhelming</td><td>One idea per card, ADHD-friendly</td></tr>
-            <tr><td>Source links vary</td><td>Cards linked back to the exact timestamp</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="adhd">
-      <div class="adhd-text">
-        <div class="eyebrow">Built different</div>
-        <h2>Made for brains that <span class="accent">hate walls of text</span>.</h2>
-        <p>Popcard was designed for students, self-learners, and ADHD brains who bounce off long content. Calm interface, low cognitive load, one idea per card.</p>
-        <ul class="adhd-list">
-          <li><span class="adhd-dot" style="background:#FF3DA0"></span> One idea per card — no dense paragraphs</li>
-          <li><span class="adhd-dot" style="background:#FF8A3D"></span> Colour-coded by importance and type</li>
-          <li><span class="adhd-dot" style="background:#FFD338"></span> One-tap "Simplify" or "Explain like I'm 15"</li>
-          <li><span class="adhd-dot" style="background:#2BC489"></span> Clear progress, no infinite scroll</li>
-          <li><span class="adhd-dot" style="background:#3DAEFF"></span> Friendly microcopy, not lecture energy</li>
-        </ul>
-      </div>
-      <div class="adhd-visual" aria-hidden="true">
-        <div class="adhd-mini-card adhd-mini-1">
-          <div class="adhd-mini-badge">Must know</div>
-          <div class="adhd-mini-title">What is mitochondria?</div>
-          <div class="adhd-mini-body">The powerhouse of the cell — generates ATP through respiration.</div>
-        </div>
-        <div class="adhd-mini-card adhd-mini-2">
-          <div class="adhd-mini-badge adhd-mini-badge-alt">Analogy</div>
-          <div class="adhd-mini-title">Think of it like…</div>
-          <div class="adhd-mini-body">A tiny power station inside every cell, converting fuel into usable energy.</div>
-        </div>
-      </div>
-    </section>
-
-    <div class="trust">
-      <span>Loved by learners everywhere</span>
-      <span class="stars">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>
-      </span>
-      <span><strong style="color:var(--ink)">4.9/5</strong> from 1,000+ users</span>
     </div>
-  </div>
+  </header>
+
+  <div class="snap-container">
+
+  <!-- HERO ============================================================== -->
+  <section class="hero">
+    <div class="page">
+      <div class="scene-row">
+        <div class="hero-visual">
+          <img class="duo-mascot" src="/images/popcard-mascot.png" alt="Popcard mascot" />
+        </div>
+        <div class="scene-text">
+          <h1 class="h1" data-i18n="hero.duo.headline">Remember more from videos, articles, and books — without the boring bits.</h1>
+          <p class="lede" data-i18n="hero.duo.sub">Turn anything you watch or read into cards you&rsquo;ll actually remember.</p>
+          <div class="cta-stack">
+            <a href="/onboarding" class="btn btn-primary btn-lg btn-block" data-guest-only data-track="Hero Get Started" data-i18n="hero.duo.cta.start">GET STARTED</a>
+            <a href="/login" class="btn btn-secondary btn-lg btn-block" data-guest-only data-track="Hero Have Account" data-i18n="hero.duo.cta.have">I ALREADY HAVE AN ACCOUNT</a>
+            <a href="/account" class="btn btn-primary btn-lg btn-block" data-auth-only style="display:none" data-i18n="hero.duo.cta.decks">GO TO YOUR DECKS</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE: DROP ANYTHING IN ============================================ -->
+  <section class="scene scene-paste">
+    <div class="page">
+      <div class="scene-row">
+        <div class="drop-illustration">
+          <img src="/images/hero-drop.png" alt="Popcard mascot turning a YouTube video, a book, and an article into colourful Popcards" />
+        </div>
+        <div class="scene-text">
+          <h2 class="h2" data-i18n="scene.drop.h">Drop anything in.</h2>
+          <p class="lede" data-i18n="scene.drop.sub">A YouTube link, a chapter from your textbook, an article you saved. Popcard turns it into cards.</p>
+          <a href="/onboarding" class="btn btn-primary btn-lg" data-track="Scene Drop CTA" data-i18n="scene.drop.cta">TRY IT NOW</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE: QUICK MODE (yellow) ========================================= -->
+  <section class="scene scene-yellow">
+    <div class="page">
+      <div class="scene-row reverse">
+        <div class="quick-illustration">
+          <img src="/images/hero-sprint.png" alt="Popcard mascot sprinting with a stack of cards in front of a giant stopwatch" />
+        </div>
+        <div class="scene-text">
+          <h2 class="h2" data-i18n="scene.quick.h">Get the gist in minutes.</h2>
+          <p class="lede">Drop in a long video, article, or chapter and <span class="mode-name">Quick Mode</span> pulls out the key ideas fast. No waffle, no overload &mdash; just the stuff worth knowing.</p>
+          <div class="cta-row">
+            <a href="/onboarding" class="btn btn-primary btn-lg" data-track="Scene Quick CTA" data-i18n="scene.quick.cta">TRY QUICK MODE</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE: STUDY MODE (purple) ========================================= -->
+  <section class="scene scene-purple">
+    <div class="page">
+      <div class="scene-row">
+        <div class="study-illustration">
+          <img src="/images/hero-gist.png" alt="Popcard mascot pinning coloured cards onto a bullseye target — until they stick" />
+        </div>
+        <div class="scene-text">
+          <h2 class="h2"><span data-i18n="scene.study.h.line1">Until it</span><br/><span data-i18n="scene.study.h.line2">actually sticks.</span></h2>
+          <p class="lede"><span class="mode-name">Study Mode</span> uses spaced reviews, quizzes, and mastery tracking &mdash; the science-backed way to remember everything you read, not just for tomorrow, for keeps.</p>
+          <div class="cta-row">
+            <a href="/onboarding" class="btn btn-primary btn-lg" data-track="Scene Study CTA" data-i18n="scene.study.cta">START STUDYING</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE: BUSY BRAINS (pink) ========================================== -->
+  <section class="scene scene-pink">
+    <div class="page">
+      <div class="scene-row reverse">
+        <div class="busy-illustration">
+          <img src="/images/hero-busy.png" alt="Popcard mascot placing coloured cards one at a time in a small-wins progression" />
+        </div>
+        <div class="scene-text">
+          <h2 class="h2"><span data-i18n="scene.busy.h.line1">When walls of text</span><br/><span data-i18n="scene.busy.h.line2">just don't work.</span></h2>
+          <p class="lede">Short cards. One idea each. Color, progress, little wins. <span class="mode-name">Popcard</span> is designed for the way your brain actually wants to learn.</p>
+          <a href="/onboarding" class="btn btn-primary btn-lg" data-track="Scene Busy CTA" data-i18n="scene.busy.cta">SEE IT IN ACTION</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE: LANGUAGES =================================================== -->
+  <section class="scene">
+    <div class="page">
+      <div class="scene-text center" style="max-width:720px;margin:0 auto;gap:32px;">
+        <h2 class="h2" data-i18n="scene.lang.h">Learn in your language.</h2>
+        <p class="lede">Cards and the whole app in <span class="mode-name">10 languages</span> &mdash; whichever you pick. Tap a flag, get learning.</p>
+      </div>
+
+      <div class="lang-illustration">
+        <img src="/images/hero-language.png" alt="Popcard mascot reading a rainbow book with a globe and chat bubble" />
+      </div>
+
+      <div class="lang-strip" style="margin-top:40px;">
+        <span class="lang-chip"><span class="flag fi fi-gb"></span>English</span>
+        <span class="lang-chip"><span class="flag fi fi-es"></span>Español</span>
+        <span class="lang-chip"><span class="flag fi fi-cn"></span>中文</span>
+        <span class="lang-chip"><span class="flag fi fi-in"></span>हिन्दी</span>
+        <span class="lang-chip"><span class="flag fi fi-sa"></span>العربية</span>
+        <span class="lang-chip"><span class="flag fi fi-br"></span>Português</span>
+        <span class="lang-chip"><span class="flag fi fi-fr"></span>Français</span>
+        <span class="lang-chip"><span class="flag fi fi-de"></span>Deutsch</span>
+        <span class="lang-chip"><span class="flag fi fi-jp"></span>日本語</span>
+        <span class="lang-chip"><span class="flag fi fi-ru"></span>Русский</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE: TESTIMONIAL ================================================= -->
+  <section class="scene">
+    <div class="page">
+      <div class="testimonial-big">
+        <div class="testimonial-mascot">
+          <img src="/images/popcard-mascot.png" alt="" />
+        </div>
+        <div class="testimonial-content">
+          <div class="testimonial-stars">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>
+          </div>
+          <p class="testimonial-quote" data-i18n="scene.test.quote">"I pasted a 2-hour Huberman pod and got 80 cards. Genuinely the only way I finish them now — and remember what I watched."</p>
+          <div class="testimonial-author">
+            <span class="who" data-i18n="scene.test.who">Maya R.</span>
+            <span class="testimonial-dot"></span>
+            <span class="role" data-i18n="scene.test.role">Medical student, London</span>
+            <span class="testimonial-dot"></span>
+            <span class="role" data-i18n="scene.test.proof">4.9 &#9733; from 1,000+ learners</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BIG CTA BAND ======================================================= -->
+  <section class="cta-band-page">
+    <div class="page">
+      <div class="cta-band">
+        <div class="cta-band-heading">
+          <h2 class="h2" data-i18n="cta.band.h">Pop your first deck.</h2>
+          <p data-i18n="cta.band.sub">Paste a YouTube link, article, or ebook &mdash; we&rsquo;ll do the rest.</p>
+        </div>
+
+        <!-- Form wrap: positions the peeking mascot behind the bar -->
+        <div class="cta-form-wrap" data-guest-only>
+          <img class="cta-mascot-peek" src="/images/mascot-peek.png" alt="" aria-hidden="true" />
+          <form class="cta-paste-form" id="cta-paste-form" autocomplete="off">
+            <div class="cta-paste-input">
+              <span class="cta-paste-yt" aria-hidden="true">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </span>
+              <input type="text" id="cta-paste" class="ph-no-capture" placeholder="Paste a YouTube link&hellip;" aria-label="Paste a link or text" />
+              <button type="submit" class="cta-paste-pop" data-track="CTA Band Paste">POP IT</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Source-type chips: click to swap the input placeholder & focus -->
+        <div class="cta-source-chips" data-guest-only>
+          <button type="button" class="cta-source-chip is-active" data-source="youtube" data-track="CTA Source Chip YouTube">
+            <span class="cta-source-chip-emoji">&#128250;</span>
+            <span>YouTube</span>
+          </button>
+          <button type="button" class="cta-source-chip" data-source="article" data-track="CTA Source Chip Article">
+            <span class="cta-source-chip-emoji">&#128240;</span>
+            <span>Article</span>
+          </button>
+          <button type="button" class="cta-source-chip" data-source="book" data-track="CTA Source Chip Book">
+            <span class="cta-source-chip-emoji">&#128218;</span>
+            <span>Book</span>
+          </button>
+        </div>
+
+        <!-- Trust signals row -->
+        <div class="cta-trust" data-guest-only>
+          <span class="cta-trust-item">
+            <svg class="cta-trust-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
+            Free
+          </span>
+          <span class="cta-trust-dot" aria-hidden="true"></span>
+          <span class="cta-trust-item">No card needed</span>
+          <span class="cta-trust-dot" aria-hidden="true"></span>
+          <span class="cta-trust-item">
+            <svg class="cta-trust-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 11-13h-8l1-7z"/></svg>
+            10 seconds
+          </span>
+          <span class="cta-trust-dot" aria-hidden="true"></span>
+          <span class="cta-trust-item">5,000+ learners</span>
+        </div>
+
+        <a href="/account" class="btn btn-white btn-lg" data-auth-only style="display:none" data-i18n="cta.band.cta.decks">GO TO YOUR DECKS</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER ============================================================= -->
+  <footer class="footer">
+    <img class="footer-skyline" src="/images/footer-skyline.png" alt="" aria-hidden="true" />
+    <div class="page">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand">
+            <img class="brand-icon" src="/images/popcard-icon.png" alt="" />
+            <span class="brand-word">popcard</span>
+          </div>
+          <p class="footer-tagline" data-i18n="footer.tagline">The fun, effective way to remember what you watch and read.</p>
+          <div class="footer-socials">
+            <a href="#" aria-label="Twitter"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2H21l-6.52 7.45L22 22h-6.156l-4.82-6.31L5.4 22H2.64l6.974-7.97L2 2h6.31l4.36 5.77L18.244 2zm-1.08 18h1.67L7.92 4H6.13l11.034 16z"/></svg></a>
+            <a href="#" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+            <a href="#" aria-label="TikTok"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 2v3.2a4 4 0 0 0 4 4v3.2a7 7 0 0 1-4-1.3v6.4a6.3 6.3 0 1 1-6.3-6.3v3.4a2.9 2.9 0 1 0 2.9 2.9V2h3.4z"/></svg></a>
+            <a href="#" aria-label="YouTube"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.3 5 12 5 12 5s-6.3 0-7.8.4a2.5 2.5 0 0 0-1.8 1.8C2 8.7 2 12 2 12s0 3.3.4 4.8a2.5 2.5 0 0 0 1.8 1.8c1.5.4 7.8.4 7.8.4s6.3 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.5.4-4.8.4-4.8s0-3.3-.4-4.8zM10 15V9l5 3-5 3z"/></svg></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h5 data-i18n="footer.col.product">PRODUCT</h5>
+          <ul>
+            <li><a href="/examples" data-i18n="nav.examples">Examples</a></li>
+            <li><a href="/pricing" data-i18n="nav.pricing">Pricing</a></li>
+            <li><a href="#" data-i18n="footer.product.ext">Browser extension</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5 data-i18n="footer.col.company">COMPANY</h5>
+          <ul>
+            <li><a href="#" data-i18n="footer.company.about">About</a></li>
+            <li><a href="#" data-i18n="footer.company.help">Help</a></li>
+            <li><a href="#" data-i18n="footer.company.contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5 data-i18n="footer.col.legal">LEGAL</h5>
+          <ul>
+            <li><a href="#" data-i18n="footer.legal.terms">Terms</a></li>
+            <li><a href="#" data-i18n="footer.legal.privacy">Privacy</a></li>
+            <li><a href="#" data-i18n="footer.legal.cookies">Cookies</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5 data-i18n="footer.col.account">ACCOUNT</h5>
+          <ul>
+            <li><a href="/login" data-i18n="nav.login">Log in</a></li>
+            <li><a href="/login" data-i18n="nav.signup">Sign up</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span data-i18n="footer.copy">&copy; 2026 Popcard&reg;.</span>
+        <span>English · Español · 中文 · हिन्दी · العربية · Português · Français · Deutsch · 日本語 · Русский</span>
+      </div>
+    </div>
+  </footer>
+
+  </div><!-- /.snap-container -->
 
   <script src="analytics.js"></script>
   <script src="cookies.js"></script>
   <script src="page.js"></script>
   <script src="auth.js"></script>
-  <script src="app.js"></script>
+  <script src="lang-picker.js"></script>
+  <script src="i18n.js"></script>
+  <script src="landing-snap.js?v=5"></script>
 </body>
 </html>

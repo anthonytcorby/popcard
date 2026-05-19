@@ -10,7 +10,30 @@ import {
   createDeck,
 } from './_lib/decks.js';
 
-const MAX_INPUT_CHARS = 80_000;
+// Was 80_000 — far too small for a book. Atomic Habits is ~480K chars; that
+// cap dropped 83% of it before chunked generation could run. The LLM layer
+// has its own TEXT_CHAR_BUDGET (800K) which kicks in as the real ceiling.
+const MAX_INPUT_CHARS = 800_000;
+
+// Accounts that bypass the monthly pop quota — for testing / owner use.
+const UNLIMITED_EMAILS = new Set([
+  'anthonycorby@gmail.com',
+]);
+
+// Languages we explicitly support for card output. The LLM can output in any
+// language natively; we whitelist these so the picker and the LLM stay in sync.
+const SUPPORTED_LANGUAGES = {
+  en: 'English',
+  es: 'Spanish',
+  zh: 'Mandarin Chinese (Simplified)',
+  hi: 'Hindi',
+  ar: 'Arabic',
+  pt: 'Portuguese',
+  fr: 'French',
+  de: 'German',
+  ja: 'Japanese',
+  ru: 'Russian',
+};
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -23,21 +46,25 @@ export default async function handler(req, res) {
   const user = await getUser(session.uid);
   if (!user) return res.status(401).json({ error: 'User not found' });
 
-  const { input, mode } = req.body || {};
+  const { input, mode, language } = req.body || {};
   if (typeof input !== 'string' || !input.trim()) {
     return res.status(400).json({ error: 'Missing input' });
   }
   const safeMode = mode === 'study' ? 'study' : 'simple';
+  const safeLang = SUPPORTED_LANGUAGES[language] ? language : 'en';
+  const languageName = SUPPORTED_LANGUAGES[safeLang];
 
-  // Quota check
-  const limit = QUOTA[user.tier] || QUOTA.free;
-  const used = await monthlyPopCount(user.id);
-  if (used >= limit) {
-    return res.status(402).json({
-      error: 'quota_exceeded',
-      message: `You've hit ${used} of ${limit} pops this month. Upgrade for more, or your allowance resets next month.`,
-      tier: user.tier,
-    });
+  // Quota check (bypassed for unlimited-access accounts)
+  if (!UNLIMITED_EMAILS.has((user.email || '').toLowerCase())) {
+    const limit = QUOTA[user.tier] || QUOTA.free;
+    const used = await monthlyPopCount(user.id);
+    if (used >= limit) {
+      return res.status(402).json({
+        error: 'quota_exceeded',
+        message: `You've hit ${used} of ${limit} pops this month. Upgrade for more, or your allowance resets next month.`,
+        tier: user.tier,
+      });
+    }
   }
 
   // Resolve source
@@ -70,6 +97,7 @@ export default async function handler(req, res) {
     sourceUrl: source.sourceUrl,
     text: trimmed,
     mode: safeMode,
+    language: safeLang,
   });
 
   // Cache lookup
@@ -108,6 +136,7 @@ export default async function handler(req, res) {
       mode: safeMode,
       sourceUrl: source.sourceUrl,
       segments: source.segments,
+      language: languageName,
     });
   } catch (e) {
     console.error('LLM error', e);

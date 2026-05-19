@@ -3,259 +3,291 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Account — Popcard</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Popcard &mdash; Dashboard</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png?v=3" />
+  <link rel="apple-touch-icon" href="/images/favicon.png?v=3" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
 
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="account.css?v=13" />
 </head>
-<body>
-  <div class="page">
-    <header class="header">
-      <a href="/" class="brand">
-        <div class="brand-logo" aria-label="Popcard logo">
-          <svg viewBox="0 0 56 56" width="44" height="44">
-            <g>
-              <rect x="3" y="6" width="14" height="44" rx="6" fill="#FF3DA0" transform="rotate(-12 10 28)"/>
-              <rect x="6" y="6" width="14" height="44" rx="6" fill="#FF8A3D" transform="rotate(-7 13 28)"/>
-              <rect x="9" y="6" width="14" height="44" rx="6" fill="#FFD338" transform="rotate(-2 16 28)"/>
-              <rect x="12" y="6" width="14" height="44" rx="6" fill="#2BC489" transform="rotate(3 19 28)"/>
-              <rect x="15" y="6" width="14" height="44" rx="6" fill="#3DAEFF" transform="rotate(8 22 28)"/>
-            </g>
-            <path d="M14 6 H40 A8 8 0 0 1 48 14 V38 A8 8 0 0 1 40 46 H28 L18 54 L20 46 A6 6 0 0 1 14 40 V6 Z" fill="#6E3DEA"/>
-            <circle cx="22" cy="22" r="2.4" fill="#fff"/>
-            <circle cx="34" cy="22" r="2.4" fill="#fff"/>
-            <path d="M22 30 Q28 36 34 30" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <span class="brand-name">popcard<sup>&reg;</sup></span>
-      </a>
-      <nav class="nav">
-        <a href="/#how">How it works</a>
-        <a href="/examples">Examples</a>
-        <a href="/pricing">Pricing</a>
-        <button class="btn-primary" type="button" id="sign-out-btn">Sign out</button>
-      </nav>
-    </header>
+<body class="dashboard">
 
-    <main class="account">
-      <div class="account-card" id="account-card" hidden>
-        <img class="account-avatar" data-auth-picture alt="" referrerpolicy="no-referrer" />
-        <div class="account-meta">
-          <div class="account-greeting">Hi, <span data-auth-name>there</span> 👋</div>
-          <div class="account-tier">
-            Current plan: <span class="tier-pill" data-auth-tier>free</span>
+  <!-- ===== Top bar ===================================================== -->
+  <header class="dash-header">
+    <a class="dash-brand" href="/account">
+      <img class="dash-brand-icon" src="/images/popcard-icon.png" alt="" />
+      <span class="dash-brand-word">popcard</span>
+    </a>
+
+    <div class="dash-stats" data-auth-only>
+      <button type="button" class="dash-stat dash-streak" id="dash-streak-stat" title="Daily streak" aria-label="Daily streak">
+        <span class="dash-stat-icon" aria-hidden="true">
+          <!-- flame -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14a8 8 0 1 0 16 0c0-4.16-2-7.87-6.5-13.33zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>
+        </span>
+        <span class="dash-stat-num" id="dash-streak-num">0</span>
+      </button>
+      <button type="button" class="dash-stat dash-sparks" id="dash-sparks-stat" title="Sparks earned" aria-label="Sparks earned">
+        <span class="dash-stat-icon" aria-hidden="true">
+          <!-- spark / star -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 13.7 8.3 20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7zM19 14l.9 2.6 2.1.9-2.1.6L19 21l-.9-2.9L16 17.5l2.1-.9zM5 3l.7 2.2L8 6l-2.3.8L5 9l-.7-2.2L2 6l2.3-.8z"/></svg>
+        </span>
+        <span class="dash-stat-num" id="dash-sparks-num">0</span>
+      </button>
+    </div>
+
+    <div class="dash-user-wrap" data-auth-only>
+      <button type="button" class="dash-user-chip" id="dash-user-chip">
+        <img class="dash-user-pic" data-auth-picture alt="" referrerpolicy="no-referrer" />
+        <span class="dash-user-name" data-auth-name>Account</span>
+      </button>
+      <div class="dash-user-menu" id="dash-user-menu" hidden role="menu">
+        <a href="#" role="menuitem" id="dash-menu-settings">Settings</a>
+        <a href="/pricing" role="menuitem">Plan &amp; billing</a>
+        <button type="button" role="menuitem" id="sign-out-btn">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="dash-layout">
+
+    <!-- ===== Sidebar nav ============================================== -->
+    <aside class="dash-sidebar" aria-label="Primary navigation">
+      <nav class="dash-nav">
+        <a href="/account" class="dash-nav-item is-active">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12 12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+          <span>Home</span>
+        </a>
+        <a href="#decks" class="dash-nav-item">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="14" height="16" rx="2"/><path d="M21 8v12a1 1 0 0 1-1 1H8"/></svg>
+          <span>Decks</span>
+        </a>
+        <a href="/practice" class="dash-nav-item">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a10 10 0 1 1 10-10"/><path d="m16 12-4 4-2-2"/></svg>
+          <span>Practice</span>
+        </a>
+        <a href="/quizzes" class="dash-nav-item">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11h6"/><path d="M9 15h4"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+          <span>Quizzes</span>
+        </a>
+      </nav>
+
+    </aside>
+
+    <!-- ===== Main column ============================================== -->
+    <main class="dash-main">
+
+      <!-- Mode switch (Quick = no gameification, Study = full dashboard) -->
+      <div class="dash-mode-switch" role="tablist" aria-label="Mode">
+        <span class="dash-mode-switch-label">Mode</span>
+        <div class="dash-mode-switch-pill">
+          <button type="button" class="dash-mode-switch-btn" data-mode="quick" role="tab" aria-selected="false" data-track="Dashboard Mode Switch">
+            <span class="dash-mode-switch-emoji" aria-hidden="true">&#9889;</span>
+            <span>Quick</span>
+          </button>
+          <button type="button" class="dash-mode-switch-btn is-active" data-mode="study" role="tab" aria-selected="true" data-track="Dashboard Mode Switch">
+            <span class="dash-mode-switch-emoji" aria-hidden="true">&#127891;</span>
+            <span>Study</span>
+          </button>
+          <span class="dash-mode-switch-indicator" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <!-- Welcome / streak hero -->
+      <section class="dash-welcome" id="dash-welcome">
+        <div class="dash-welcome-text">
+          <h1 class="dash-welcome-h">
+            Welcome back, <span data-auth-name>there</span>.
+          </h1>
+          <p class="dash-welcome-sub" id="dash-welcome-sub">
+            Loading today's snapshot&hellip;
+          </p>
+        </div>
+        <div class="dash-welcome-mascot-wrap">
+          <img class="dash-welcome-mascot" id="dash-welcome-mascot" src="/images/popcard-mascot.png" alt="Pop mascot" />
+        </div>
+      </section>
+
+      <!-- Pop something new -->
+      <section class="dash-pop">
+        <div class="dash-pop-head">
+          <h2 class="dash-h2">Pop something new</h2>
+          <span class="dash-pop-tier" data-auth-tier>free</span>
+        </div>
+        <form class="dash-pop-form" id="dash-pop-form" autocomplete="off">
+          <span class="dash-pop-yt" aria-hidden="true">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </span>
+          <input type="text" id="dash-pop-input" class="ph-no-capture"
+                 placeholder="Paste a YouTube link, article, or text&hellip;"
+                 aria-label="Paste a link or text" />
+          <button type="submit" class="dash-pop-btn" id="dash-pop-btn" data-track="Dashboard Pop">
+            <span class="dash-pop-btn-label">POP IT</span>
+            <span class="dash-pop-btn-spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+        <div class="dash-pop-chips" id="dash-pop-chips">
+          <button type="button" class="dash-pop-chip is-active" data-source="youtube">
+            <span class="dash-pop-chip-emoji">&#128250;</span> YouTube
+          </button>
+          <button type="button" class="dash-pop-chip" data-source="article">
+            <span class="dash-pop-chip-emoji">&#128240;</span> Article
+          </button>
+          <button type="button" class="dash-pop-chip" data-source="book">
+            <span class="dash-pop-chip-emoji">&#128218;</span> Text / Book
+          </button>
+        </div>
+        <div class="dash-pop-status" id="dash-pop-status" hidden></div>
+      </section>
+
+      <!-- Today's progress -->
+      <section class="dash-today">
+        <div class="dash-today-head">
+          <h2 class="dash-h2">Today</h2>
+          <button type="button" class="dash-link-btn" id="dash-goal-edit">Change daily goal</button>
+        </div>
+        <div class="dash-goal">
+          <div class="dash-goal-bar"><div class="dash-goal-bar-fill" id="dash-goal-fill" style="width:0%"></div></div>
+          <div class="dash-goal-label">
+            <span id="dash-goal-current">0</span>
+            <span class="dash-goal-divider">/</span>
+            <span id="dash-goal-target">20</span>
+            <span class="dash-goal-unit">cards reviewed</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Decks -->
+      <section class="dash-decks" id="decks">
+        <div class="dash-decks-head">
+          <h2 class="dash-h2">Your decks</h2>
+          <a class="dash-link-btn" href="#dash-pop-input">+ Pop another</a>
+        </div>
+        <div class="dash-decks-loading" id="account-decks-loading">Loading your decks&hellip;</div>
+        <div class="dash-decks-empty" id="account-decks-empty" hidden>
+          <p>No decks yet. Paste something above to pop your first.</p>
+        </div>
+        <div class="dash-decks-grid" id="account-decks-grid" hidden></div>
+        <div class="dash-decks-footer" id="account-decks-footer" hidden>
+          <button type="button" class="dash-decks-delete-all" id="delete-all-decks-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="m19 6-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Delete all decks
+          </button>
+        </div>
+      </section>
+
+      <!-- Upgrade promo for free tier -->
+      <section class="dash-upsell" id="actions-free" hidden>
+        <div class="dash-upsell-text">
+          <h2 class="dash-h2">Unlock Study tier</h2>
+          <p>Unlimited Pops, Sprint Mode for cramming, Ask Pop AI tutor, and exports. Coming features unlock as we ship them.</p>
+        </div>
+        <button type="button" class="dash-upsell-cta" data-checkout="study" data-track="Account Upgrade Click">
+          Upgrade · £3.99 / mo
+        </button>
+      </section>
+      <section class="dash-upsell dash-upsell-paid" id="actions-paid" hidden>
+        <div class="dash-upsell-text">
+          <h2 class="dash-h2">You're on Study tier</h2>
+          <p>Manage your subscription, change plan, or cancel anytime.</p>
+        </div>
+        <a href="mailto:support@popcard.me" class="dash-upsell-cta dash-upsell-cta-quiet">Contact support</a>
+      </section>
+
+      <div class="dash-loading" id="account-loading">Loading your account&hellip;</div>
+    </main>
+
+    <!-- ===== Right rail ================================================ -->
+    <aside class="dash-rail" aria-label="Activity rail">
+
+      <!-- Mascot Pop greeting card -->
+      <div class="rail-card rail-mascot">
+        <img class="rail-mascot-img" id="rail-mascot-img" src="/images/popcard-mascot.png" alt="" />
+        <div class="rail-mascot-bubble" id="rail-mascot-bubble">
+          Drop something in any time &mdash; I&rsquo;ll turn it into cards.
+        </div>
+      </div>
+
+      <!-- Plan / Tier -->
+      <div class="rail-card rail-plan">
+        <div class="rail-card-head"><h3>Your plan</h3></div>
+        <span class="rail-plan-tier" data-auth-tier>free</span>
+        <p class="rail-plan-meta">Pop YouTube videos, articles, podcasts and books.</p>
+        <a href="/pricing" class="rail-plan-cta" data-track="Rail Plan View Plans">View plans &rarr;</a>
+      </div>
+
+      <!-- Streak detail -->
+      <div class="rail-card rail-streak">
+        <div class="rail-card-head">
+          <h3>Streak</h3>
+          <span class="rail-shield" id="rail-shield" title="Streak shields">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z"/></svg>
+            <span id="rail-shield-num">2</span>
+          </span>
+        </div>
+        <div class="rail-streak-num"><span id="rail-streak-num">0</span> <span class="rail-streak-unit">day streak</span></div>
+        <div class="rail-streak-best">Best: <span id="rail-streak-best">0</span></div>
+      </div>
+
+      <!-- Daily Quests -->
+      <div class="rail-card rail-quests">
+        <div class="rail-card-head"><h3>Daily quests</h3></div>
+        <ul class="rail-quest-list" id="rail-quest-list">
+          <li class="rail-quest" data-quest-id="pop">
+            <span class="rail-quest-icon">&#9889;</span>
+            <span class="rail-quest-text">Pop 1 deck</span>
+            <span class="rail-quest-prog"><span class="rail-quest-cur">0</span>/<span class="rail-quest-tgt">1</span></span>
+          </li>
+          <li class="rail-quest" data-quest-id="review">
+            <span class="rail-quest-icon">&#128218;</span>
+            <span class="rail-quest-text">Review 10 cards</span>
+            <span class="rail-quest-prog"><span class="rail-quest-cur">0</span>/<span class="rail-quest-tgt">10</span></span>
+          </li>
+          <li class="rail-quest" data-quest-id="goal">
+            <span class="rail-quest-icon">&#127919;</span>
+            <span class="rail-quest-text">Hit your daily goal</span>
+            <span class="rail-quest-prog"><span class="rail-quest-cur">0</span>/<span class="rail-quest-tgt">20</span></span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Achievements -->
+      <div class="rail-card rail-achievements">
+        <div class="rail-card-head"><h3>Achievements</h3></div>
+        <div class="rail-badge-grid" id="rail-badge-grid">
+          <div class="rail-badge is-locked" title="First Pop — pop your first deck">
+            <span class="rail-badge-emoji">&#9889;</span>
+            <span class="rail-badge-name">First Pop</span>
+          </div>
+          <div class="rail-badge is-locked" title="Bookworm — pop an ebook">
+            <span class="rail-badge-emoji">&#128218;</span>
+            <span class="rail-badge-name">Bookworm</span>
+          </div>
+          <div class="rail-badge is-locked" title="3-day streak">
+            <span class="rail-badge-emoji">&#128293;</span>
+            <span class="rail-badge-name">3 day streak</span>
+          </div>
+          <div class="rail-badge is-locked" title="Polyglot — pop in 3 languages">
+            <span class="rail-badge-emoji">&#127760;</span>
+            <span class="rail-badge-name">Polyglot</span>
           </div>
         </div>
       </div>
 
-      <section class="account-actions" id="actions-free" hidden>
-        <h2>Upgrade to Study</h2>
-        <p>100 popcards/month, Study Mode, source-linked cards, saved decks, and (soon) Quiz Mode + exports.</p>
-        <div class="account-cta-row">
-          <button type="button" class="tier-cta" data-checkout="study">Upgrade to Study · £3.99/mo</button>
-        </div>
-      </section>
-
-      <section class="account-actions" id="actions-paid" hidden>
-        <h2>You're on a paid plan</h2>
-        <p>Manage your subscription, change plan, or cancel anytime.</p>
-        <div class="account-cta-row">
-          <a href="mailto:support@popcard.me" class="tier-cta" style="background: var(--ink)">Contact support</a>
-        </div>
-      </section>
-
-      <section class="account-decks" id="account-decks" hidden>
-        <div class="account-decks-head">
-          <h2>Your decks</h2>
-          <a class="deck-action-link" href="/">+ Pop another</a>
-        </div>
-        <div class="account-decks-loading" id="account-decks-loading">Loading your decks…</div>
-        <div class="account-decks-empty" id="account-decks-empty" hidden>
-          <p>No decks yet. Paste a YouTube link or some notes on the homepage to make your first.</p>
-          <a class="tier-cta" href="/">Make your first deck</a>
-        </div>
-        <div class="account-decks-grid" id="account-decks-grid" hidden></div>
-      </section>
-
-      <div class="account-loading" id="account-loading">Loading your account…</div>
-    </main>
+    </aside>
   </div>
 
   <script src="analytics.js"></script>
   <script src="cookies.js"></script>
   <script src="auth.js"></script>
-  <script>
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, (c) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-      }[c]));
-    }
-
-    function timeAgo(iso) {
-      const then = new Date(iso).getTime();
-      const diff = Math.max(0, Date.now() - then);
-      const mins = Math.floor(diff / 60000);
-      if (mins < 1) return 'just now';
-      if (mins < 60) return mins + 'm ago';
-      const hrs = Math.floor(mins / 60);
-      if (hrs < 24) return hrs + 'h ago';
-      const days = Math.floor(hrs / 24);
-      if (days < 30) return days + 'd ago';
-      return new Date(iso).toLocaleDateString();
-    }
-
-    function sourceBadge(d) {
-      if (d.sourceType === 'youtube') {
-        return '<span class="account-deck-source"><span class="account-deck-source-icon" style="background:#FF0033"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>YouTube</span>';
-      }
-      return '<span class="account-deck-source">📝 Text</span>';
-    }
-
-    function renderDeckCard(d) {
-      return `
-        <article class="account-deck-card${d.pinned ? ' is-pinned' : ''}" data-deck-id="${d.id}">
-          <a class="account-deck-link" href="/deck/${d.id}">
-            <div class="account-deck-top">
-              <span class="tier-pill account-deck-mode" data-mode="${d.mode}">${d.mode}</span>
-              <span class="account-deck-time">${timeAgo(d.createdAt)}</span>
-            </div>
-            <h3 class="account-deck-title">${escapeHtml(d.title || 'Untitled')}</h3>
-            <div class="account-deck-meta">
-              ${sourceBadge(d)}
-              <span class="account-deck-count">${d.cardCount} card${d.cardCount === 1 ? '' : 's'}</span>
-            </div>
-          </a>
-          <div class="account-deck-actions">
-            <button type="button" class="account-deck-action account-deck-pin" data-action="pin" title="${d.pinned ? 'Unpin' : 'Pin to top'}" aria-label="${d.pinned ? 'Unpin' : 'Pin to top'}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="${d.pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m12 2 3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/>
-              </svg>
-            </button>
-            <button type="button" class="account-deck-action account-deck-delete" data-action="delete" title="Delete" aria-label="Delete deck">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="m19 6-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-              </svg>
-            </button>
-          </div>
-        </article>
-      `;
-    }
-
-    async function loadDecks() {
-      const section = document.getElementById('account-decks');
-      const loading = document.getElementById('account-decks-loading');
-      const empty = document.getElementById('account-decks-empty');
-      const gridEl = document.getElementById('account-decks-grid');
-      section.hidden = false;
-
-      try {
-        const r = await fetch('/api/decks?limit=30', { credentials: 'same-origin' });
-        if (!r.ok) throw new Error('Failed to load');
-        const { decks } = await r.json();
-        loading.hidden = true;
-
-        if (!decks.length) {
-          empty.hidden = false;
-          return;
-        }
-        gridEl.hidden = false;
-        gridEl.innerHTML = decks.map(renderDeckCard).join('');
-        wireDeckActions(gridEl);
-      } catch (e) {
-        loading.textContent = "Couldn't load your decks. Refresh to try again.";
-      }
-    }
-
-    function wireDeckActions(root) {
-      root.addEventListener('click', async (e) => {
-        const btn = e.target.closest('[data-action]');
-        if (!btn) return;
-        e.preventDefault();
-        e.stopPropagation();
-        const card = btn.closest('.account-deck-card');
-        const id = card.dataset.deckId;
-
-        if (btn.dataset.action === 'pin') {
-          const isPinned = card.classList.contains('is-pinned');
-          btn.disabled = true;
-          try {
-            const r = await fetch('/api/deck?id=' + encodeURIComponent(id), {
-              method: 'PATCH',
-              credentials: 'same-origin',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ pinned: !isPinned }),
-            });
-            if (!r.ok) throw new Error('pin failed');
-            // Move pinned card to top of grid; just reload for simplicity
-            loadDecks();
-            window.PopcardAnalytics?.track('Deck Pin', { pinned: String(!isPinned) });
-          } catch {
-            btn.disabled = false;
-            alert("Couldn't update — try again.");
-          }
-        } else if (btn.dataset.action === 'delete') {
-          if (!confirm('Delete this deck? This cannot be undone.')) return;
-          btn.disabled = true;
-          try {
-            const r = await fetch('/api/deck?id=' + encodeURIComponent(id), {
-              method: 'DELETE',
-              credentials: 'same-origin',
-            });
-            if (!r.ok) throw new Error('delete failed');
-            card.style.transition = 'opacity .2s, transform .2s';
-            card.style.opacity = '0';
-            card.style.transform = 'scale(0.96)';
-            setTimeout(() => card.remove(), 220);
-            window.PopcardAnalytics?.track('Deck Delete');
-            // Show empty state if it was the last one
-            setTimeout(() => {
-              if (!document.querySelector('.account-deck-card')) {
-                document.getElementById('account-decks-grid').hidden = true;
-                document.getElementById('account-decks-empty').hidden = false;
-              }
-            }, 240);
-          } catch {
-            btn.disabled = false;
-            alert("Couldn't delete — try again.");
-          }
-        }
-      });
-    }
-
-    (async function init() {
-      const loading = document.getElementById('account-loading');
-      const card = document.getElementById('account-card');
-      const free = document.getElementById('actions-free');
-      const paid = document.getElementById('actions-paid');
-
-      const user = await window.PopcardAuth.me();
-      if (!user) {
-        window.location.href = '/login?next=' + encodeURIComponent('/account');
-        return;
-      }
-      loading.hidden = true;
-      card.hidden = false;
-      if (user.tier === 'free') free.hidden = false;
-      else paid.hidden = false;
-
-      document.querySelectorAll('[data-checkout]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          window.PopcardAnalytics?.track('Account Upgrade', { tier: btn.dataset.checkout });
-          window.PopcardAuth.startCheckout(btn.dataset.checkout);
-        });
-      });
-
-      document.getElementById('sign-out-btn').addEventListener('click', async () => {
-        await window.PopcardAuth.signOut();
-        window.PopcardAnalytics?.track('Sign Out');
-        window.location.href = '/';
-      });
-
-      loadDecks();
-    })();
-  </script>
+  <script src="lang-picker.js"></script>
+  <script src="i18n.js"></script>
+  <script src="account.js?v=5"></script>
 </body>
 </html>

@@ -1,0 +1,667 @@
+/* Onboarding — Duolingo-style 5-step signup funnel.
+   Single-page, single column, one step visible at a time, big chunky CTA. */
+
+body.onboarding {
+  background: #fff;
+  min-height: 100vh;
+  min-height: 100svh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+
+/* ---------- Header ---------- */
+.ob-header {
+  position: sticky;
+  top: 0;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 32px;
+  background: #fff;
+  border-bottom: 2px solid var(--line);
+  z-index: 10;
+}
+.ob-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+.ob-brand-icon { width: 36px; height: 36px; object-fit: contain; }
+.ob-brand-word {
+  font-family: "Outfit", var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+}
+.ob-progress {
+  height: 14px;
+  background: var(--line-2);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
+}
+.ob-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--green, #2BC489);
+  border-radius: 999px;
+  transition: width .35s cubic-bezier(.4,0,.2,1);
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.10);
+}
+.ob-skip {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mute);
+  padding: 10px 14px;
+  border-radius: 999px;
+  transition: background .12s, color .12s;
+}
+.ob-skip:hover { background: var(--line-2); color: var(--ink); }
+
+/* ---------- Main / steps ---------- */
+.ob-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 32px 96px;
+}
+.ob-step {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+  animation: ob-fade-in .24s ease-out;
+}
+.ob-step[hidden] { display: none; }
+
+@keyframes ob-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ob-mascot {
+  width: 180px;
+  height: auto;
+  margin-bottom: 4px;
+  filter: drop-shadow(0 20px 32px rgba(15,15,20,0.10));
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+/* Mascot variant hooks — drop dedicated PNGs here when commissioned */
+.ob-mascot-point { /* TODO swap to mascot-point.png */ }
+.ob-mascot-cheer { /* TODO swap to mascot-cheer.png */ }
+
+/* Welcome wave video — bg is already white in the source; the video sits
+   directly on the white page. A subtle brightness/contrast nudge plus a
+   tiny inward scale hides the AI generator's edge compression halo so the
+   transition from video → page is invisible. */
+.ob-mascot-wave {
+  width: 608px;                    /* native source resolution */
+  height: 640px;
+  max-width: 100%;                 /* shrink on narrow screens to avoid overflow */
+  height: auto;                    /* let height follow width when constrained */
+  object-fit: contain;
+  background: #fff;
+  flex-shrink: 1;                  /* allow shrinking when the row is tight */
+  transform: scale(1.04);          /* eat the ~5px slightly-dim edge ring */
+  filter: brightness(1.01) contrast(1.005);
+}
+
+/* Step 1's step wrapper needs to be wider than the default 560px cap so the
+   native-size mascot video + speech bubble fit on the same row. */
+.ob-step[data-step="1"] {
+  max-width: 980px;
+}
+
+/* Step 1 welcome — native-size mascot video + speech bubble.
+   Wide enough on desktop for full 608px video + gap + 320px bubble. */
+.ob-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;            /* bubble drops below the mascot on tight screens */
+  gap: 24px;
+  width: 100%;
+  max-width: 980px;
+}
+.ob-welcome .ob-mascot {
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+
+/* Speech bubble — FIXED size so the typewriter never shifts the mascot.
+   Reserve enough space for the full sentence + cursor in advance. */
+.ob-bubble {
+  position: relative;
+  background: #fff;
+  border: 2px solid var(--purple-ring);
+  border-radius: 22px;
+  padding: 18px 22px;
+  box-shadow: 0 4px 0 var(--purple-ring);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 19px;          /* fixed size so the reserved height calc stays correct */
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  line-height: 1.4;
+  text-align: left;
+  width: 320px;             /* hard width — bubble never grows */
+  min-height: 116px;        /* reserves vertical space for ~3 lines at 19px / 1.4 */
+  box-sizing: border-box;
+  flex-shrink: 0;
+  animation: ob-bubble-in .35s cubic-bezier(.4,0,.2,1) .2s both;
+}
+@keyframes ob-bubble-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* Triangle tail pointing left toward the mascot's mouth.
+   ::before is the outer (border-coloured) triangle.
+   ::after is the inner (white) triangle stacked on top to leave a border outline. */
+.ob-bubble::before,
+.ob-bubble::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+.ob-bubble::before {
+  left: -16px;
+  margin-top: -12px;
+  border-width: 12px 16px 12px 0;
+  border-color: transparent var(--purple-ring) transparent transparent;
+}
+.ob-bubble::after {
+  left: -13px;
+  margin-top: -10px;
+  border-width: 10px 14px 10px 0;
+  border-color: transparent #fff transparent transparent;
+}
+
+.ob-bubble-text {
+  white-space: pre-wrap;            /* preserve spaces during typewriter typing */
+}
+.ob-bubble-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  background: var(--purple);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: ob-blink .8s steps(2, jump-none) infinite;
+}
+@keyframes ob-blink {
+  50% { opacity: 0; }
+}
+.ob-bubble.is-done .ob-bubble-cursor {
+  animation: none;
+  opacity: 0.4;
+}
+
+@media (max-width: 600px) {
+  .ob-welcome { flex-direction: column; gap: 12px; }
+  .ob-welcome .ob-mascot { width: 140px; }
+  /* Tail switches to point up (from below the mascot) on stacked mobile */
+  .ob-bubble::before {
+    left: 50%; top: -16px;
+    margin-left: -12px; margin-top: 0;
+    border-width: 0 12px 16px 12px;
+    border-color: transparent transparent var(--purple-ring) transparent;
+  }
+  .ob-bubble::after {
+    left: 50%; top: -13px;
+    margin-left: -10px; margin-top: 0;
+    border-width: 0 10px 14px 10px;
+    border-color: transparent transparent #fff transparent;
+  }
+}
+
+.ob-h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  margin: 0;
+  text-wrap: balance;
+}
+.ob-lede {
+  font-size: 17px;
+  color: var(--mute);
+  line-height: 1.5;
+  margin: 0;
+  font-weight: 500;
+  max-width: 42ch;
+}
+.ob-cta {
+  margin-top: 12px;
+  width: 100%;
+  max-width: 360px;
+}
+
+/* ---------- Step 2: topic chips ---------- */
+.ob-chips {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+}
+.ob-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-lg);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .12s, background .12s, transform .08s, box-shadow .12s;
+  box-shadow: 0 3px 0 var(--line);
+}
+.ob-chip:hover { border-color: var(--purple-ring); }
+.ob-chip.is-selected {
+  border-color: var(--purple);
+  background: var(--purple-soft);
+  box-shadow: 0 3px 0 var(--purple);
+}
+.ob-chip-emoji { font-size: 22px; line-height: 1; flex-shrink: 0; }
+.ob-chip-label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+/* ---------- Step 3: mode cards (Quick vs Study) ---------- */
+.ob-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 520px;
+}
+.ob-mode-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 22px 24px;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .12s, background .12s, box-shadow .12s, transform .08s;
+  box-shadow: 0 3px 0 var(--line);
+}
+.ob-mode-card:hover { border-color: var(--purple-ring); }
+.ob-mode-card.is-selected {
+  border-color: var(--purple);
+  background: var(--purple-soft);
+  box-shadow: 0 3px 0 var(--purple);
+}
+.ob-mode-emoji {
+  font-size: 38px;
+  line-height: 1;
+}
+.ob-mode-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ob-mode-label {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 19px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.ob-mode-sub {
+  font-size: 13px;
+  color: var(--mute);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.ob-mode-card.is-selected .ob-mode-label { color: var(--purple); }
+
+/* ---------- Step 4: language pills ---------- */
+.ob-langs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 480px;
+}
+.ob-lang {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  text-align: left;
+  transition: border-color .12s, background .12s, box-shadow .12s;
+  box-shadow: 0 3px 0 var(--line);
+}
+.ob-lang:hover { border-color: var(--purple-ring); }
+.ob-lang.is-selected {
+  border-color: var(--purple);
+  background: var(--purple-soft);
+  box-shadow: 0 3px 0 var(--purple);
+  color: var(--purple);
+}
+.ob-lang .flag {
+  width: 22px; height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-size: cover !important;
+  background-position: 50% 50% !important;
+}
+
+/* ---------- Step 5: social auth (Google + Apple + Facebook) ---------- */
+.ob-social {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+}
+/* Stack the custom Google button with the GSI iframe overlaid invisibly on top.
+   Click hits the iframe → Google's real auth popup fires. */
+.ob-google-stack {
+  position: relative;
+  width: 100%;
+}
+.ob-google-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;                        /* invisible — the visual is our custom button */
+  z-index: 2;
+  cursor: pointer;
+  overflow: hidden;
+}
+.ob-google-overlay > div,
+.ob-google-overlay iframe {
+  width: 100% !important;
+  height: 100% !important;
+}
+.ob-google-stack .ob-social-btn {
+  position: relative;
+  z-index: 1;                        /* sits beneath the click-catching iframe */
+  pointer-events: none;              /* let clicks pass through to the iframe */
+}
+
+/* Shared shape — chunky pill matching the original /login design.
+   Each provider keeps its brand colour. Logo pinned far-left, text centred. */
+.ob-social-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: background .12s, border-color .12s, box-shadow .12s, transform .08s;
+  box-sizing: border-box;
+  min-height: 52px;
+}
+.ob-social-btn:active { transform: translateY(1px); }
+.ob-social-btn svg {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Google — white pill, dark text, multi-colour G logo (Google brand requirement) */
+.ob-social-google {
+  background: #fff;
+  color: var(--ink);
+  border-color: var(--line);
+  box-shadow: 0 4px 0 var(--line);
+}
+.ob-social-google:hover { background: var(--line-2); }
+.ob-social-google:active { box-shadow: 0 2px 0 var(--line); }
+
+/* Apple — solid black */
+.ob-social-apple {
+  background: #0a0a0a;
+  color: #fff;
+  border-color: #0a0a0a;
+  box-shadow: 0 4px 0 #000;
+}
+.ob-social-apple:hover { background: #1a1a1a; }
+.ob-social-apple:active { box-shadow: 0 2px 0 #000; }
+.ob-social-apple svg { color: #fff; }
+
+/* Facebook — solid blue */
+.ob-social-facebook {
+  background: #1877F2;
+  color: #fff;
+  border-color: #1877F2;
+  box-shadow: 0 4px 0 #0d5cba;
+}
+.ob-social-facebook:hover { background: #2685ff; }
+.ob-social-facebook:active { box-shadow: 0 2px 0 #0d5cba; }
+.ob-social-facebook svg { color: #fff; }
+
+.ob-fine {
+  font-size: 12px;
+  color: var(--mute-2);
+  max-width: 36ch;
+  margin: 16px 0 0;
+}
+.ob-error {
+  margin-top: 16px;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  background: #FEF2F2;
+  border: 2px solid #FCA5A5;
+  color: #B91C1C;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---------- Back button (floats bottom-left) ---------- */
+.ob-back {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--line);
+  box-shadow: 0 3px 0 var(--line);
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background .12s, border-color .12s, transform .08s, box-shadow .12s;
+  z-index: 20;
+}
+.ob-back:hover {
+  background: var(--line-2);
+  border-color: var(--purple-ring);
+}
+.ob-back:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--line);
+}
+
+/* ---------- Shared button styles (mirror landing-v2) ---------- */
+body.onboarding .btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 16px 28px;
+  border-radius: var(--r-pill);
+  border: 2px solid transparent;
+  transition: transform .08s, box-shadow .08s, background-color .12s, color .12s;
+  cursor: pointer;
+  line-height: 1;
+}
+body.onboarding .btn:active { transform: translateY(2px); }
+body.onboarding .btn-primary {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+  box-shadow: 0 4px 0 var(--purple-deep);
+}
+body.onboarding .btn-primary:hover { background: #7d4ff0; color: #fff; }
+body.onboarding .btn-primary:active { box-shadow: 0 2px 0 var(--purple-deep); }
+body.onboarding .btn-primary:disabled {
+  background: var(--mute-2);
+  border-color: var(--mute-2);
+  box-shadow: 0 4px 0 var(--mute);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+body.onboarding .btn-primary:disabled:hover { background: var(--mute-2); }
+body.onboarding .btn-lg { font-size: 17px; padding: 20px 36px; }
+body.onboarding .btn-block { display: flex; width: 100%; }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 600px) {
+  .ob-header { padding: 14px 16px; gap: 12px; }
+  .ob-skip { padding: 8px 10px; font-size: 12px; }
+  .ob-brand-word { display: none; }
+  .ob-main { padding: 32px 20px 80px; }
+  .ob-mascot { width: 140px; }
+  .ob-chips { grid-template-columns: 1fr; }
+  .ob-back { left: 16px; bottom: 16px; width: 48px; height: 48px; }
+}
+
+/* ---------- Phone (≤480px) — tighter spacing, full-width controls ---------- */
+@media (max-width: 480px) {
+  .ob-header {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .ob-brand-icon { width: 30px; height: 30px; }
+  .ob-progress { height: 12px; }
+  .ob-skip { padding: 6px 8px; font-size: 11px; }
+  .ob-main { padding: 20px 16px 88px; }
+  .ob-step { gap: 16px; }
+  .ob-mascot {
+    width: 216px;
+    filter: drop-shadow(0 10px 14px rgba(15,15,20,0.10));
+  }
+  /* Step 1: bigger mascot wave video. The wave VIDEO has a pure-white
+     background that matches the page (#fff). The faint rectangular frame
+     visible around it was the drop-shadow filter — strip it so the
+     mascot blends seamlessly. */
+  .ob-welcome { gap: 12px; }
+  .ob-welcome .ob-mascot { width: 508px; }
+  .ob-mascot-wave {
+    width: 508px;
+    max-width: 100%;
+    filter: none;
+  }
+  .ob-bubble {
+    width: 100%;
+    max-width: 280px;
+    font-size: 16px;
+    padding: 14px 16px;
+    min-height: 84px;
+  }
+  .ob-h1 {
+    font-size: 24px;
+    line-height: 1.18;
+    letter-spacing: -0.025em;
+  }
+  .ob-lede {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  /* Buttons — full-width, slightly tighter */
+  .ob-cta { max-width: 100%; }
+  body.onboarding .btn-lg {
+    font-size: 14px;
+    padding: 16px 22px;
+    letter-spacing: 0.04em;
+  }
+  /* Step 2: topic chips */
+  .ob-chips { gap: 10px; }
+  .ob-chip {
+    padding: 14px 14px;
+    gap: 10px;
+    border-radius: var(--r-md);
+    box-shadow: 0 2px 0 var(--line);
+  }
+  .ob-chip.is-selected { box-shadow: 0 2px 0 var(--purple); }
+  .ob-chip-emoji { font-size: 20px; }
+  .ob-chip-label { font-size: 13px; }
+  /* Step 3: mode cards */
+  .ob-modes { gap: 10px; }
+  .ob-mode-card {
+    padding: 16px 16px;
+    gap: 14px;
+    border-radius: var(--r-md);
+    box-shadow: 0 2px 0 var(--line);
+  }
+  .ob-mode-card.is-selected { box-shadow: 0 2px 0 var(--purple); }
+  .ob-mode-emoji { font-size: 28px; }
+  .ob-mode-label { font-size: 17px; }
+  .ob-mode-sub { font-size: 12px; line-height: 1.4; }
+  /* Step 4: language pills — 2 columns instead of auto-fit (which can drop to 1 on narrow) */
+  .ob-langs {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .ob-lang {
+    padding: 10px 12px;
+    font-size: 13px;
+    box-shadow: 0 2px 0 var(--line);
+  }
+  .ob-lang.is-selected { box-shadow: 0 2px 0 var(--purple); }
+  .ob-lang .flag { width: 18px; height: 18px; }
+  /* Back button slightly smaller, lower */
+  .ob-back {
+    width: 44px;
+    height: 44px;
+    left: 12px;
+    bottom: 12px;
+  }
+  /* Fine print */
+  .ob-fine { font-size: 11px; max-width: 32ch; }
+}

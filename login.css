@@ -1,0 +1,407 @@
+/* Login page — Duolingo-style auth card.
+   Centered single card with email/password form, Google + Apple + Facebook
+   social buttons, sign-up link, and fine print. */
+
+body.login-v2 {
+  background: #fff;
+  min-height: 100vh;
+  min-height: 100svh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+
+/* ---------- Header (logo top-left + sign-up CTA top-right) ---------- */
+.login-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 32px;
+  background: #fff;
+  border-bottom: 2px solid var(--line);
+  z-index: 10;
+}
+.login-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+.login-brand-icon { width: 36px; height: 36px; object-fit: contain; }
+.login-brand-word {
+  font-family: "Outfit", var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+}
+.login-header-cta {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--purple);
+  padding: 10px 18px;
+  border: 2px solid var(--purple-ring);
+  border-radius: 999px;
+  box-shadow: 0 2px 0 var(--purple-ring);
+  transition: background .12s, border-color .12s, box-shadow .12s, transform .08s;
+  text-decoration: none;
+}
+.login-header-cta:hover { background: var(--purple-soft); border-color: var(--purple); }
+.login-header-cta:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--purple-ring); }
+
+/* ---------- Main centered card ---------- */
+.login-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px 96px;
+}
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 20px;
+}
+.login-h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(28px, 4vw, 36px);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  margin: 0;
+  text-align: center;
+}
+.login-sub {
+  font-size: 16px;
+  color: var(--mute);
+  line-height: 1.5;
+  margin: 0 0 8px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ---------- Email / Password form ---------- */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.login-field-label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.login-field input {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  outline: none;
+  transition: border-color .12s, box-shadow .12s;
+  width: 100%;
+}
+.login-field input:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px var(--purple-soft);
+}
+.login-field input::placeholder { color: var(--mute-2); font-weight: 500; }
+
+.login-pw-wrap { position: relative; }
+.login-pw-wrap input { padding-right: 48px; }
+.login-pw-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--mute);
+  background: transparent;
+  cursor: pointer;
+}
+.login-pw-toggle:hover { color: var(--ink); background: var(--line-2); }
+
+.login-row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: -4px;
+}
+.login-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--mute);
+  font-weight: 600;
+  cursor: pointer;
+}
+.login-remember input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--purple);
+  cursor: pointer;
+}
+.login-forgot {
+  font-size: 13px;
+  color: var(--purple);
+  font-weight: 700;
+  text-decoration: none;
+}
+.login-forgot:hover { text-decoration: underline; }
+
+.login-submit {
+  margin-top: 4px;
+  background: var(--purple);
+  color: #fff;
+  border: 2px solid var(--purple);
+  border-radius: 999px;
+  padding: 16px 28px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--purple-deep);
+  transition: background .12s, transform .08s, box-shadow .12s;
+}
+.login-submit:hover { background: #7d4ff0; }
+.login-submit:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--purple-deep); }
+
+/* ---------- OR divider ---------- */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute-2);
+  margin: 4px 0;
+}
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+  border-radius: 1px;
+}
+
+/* ---------- Social auth buttons ----------
+   Identical shape across all three providers, logo pinned far-left,
+   text centred. Matches the end-of-onboarding (step 5) design exactly. */
+.login-social {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Stack the custom Google button with the GSI iframe overlaid invisibly on
+   top. Click hits the iframe → Google's real auth popup fires. */
+.login-google-stack {
+  position: relative;
+  width: 100%;
+}
+.login-google-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: 2;
+  cursor: pointer;
+  overflow: hidden;
+}
+.login-google-overlay > div,
+.login-google-overlay iframe {
+  width: 100% !important;
+  height: 100% !important;
+}
+.login-google-stack .login-social-btn {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;   /* let clicks pass through to the iframe */
+}
+
+.login-social-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: background .12s, border-color .12s, box-shadow .12s, transform .08s;
+  box-sizing: border-box;
+  min-height: 52px;
+}
+.login-social-btn:active { transform: translateY(1px); }
+.login-social-btn svg {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Google — white pill with multi-colour G logo */
+.login-social-google {
+  background: #fff;
+  color: var(--ink);
+  border-color: var(--line);
+  box-shadow: 0 4px 0 var(--line);
+}
+.login-social-google:hover { background: var(--line-2); }
+.login-social-google:active { box-shadow: 0 2px 0 var(--line); }
+
+/* Apple — solid black */
+.login-social-apple {
+  background: #0a0a0a;
+  color: #fff;
+  border-color: #0a0a0a;
+  box-shadow: 0 4px 0 #000;
+}
+.login-social-apple:hover { background: #1a1a1a; }
+.login-social-apple:active { box-shadow: 0 2px 0 #000; }
+.login-social-apple svg { color: #fff; }
+
+/* Facebook — solid blue */
+.login-social-facebook {
+  background: #1877F2;
+  color: #fff;
+  border-color: #1877F2;
+  box-shadow: 0 4px 0 #0d5cba;
+}
+.login-social-facebook:hover { background: #2685ff; }
+.login-social-facebook:active { box-shadow: 0 2px 0 #0d5cba; }
+.login-social-facebook svg { color: #fff; }
+
+/* ---------- Error + helpers ---------- */
+.login-error {
+  margin: 8px 0 0;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  background: #FEF2F2;
+  border: 2px solid #FCA5A5;
+  color: #B91C1C;
+  font-size: 14px;
+  font-weight: 600;
+}
+.login-signup-link {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--mute);
+  font-weight: 500;
+}
+.login-signup-link a {
+  color: var(--purple);
+  font-weight: 700;
+  text-decoration: none;
+}
+.login-signup-link a:hover { text-decoration: underline; }
+.login-fine {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--mute-2);
+  font-weight: 500;
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 600px) {
+  .login-header { padding: 14px 16px; }
+  .login-brand-word { font-size: 22px; }
+  .login-header-cta { padding: 8px 14px; font-size: 12px; }
+  .login-main { padding: 24px 16px 64px; }
+}
+
+/* ---------- Phone (≤480px) ---------- */
+@media (max-width: 480px) {
+  .login-header {
+    padding: 10px 14px;
+  }
+  .login-brand-icon { width: 30px; height: 30px; }
+  .login-brand-word { font-size: 20px; }
+  .login-header-cta {
+    padding: 8px 12px;
+    font-size: 11px;
+    box-shadow: 0 2px 0 var(--purple-ring);
+  }
+  .login-main { padding: 20px 14px 56px; }
+  .login-card { gap: 14px; }
+  .login-h1 { font-size: 24px; }
+  .login-sub { font-size: 14px; margin-bottom: 4px; }
+  .login-field-label { font-size: 11px; }
+  /* Keep input font-size at 16px to prevent iOS Safari zoom on focus. */
+  .login-field input {
+    padding: 12px 14px;
+    font-size: 16px;
+    border-radius: var(--r-md);
+  }
+  .login-pw-wrap input { padding-right: 44px; }
+  .login-pw-toggle {
+    width: 32px;
+    height: 32px;
+    right: 6px;
+  }
+  .login-remember { font-size: 12px; }
+  .login-forgot { font-size: 12px; }
+  .login-submit {
+    padding: 14px 22px;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    box-shadow: 0 3px 0 var(--purple-deep);
+  }
+  .login-divider { font-size: 11px; margin: 2px 0; }
+  .login-social { gap: 8px; }
+  .login-social-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.18);
+  }
+  .login-social-apple { box-shadow: 0 3px 0 #000; }
+  .login-social-facebook { box-shadow: 0 3px 0 #0d5cba; }
+  /* Google's embedded iframe — constrain so it can't overflow. */
+  .login-google-wrap { width: 100%; }
+  .login-google-wrap .g_id_signin,
+  .login-google-wrap iframe {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  .login-signup-link { font-size: 13px; }
+  .login-fine { font-size: 11px; }
+  .login-error { font-size: 13px; padding: 10px 12px; }
+}
