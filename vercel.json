@@ -9,6 +9,6 @@
     { "source": "/deck/:id", "destination": "/deck?id=:id" }
   ],
   "crons": [
-    { "path": "/api/cron/notify", "schedule": "*/5 * * * *" }
+    { "path": "/api/cron/notify", "schedule": "0 18 * * *" }
   ]
 }
