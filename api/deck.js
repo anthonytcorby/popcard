@@ -31,6 +31,8 @@ async function handleGet(req, res, session) {
       createdAt: deck.created_at,
       fromCache: deck.from_cache,
       pinned: deck.pinned,
+      reviewStatus: deck.review_status || 'unreviewed',
+      reviewData: deck.review_data || null,
     },
     cards: deck.cards || [],
   });

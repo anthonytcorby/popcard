@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
 
   <link rel="stylesheet" href="styles.css?v=2" />
-  <link rel="stylesheet" href="onboarding.css?v=21" />
+  <link rel="stylesheet" href="onboarding.css?v=23" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="onboarding">
@@ -124,8 +124,53 @@
       <button class="btn btn-primary btn-lg btn-block ob-cta" data-action="next" disabled>CONTINUE</button>
     </section>
 
-    <!-- ============== STEP 5: AUTH ============== -->
-    <section class="ob-step" data-step="5" hidden>
+    <!-- ============== STEP 5: TRY A CARD ============== -->
+    <!-- Duolingo plays a lesson before asking for signup. We do the same:
+         one real flip-and-grade interaction so the user *feels* the product
+         before being asked for an email. Pop reacts to the grade. -->
+    <section class="ob-step ob-try" data-step="5" hidden>
+      <div class="ob-try-head">
+        <img class="ob-mascot ob-try-mascot" src="/images/popcard-mascot.png" alt="" id="ob-try-mascot" />
+        <div class="ob-try-bubble" id="ob-try-bubble">
+          <span>Try a real Popcard. Flip it, grade yourself — see how Pop teaches.</span>
+        </div>
+      </div>
+
+      <div class="ob-try-card" id="ob-try-card" role="button" tabindex="0" aria-label="Tap to reveal the answer">
+        <div class="ob-try-card-inner" id="ob-try-card-inner">
+          <div class="ob-try-card-face ob-try-card-front">
+            <span class="ob-try-card-tag">Idea</span>
+            <p class="ob-try-card-q">Why do we forget things?</p>
+            <button type="button" class="ob-try-reveal" id="ob-try-reveal">REVEAL ANSWER</button>
+          </div>
+          <div class="ob-try-card-face ob-try-card-back">
+            <span class="ob-try-card-tag">Idea</span>
+            <p class="ob-try-card-q ob-try-card-q-small">Why do we forget things?</p>
+            <p class="ob-try-card-a">Without recall practice, the brain prunes memories it thinks you don&rsquo;t need. <strong>Spaced review</strong> is the cheapest way to keep what matters &mdash; the whole point of Popcard.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ob-try-grades" id="ob-try-grades" hidden>
+        <button type="button" class="ob-try-grade ob-try-grade-hard" data-grade="hard">
+          <span class="ob-try-grade-emoji">&#128557;</span>
+          <span class="ob-try-grade-label">Hard</span>
+        </button>
+        <button type="button" class="ob-try-grade ob-try-grade-good" data-grade="good">
+          <span class="ob-try-grade-emoji">&#128526;</span>
+          <span class="ob-try-grade-label">Good</span>
+        </button>
+        <button type="button" class="ob-try-grade ob-try-grade-easy" data-grade="easy">
+          <span class="ob-try-grade-emoji">&#128293;</span>
+          <span class="ob-try-grade-label">Easy</span>
+        </button>
+      </div>
+
+      <button class="btn btn-primary btn-lg btn-block ob-cta" data-action="next" disabled>CONTINUE</button>
+    </section>
+
+    <!-- ============== STEP 6: AUTH ============== -->
+    <section class="ob-step" data-step="6" hidden>
       <img class="ob-mascot ob-mascot-cheer" src="/images/mascot-cheer.png" alt="Popcard mascot celebrating" />
       <h1 class="ob-h1">Save your progress.</h1>
       <p class="ob-lede">Sign up so we can save your decks and streak.</p>
@@ -195,6 +240,6 @@
   <script src="auth.js"></script>
   <script src="lang-picker.js"></script>
   <script src="i18n.js"></script>
-  <script src="onboarding.js?v=5"></script>
+  <script src="onboarding.js?v=6"></script>
 </body>
 </html>

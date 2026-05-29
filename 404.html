@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Page not found — Popcard</title>
+  <meta name="robots" content="noindex, follow" />
+  <meta name="theme-color" content="#6E3DEA" />
+  <link rel="icon" type="image/png" href="/images/favicon.png?v=3" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" />
+  <style>
+    :root { --purple:#6E3DEA; --purple-deep:#5826D9; --ink:#0F0F14; --mute:#6B7280; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      background: radial-gradient(120% 100% at 50% 0%, #F4F1FE 0%, #FBFAFF 60%);
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+      color: var(--ink);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 32px;
+    }
+    .nf-brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; position: fixed; top: 22px; left: 24px; }
+    .nf-brand img { width: 32px; height: 32px; }
+    .nf-brand span { font-family: "Outfit", sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -0.04em; color: var(--ink); }
+    .nf-mascot { width: 150px; height: 150px; object-fit: contain; margin-bottom: 12px; animation: bob 2.6s ease-in-out infinite; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .nf-code { font-family: "Outfit", sans-serif; font-weight: 900; font-size: 80px; line-height: 1; color: var(--purple); letter-spacing: -0.05em; }
+    h1 { font-family: "Sora", sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.03em; margin: 8px 0 10px; }
+    p { color: var(--mute); font-size: 16.5px; line-height: 1.6; max-width: 440px; margin: 0 0 26px; }
+    .nf-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .nf-btn {
+      font-family: "Sora", sans-serif; font-weight: 800; font-size: 15px;
+      padding: 14px 28px; border-radius: 999px; text-decoration: none; transition: transform .1s;
+    }
+    .nf-btn-primary { background: var(--purple); color: #fff; box-shadow: 0 5px 0 var(--purple-deep); }
+    .nf-btn-primary:hover { transform: translateY(-2px); }
+    .nf-btn-ghost { background: #fff; color: var(--purple); border: 2px solid #E6DDFF; }
+  </style>
+</head>
+<body>
+  <a class="nf-brand" href="/"><img src="/images/popcard-icon.png" alt="" /><span>popcard</span></a>
+  <img class="nf-mascot" src="/images/mascot-peek.png" alt="" onerror="this.src='/images/popcard-mascot.png'" />
+  <div class="nf-code">404</div>
+  <h1>Pop couldn't find that page.</h1>
+  <p>The link might be broken or the page may have moved. Let's get you back to learning.</p>
+  <div class="nf-actions">
+    <a class="nf-btn nf-btn-primary" href="/">Back home</a>
+    <a class="nf-btn nf-btn-ghost" href="/blog">Read the blog</a>
+  </div>
+</body>
+</html>

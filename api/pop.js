@@ -5,10 +5,12 @@ import { generateCards } from './_lib/llm.js';
 import {
   QUOTA,
   hashSource,
-  monthlyPopCount,
+  monthlyPopCountByMode,
   findCachedDeck,
   createDeck,
 } from './_lib/decks.js';
+import { recordDeckPop } from './_lib/sessions.js';
+import { createDeckReadyNotification } from './_lib/notifications.js';
 
 // Was 80_000 — far too small for a book. Atomic Habits is ~480K chars; that
 // cap dropped 83% of it before chunked generation could run. The LLM layer
@@ -54,15 +56,23 @@ export default async function handler(req, res) {
   const safeLang = SUPPORTED_LANGUAGES[language] ? language : 'en';
   const languageName = SUPPORTED_LANGUAGES[safeLang];
 
-  // Quota check (bypassed for unlimited-access accounts)
+  // Quota check (bypassed for unlimited-access accounts). Per-mode: free users
+  // get 10 quick pops + 1 study pop / month. Study mode is the premium feature,
+  // so the trial gate fires there first for most free users.
   if (!UNLIMITED_EMAILS.has((user.email || '').toLowerCase())) {
-    const limit = QUOTA[user.tier] || QUOTA.free;
-    const used = await monthlyPopCount(user.id);
+    const tierQuota = QUOTA[user.tier] || QUOTA.free;
+    const limit = tierQuota[safeMode] ?? 0;
+    const used = await monthlyPopCountByMode(user.id, safeMode);
     if (used >= limit) {
+      const modeLabel = safeMode === 'study' ? 'study' : 'quick';
+      const message = user.tier === 'free' && safeMode === 'study'
+        ? `Your free study pop for the month is used. Upgrade to keep generating study decks — your allowance refills next month.`
+        : `You've hit ${used} of ${limit} ${modeLabel} pops this month. Upgrade for more, or your allowance resets next month.`;
       return res.status(402).json({
         error: 'quota_exceeded',
-        message: `You've hit ${used} of ${limit} pops this month. Upgrade for more, or your allowance resets next month.`,
+        message,
         tier: user.tier,
+        mode: safeMode,
       });
     }
   }
@@ -114,6 +124,8 @@ export default async function handler(req, res) {
       fromCache: true,
       cards: cached.cards,
     });
+    // Daily quest: count this pop toward today's activity.
+    try { await recordDeckPop(user.id); } catch (_) { /* non-fatal */ }
     return res.status(200).json({
       deck: {
         id: deck.id,
@@ -154,6 +166,11 @@ export default async function handler(req, res) {
     fromCache: false,
     cards: generated.cards,
   });
+
+  // Daily quest: count this pop toward today's activity.
+  try { await recordDeckPop(user.id); } catch (_) { /* non-fatal */ }
+  // In-app bell: surface the fresh deck.
+  try { await createDeckReadyNotification(user.id, deck); } catch (_) { /* non-fatal */ }
 
   res.status(200).json({
     deck: {

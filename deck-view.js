@@ -37,6 +37,10 @@
   const aEl = $('deck-card-answer');
   const aInlineEl = $('deck-card-answer-inline');
   const hintEl = $('deck-card-hint');
+  const checkedBadge = $('deck-checked-badge');
+  const checkedBadgeLabel = $('deck-checked-badge-label');
+  const cardFlag = $('deck-card-flag');
+  const cardFlagText = $('deck-card-flag-text');
   const countEl = $('deck-card-count');
   const countBackEl = $('deck-card-count-back');
   const typeBadge = $('deck-card-type');
@@ -254,6 +258,41 @@
       return;
     }
 
+    // Pre-warm the quiz in the background. Generation is the slow part, so kick
+    // it off now (while the user reviews the deck) — by the time they open Quiz
+    // Mode it's cached and "preparation" is instant. Fire-and-forget; cached
+    // decks return immediately, so this is a cheap no-op once warmed.
+    if (cards.filter((c) => c.position !== 0 && c.answer).length >= 4) {
+      fetch('/api/quiz?id=' + encodeURIComponent(deck.id), { credentials: 'same-origin' }).catch(() => {});
+    }
+
+    // ---- Trust pass: paint the "Pop-checked" badge from the stored status,
+    // then kick off the critique in the background if it hasn't run. When it
+    // returns, re-paint the badge + re-flag cards without a reload. ----
+    paintCheckedBadge(deck.reviewStatus);
+    if (!deck.reviewStatus || deck.reviewStatus === 'unreviewed') {
+      fetch('/api/review-deck', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deckId: deck.id }),
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((res) => {
+          if (!res || !res.status) return;
+          deck.reviewStatus = res.status;
+          paintCheckedBadge(res.status);
+          // Re-fetch the deck's cards so confidence flags are current, then
+          // refresh the visible card if it's now flagged.
+          if (res.status === 'flagged') refreshConfidence();
+          // If the enrichment pass re-grouped the lessons into named, semantic
+          // ones, tell the lesson path to re-render so the new titles show.
+          if (res.lessonsGrouped > 0) {
+            window.dispatchEvent(new CustomEvent('popcard-lessons-regrouped'));
+          }
+        })
+        .catch(() => {});
+    }
+
     const isSimple = deck.mode === 'simple';
     card.classList.toggle('mode-simple', isSimple);
 
@@ -290,6 +329,20 @@
         hintEl.textContent = '💡 ' + c.hint;
       } else {
         hintEl.hidden = true;
+      }
+
+      // Trust pass: show the flag if the critique marked this card low/medium.
+      if (cardFlag) {
+        const conf = c.confidence;
+        if (conf === 'low' || conf === 'medium') {
+          cardFlag.hidden = false;
+          cardFlag.dataset.confidence = conf;
+          cardFlagText.textContent = c.flagReason
+            ? `Heads up: ${c.flagReason}`
+            : 'Double-check this one against the source.';
+        } else {
+          cardFlag.hidden = true;
+        }
       }
 
       const tsUrl = ytTimestampUrl(deck.sourceUrl, c.sourceTimestampSeconds);
@@ -334,6 +387,44 @@
       gridWrap.hidden = true;
       if (quizWrap) quizWrap.hidden = true;
       if (reviewWrap) reviewWrap.hidden = true;
+    }
+
+    // Trust pass UI helpers --------------------------------------------------
+    function paintCheckedBadge(status) {
+      if (!checkedBadge) return;
+      if (status === 'checked') {
+        checkedBadge.hidden = false;
+        checkedBadge.dataset.status = 'checked';
+        checkedBadgeLabel.textContent = 'Pop-checked';
+        checkedBadge.title = "Every card passed Popcard's fact-check";
+      } else if (status === 'flagged') {
+        checkedBadge.hidden = false;
+        checkedBadge.dataset.status = 'flagged';
+        const n = deck.reviewData?.flaggedCount;
+        checkedBadgeLabel.textContent = n ? `${n} to double-check` : 'Some cards to double-check';
+        checkedBadge.title = 'Popcard flagged a few cards to verify against the source';
+      } else {
+        checkedBadge.hidden = true;
+      }
+    }
+
+    // Re-pull the deck's cards so confidence/flagReason are current after the
+    // critique runs, then re-render the visible card.
+    async function refreshConfidence() {
+      try {
+        const r = await fetch('/api/deck?id=' + encodeURIComponent(deck.id), { credentials: 'same-origin' });
+        if (!r.ok) return;
+        const data = await r.json();
+        const fresh = data.cards || [];
+        // Patch confidence + flagReason onto the in-memory cards by id.
+        const byId = new Map(fresh.map((c) => [c.id, c]));
+        cards.forEach((c) => {
+          const f = byId.get(c.id);
+          if (f) { c.confidence = f.confidence; c.flagReason = f.flagReason; }
+        });
+        if (deck.reviewData == null && data.deck) deck.reviewData = data.deck.reviewData;
+        render();
+      } catch {}
     }
 
     const GRID_PALETTE = [
@@ -597,7 +688,7 @@
     if (startReviewBtn && reviewWrap) {
       startReviewBtn.hidden = false;
       // Surface "X due" badge on the button if we can ping the queue summary.
-      fetch(`/api/review-queue?deckId=${encodeURIComponent(deck.id)}`, { credentials: 'same-origin' })
+      fetch(`/api/review?deckId=${encodeURIComponent(deck.id)}`, { credentials: 'same-origin' })
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
           if (d?.cards?.length) {
@@ -626,7 +717,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       try {
-        const r = await fetch(`/api/review-queue?deckId=${encodeURIComponent(deck.id)}`, {
+        const r = await fetch(`/api/review?deckId=${encodeURIComponent(deck.id)}`, {
           credentials: 'same-origin',
         });
         const data = await r.json();

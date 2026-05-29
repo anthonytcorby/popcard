@@ -25,12 +25,12 @@ body.login-v2 {
   border-bottom: 2px solid var(--line);
   z-index: 10;
 }
-.login-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
-.login-brand-icon { width: 36px; height: 36px; object-fit: contain; }
+.login-brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; }
+.login-brand-icon { width: 40px; height: 40px; object-fit: contain; }
 .login-brand-word {
   font-family: "Outfit", var(--font-display);
   font-weight: 800;
-  font-size: 26px;
+  font-size: 29px;
   letter-spacing: -0.04em;
   color: var(--ink);
 }

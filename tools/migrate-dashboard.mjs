@@ -19,10 +19,18 @@
 // Idempotent — safe to run multiple times.
 //
 // Run from project root:  node tools/migrate-dashboard.mjs
-import 'dotenv/config';
+import fs from 'node:fs';
 import { neon } from '@neondatabase/serverless';
 
-const url = process.env.POSTGRES_URL;
+// Read POSTGRES_URL from .env.local (consistent with the other migrations and
+// works when spawned by migrate-all.mjs). Falls back to process.env if set.
+let url = process.env.POSTGRES_URL;
+if (!url) {
+  try {
+    const env = fs.readFileSync('.env.local', 'utf8');
+    url = env.match(/^POSTGRES_URL=(.+)$/m)?.[1]?.replace(/^"|"$/g, '');
+  } catch {}
+}
 if (!url) {
   console.error('POSTGRES_URL not set. Make sure .env.local has it.');
   process.exit(1);

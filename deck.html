@@ -18,8 +18,8 @@
   <div class="page">
     <header class="header">
       <a href="/" class="brand">
-        <img class="brand-logo" src="/images/popcard-logo.png" alt="Popcard logo" width="96" height="96" />
-        <span class="brand-name">popcard<sup>&reg;</sup></span>
+        <img class="brand-icon" src="/images/popcard-icon.png" alt="" />
+        <span class="brand-word">popcard</span>
       </a>
       <nav class="nav">
         <div class="lang-picker">
@@ -47,6 +47,10 @@
           Your decks
         </a>
         <span class="tier-pill" id="deck-mode-pill"></span>
+        <span class="deck-checked-badge" id="deck-checked-badge" hidden title="Every card passed Popcard's fact-check">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <span id="deck-checked-badge-label">Pop-checked</span>
+        </span>
         <h1 class="deck-title" id="deck-title" title="Click to rename">Loading…</h1>
         <a class="deck-source" id="deck-source" target="_blank" rel="noopener" hidden></a>
         <div class="deck-meta-actions">
@@ -107,6 +111,75 @@
         </div>
       </div>
 
+      <!-- ===== Lesson path (Sprint 3 hero) ===== -->
+      <section class="deck-path-wrap" id="deck-path-wrap" hidden>
+        <div class="deck-path-head">
+          <div class="deck-path-head-text">
+            <h2 class="deck-path-title">Your path</h2>
+            <p class="deck-path-sub" id="deck-path-sub">Work through the lessons. Earn a crown for each, five to max it out.</p>
+          </div>
+          <div class="deck-path-crowns" id="deck-path-crowns" title="Crowns earned">
+            <span class="deck-path-crown-ico" aria-hidden="true">&#128081;</span>
+            <span><span id="deck-path-crowns-num">0</span> / <span id="deck-path-crowns-max">0</span></span>
+          </div>
+        </div>
+        <div class="deck-path-track" id="deck-path-nodes" role="list"></div>
+        <div class="deck-path-foot">
+          <button type="button" class="deck-action-link" id="deck-path-browse">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Browse all cards
+          </button>
+        </div>
+      </section>
+
+      <!-- ===== Lesson screen (full-screen overlay, Sprint 3) ===== -->
+      <div class="lesson-screen" id="lesson-screen" hidden>
+        <div class="lesson-screen-bar">
+          <button type="button" class="lesson-quit" id="lesson-quit" aria-label="Quit lesson">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <div class="lesson-progress"><div class="lesson-progress-fill" id="lesson-progress-fill"></div></div>
+          <div class="lesson-hearts" id="lesson-hearts"></div>
+        </div>
+
+        <div class="lesson-stage" id="lesson-stage">
+          <div class="lesson-card" id="lesson-card">
+            <div class="lesson-card-inner" id="lesson-card-inner">
+              <div class="lesson-card-face lesson-card-front">
+                <span class="lesson-card-tag" id="lesson-card-tag">Idea</span>
+                <p class="lesson-card-q" id="lesson-card-q"></p>
+                <button type="button" class="lesson-reveal" id="lesson-reveal">REVEAL ANSWER</button>
+              </div>
+              <div class="lesson-card-face lesson-card-back">
+                <span class="lesson-card-tag" id="lesson-card-tag-back">Idea</span>
+                <p class="lesson-card-q lesson-card-q-small" id="lesson-card-q-back"></p>
+                <p class="lesson-card-a" id="lesson-card-a"></p>
+              </div>
+            </div>
+          </div>
+          <div class="lesson-grades" id="lesson-grades" hidden>
+            <button type="button" class="lesson-grade lesson-grade-miss" data-correct="0">
+              <span class="lesson-grade-emoji">&#128557;</span><span>Missed it</span>
+            </button>
+            <button type="button" class="lesson-grade lesson-grade-got" data-correct="1">
+              <span class="lesson-grade-emoji">&#9989;</span><span>Got it</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Lesson complete -->
+        <div class="lesson-complete" id="lesson-complete" hidden>
+          <div class="lesson-complete-crown" id="lesson-complete-crown">&#128081;</div>
+          <h2 class="lesson-complete-h" id="lesson-complete-h">Lesson complete!</h2>
+          <p class="lesson-complete-sub" id="lesson-complete-sub"></p>
+          <div class="lesson-complete-score" id="lesson-complete-score"></div>
+          <div class="lesson-complete-actions">
+            <button type="button" class="deck-action-cta" id="lesson-continue">Continue</button>
+            <button type="button" class="deck-action-link" id="lesson-redo" hidden>Try again</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Single-card view -->
       <div class="deck-card-wrap" id="deck-card-wrap" hidden>
         <div class="deck-card-flip" id="deck-card">
@@ -119,6 +192,12 @@
               </div>
             </div>
             <div class="deck-card-question" id="deck-card-question"></div>
+            <!-- Low-confidence flag (trust pass) — hidden unless the critique
+                 marked this card medium/low. -->
+            <div class="deck-card-flag" id="deck-card-flag" hidden>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <span id="deck-card-flag-text">Double-check this one against the source.</span>
+            </div>
             <!-- Inline answer + actions for simple mode -->
             <div class="deck-card-answer-inline" id="deck-card-answer-inline" hidden></div>
             <div class="deck-card-hint" id="deck-card-hint" hidden></div>
@@ -305,11 +384,57 @@
     <div class="toast" id="toast" hidden></div>
   </div>
 
+  <!-- ===== AI Tutor (premium) — floating launcher + chat drawer ===== -->
+  <button type="button" class="tutor-fab" id="tutor-fab" hidden aria-label="Ask Pop about this deck">
+    <img src="/images/popcard-mascot.png" alt="" class="tutor-fab-mascot" />
+    <span class="tutor-fab-label">Ask Pop</span>
+  </button>
+
+  <div class="tutor-drawer" id="tutor-drawer" hidden aria-hidden="true">
+    <div class="tutor-drawer-backdrop" id="tutor-drawer-backdrop"></div>
+    <aside class="tutor-panel" role="dialog" aria-modal="true" aria-labelledby="tutor-panel-title">
+      <header class="tutor-head">
+        <div class="tutor-head-id">
+          <img src="/images/popcard-mascot.png" alt="" class="tutor-head-mascot" />
+          <div>
+            <h2 class="tutor-head-title" id="tutor-panel-title">Pop &mdash; your tutor</h2>
+            <p class="tutor-head-sub" id="tutor-head-sub">Grounded in this deck</p>
+          </div>
+        </div>
+        <button type="button" class="tutor-close" id="tutor-close" aria-label="Close tutor">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+
+      <div class="tutor-messages" id="tutor-messages">
+        <div class="tutor-msg tutor-msg-pop">
+          <p>Hey! I'm Pop. Ask me anything about this deck — or say <strong>"quiz me"</strong> and I'll test you one question at a time.</p>
+        </div>
+        <div class="tutor-suggests" id="tutor-suggests">
+          <button type="button" class="tutor-suggest" data-q="Quiz me on this deck.">Quiz me</button>
+          <button type="button" class="tutor-suggest" data-q="What are the most important things to remember here?">Key takeaways</button>
+          <button type="button" class="tutor-suggest" data-q="Explain the hardest idea in this deck simply.">Explain simply</button>
+        </div>
+      </div>
+
+      <form class="tutor-input" id="tutor-form">
+        <textarea id="tutor-text" class="ph-no-capture" rows="1" placeholder="Ask Pop about this deck&hellip;" aria-label="Message Pop"></textarea>
+        <button type="submit" class="tutor-send" id="tutor-send" aria-label="Send">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        </button>
+      </form>
+      <p class="tutor-foot" id="tutor-foot">Pop can be wrong — double-check anything that matters.</p>
+    </aside>
+  </div>
+
   <script src="/analytics.js"></script>
   <script src="/cookies.js"></script>
   <script src="/auth.js"></script>
   <script src="/lang-picker.js"></script>
   <script src="/i18n.js"></script>
+  <script src="/sfx.js?v=1"></script>
   <script src="/deck-view.js"></script>
+  <script src="/lesson-path.js?v=3"></script>
+  <script src="/tutor.js?v=1"></script>
 </body>
 </html>

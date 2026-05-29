@@ -25,12 +25,12 @@ body.onboarding {
   border-bottom: 2px solid var(--line);
   z-index: 10;
 }
-.ob-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
-.ob-brand-icon { width: 36px; height: 36px; object-fit: contain; }
+.ob-brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; }
+.ob-brand-icon { width: 40px; height: 40px; object-fit: contain; }
 .ob-brand-word {
   font-family: "Outfit", var(--font-display);
   font-weight: 800;
-  font-size: 26px;
+  font-size: 29px;
   letter-spacing: -0.04em;
   color: var(--ink);
 }
@@ -382,7 +382,170 @@ body.onboarding {
   background-position: 50% 50% !important;
 }
 
-/* ---------- Step 5: social auth (Google + Apple + Facebook) ---------- */
+/* ---------- Step 5: try a card (Duolingo-style 'play before signup') ---------- */
+.ob-try {
+  /* override the default ob-step text-align centre — we want the speech bubble
+     to sit to the right of the mascot, and grade buttons on a row. */
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 22px;
+}
+.ob-try-head {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.ob-try-mascot {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  transition: opacity .2s;
+}
+.ob-try-bubble {
+  position: relative;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 14.5px;
+  color: var(--ink);
+  line-height: 1.45;
+  font-weight: 500;
+  box-shadow: 0 2px 0 var(--line);
+}
+.ob-try-bubble::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 24px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-left: 2px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  transform: rotate(45deg);
+}
+
+/* Flip-card scaffolding mirrors practice.css .prac-card so the interaction
+   feels identical to the real product. */
+.ob-try-card {
+  perspective: 1200px;
+  cursor: pointer;
+  height: 280px;
+  outline: none;
+}
+.ob-try-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.4,0,.2,1);
+}
+.ob-try-card.is-flipped .ob-try-card-inner { transform: rotateY(180deg); }
+.ob-try-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 22px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.08), 0 14px 28px rgba(88,38,217,0.12);
+}
+.ob-try-card-front {
+  background: linear-gradient(155deg, #5826D9, #6E3DEA, #8B5CF6);
+  color: #fff;
+}
+.ob-try-card-back {
+  background: linear-gradient(155deg, #6E3DEA, #8B5CF6, #A78BFA);
+  color: #fff;
+  transform: rotateY(180deg);
+}
+.ob-try-card-tag {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.22);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 999px;
+}
+.ob-try-card-q {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin: 16px 0;
+}
+.ob-try-card-q-small { font-size: 16px; opacity: 0.78; margin: 8px 0 12px; }
+.ob-try-card-a {
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 500;
+  flex: 1;
+  overflow-y: auto;
+}
+.ob-try-card-a strong { font-weight: 800; }
+.ob-try-reveal {
+  align-self: stretch;
+  margin-top: auto;
+  background: rgba(255,255,255,0.96);
+  color: var(--purple);
+  border: none;
+  border-radius: 999px;
+  padding: 12px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13.5px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: transform .08s;
+}
+.ob-try-reveal:hover { transform: translateY(-1px); }
+.ob-try-reveal:disabled { opacity: 0; pointer-events: none; }
+
+.ob-try-grades {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.ob-try-grades[hidden] { display: none; }
+.ob-try-grade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 8px;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--line);
+  transition: border-color .12s, transform .08s, opacity .2s;
+}
+.ob-try-grade:hover { border-color: var(--purple-ring); }
+.ob-try-grade.is-selected {
+  border-color: var(--purple);
+  background: var(--purple-soft);
+  color: var(--purple);
+  box-shadow: 0 3px 0 var(--purple);
+}
+.ob-try-grade.is-dim { opacity: 0.45; }
+.ob-try-grade-emoji { font-size: 26px; line-height: 1; }
+
+/* ---------- Step 6: social auth (Google + Apple + Facebook) ---------- */
 .ob-social {
   display: flex;
   flex-direction: column;

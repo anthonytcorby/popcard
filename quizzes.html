@@ -13,64 +13,101 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" />
 
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="account.css?v=13" />
-  <link rel="stylesheet" href="quizzes.css?v=7" />
+  <link rel="stylesheet" href="dashboard.css?v=15" />
+  <link rel="stylesheet" href="quizzes.css?v=22" />
 </head>
 <body class="dashboard is-study-mode">
 
-  <header class="dash-header">
-    <a class="dash-brand" href="/account">
-      <img class="dash-brand-icon" src="/images/popcard-icon.png" alt="" />
-      <span class="dash-brand-word">popcard</span>
-    </a>
-    <div class="dash-stats" data-auth-only>
-      <button type="button" class="dash-stat dash-streak" title="Daily streak" aria-label="Daily streak">
-        <span class="dash-stat-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14a8 8 0 1 0 16 0c0-4.16-2-7.87-6.5-13.33z"/></svg></span>
-        <span class="dash-stat-num" id="dash-streak-num">0</span>
-      </button>
-      <button type="button" class="dash-stat dash-sparks" title="Sparks earned" aria-label="Sparks earned">
-        <span class="dash-stat-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 13.7 8.3 20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7z"/></svg></span>
-        <span class="dash-stat-num" id="dash-sparks-num">0</span>
-      </button>
-    </div>
-    <div class="dash-user-wrap" data-auth-only>
-      <button type="button" class="dash-user-chip" id="dash-user-chip">
-        <img class="dash-user-pic" data-auth-picture alt="" referrerpolicy="no-referrer" />
-        <span class="dash-user-name" data-auth-name>Account</span>
-      </button>
-      <div class="dash-user-menu" id="dash-user-menu" hidden role="menu">
-        <a href="/account" role="menuitem">Dashboard</a>
-        <a href="/settings" role="menuitem">Settings</a>
-        <a href="/pricing" role="menuitem">Plan &amp; billing</a>
-        <button type="button" role="menuitem" id="sign-out-btn">Sign out</button>
-      </div>
-    </div>
-  </header>
+  <div class="app-shell">
 
-  <div class="dash-layout">
+    <!-- ===== LEFT SIDEBAR (matches the dashboard) ===================== -->
+    <aside class="side" aria-label="Primary navigation">
+      <a class="side-brand" href="/account">
+        <img class="side-brand-icon" src="/images/popcard-icon.png" alt="" />
+        <span class="side-brand-word">popcard</span>
+      </a>
 
-    <aside class="dash-sidebar">
-      <nav class="dash-nav">
-        <a href="/account" class="dash-nav-item">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12 12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+      <nav class="side-nav">
+        <a href="/account" class="side-item">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
           <span>Home</span>
         </a>
-        <a href="/account#decks" class="dash-nav-item">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="14" height="16" rx="2"/><path d="M21 8v12a1 1 0 0 1-1 1H8"/></svg>
-          <span>Decks</span>
+        <a href="/casual" class="side-item">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 11-13h-8z"/></svg>
+          <span>Casual</span>
         </a>
-        <a href="/practice" class="dash-nav-item">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a10 10 0 1 1 10-10"/><path d="m16 12-4 4-2-2"/></svg>
-          <span>Practice</span>
+        <a href="/practice" class="side-item">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m22 10-10-5L2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg>
+          <span>Study</span>
         </a>
-        <a href="/quizzes" class="dash-nav-item is-active">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11h6"/><path d="M9 15h4"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+        <a href="/quizzes" class="side-item is-active">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 11h6"/><path d="M9 15h4"/></svg>
           <span>Quizzes</span>
         </a>
+        <a href="/decks" class="side-item">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="16" rx="2"/><path d="M21 8v12a1 1 0 0 1-1 1H8"/></svg>
+          <span>Decks</span>
+        </a>
+        <a href="/calendar" class="side-item">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span>Calendar</span>
+        </a>
       </nav>
+
+      <div class="side-foot">
+        <div class="side-upsell" data-tier-only="free">
+          <div class="side-upsell-head">
+            <span class="side-upsell-crown" aria-hidden="true">&#128081;</span>
+            <strong>Unlock Popcard Study</strong>
+          </div>
+          <p>Unlimited Study Mode, quizzes, and your own AI tutor — for £3.99/mo.</p>
+          <a href="/pricing" class="side-upsell-btn" data-track="Sidebar Upgrade">Upgrade now</a>
+        </div>
+
+        <div class="side-user-wrap" data-auth-only>
+          <button type="button" class="side-user" id="dash-user-chip" aria-haspopup="menu" aria-expanded="false">
+            <img class="side-user-pic" data-auth-picture alt="" referrerpolicy="no-referrer" />
+            <span class="side-user-text">
+              <span class="side-user-name" data-auth-name>Account</span>
+              <span class="side-user-plan"><span data-auth-tier>free</span> plan</span>
+            </span>
+            <svg class="side-user-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="side-user-menu" id="dash-user-menu" hidden role="menu">
+            <a href="/account" role="menuitem">Dashboard</a>
+            <a href="/settings" role="menuitem">Settings</a>
+            <a href="/pricing" role="menuitem">Plan &amp; billing</a>
+            <button type="button" role="menuitem" id="sign-out-btn">Sign out</button>
+          </div>
+        </div>
+      </div>
     </aside>
 
-    <main class="dash-main">
+    <!-- ===== MAIN COLUMN (top bar + scrolling content) =============== -->
+    <div class="app-main">
+
+      <header class="topbar">
+        <form class="topbar-search" id="quiz-search-form" role="search">
+          <svg class="topbar-search-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="quiz-search" class="ph-no-capture" placeholder="Search your decks&hellip;" aria-label="Search decks" autocomplete="off" />
+        </form>
+        <div class="topbar-actions" data-auth-only>
+          <a href="/pricing" class="topbar-pro" data-tier-only="free" data-track="Quizzes Upgrade">
+            <span aria-hidden="true">&#128081;</span> Upgrade to Study
+          </a>
+          <button type="button" class="topbar-streak" title="Daily streak" aria-label="Daily streak">
+            <span class="topbar-streak-flame" aria-hidden="true">&#128293;</span>
+            <span><span id="dash-streak-num">0</span> day streak</span>
+          </button>
+          <button type="button" class="topbar-streak quiz-sparks-chip" title="Sparks earned" aria-label="Sparks earned">
+            <span class="quiz-sparks-star" aria-hidden="true">&#10024;</span>
+            <span><span id="dash-sparks-num">0</span> Sparks</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content quiz-content">
+        <div class="col-main">
 
       <!-- ===== Deck picker (default) ===== -->
       <section class="quiz-list" id="quiz-list">
@@ -87,24 +124,6 @@
           <!-- decks rendered here -->
         </div>
 
-        <!-- Floating multi-select action bar — appears when 1+ deck is
-             selected via card body click. Sticky at the bottom of the
-             viewport, slides up from below. -->
-        <div class="quiz-multi-bar" id="quiz-multi-bar" hidden>
-          <div class="quiz-multi-info">
-            <span id="quiz-multi-count">0</span> deck<span id="quiz-multi-plural">s</span>
-            <span class="quiz-multi-dot" aria-hidden="true">&middot;</span>
-            <span id="quiz-multi-cards">0</span> cards
-          </div>
-          <button type="button" class="quiz-multi-clear" id="quiz-multi-clear" aria-label="Clear selection">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-          </button>
-          <button type="button" class="quiz-multi-cta" id="quiz-multi-cta">
-            <span>Quiz Mode</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </button>
-        </div>
-
         <div class="quiz-loading" id="quiz-loading">Loading your decks&hellip;</div>
         <div class="quiz-empty" id="quiz-empty" hidden>
           <img src="/images/popcard-mascot.png" alt="" class="quiz-empty-mascot" />
@@ -113,62 +132,62 @@
           <a href="/account" class="quiz-empty-cta">Go to dashboard</a>
         </div>
       </section>
+        </div><!-- /.col-main -->
 
-      <!-- ===== Round-length picker (shown after deck selection) =============
-           Full-screen overlay matching the quiz session chrome. User picks
-           Quick / Standard / Long and the quiz launches with that many
-           questions. Counts cap at total available cards. -->
-      <section class="quiz-rounds" id="quiz-rounds" hidden>
+        <aside class="col-rail" aria-label="Quiz info">
+          <section class="card quiz-tip">
+            <img class="quiz-tip-mascot" src="/images/popcard-mascot.png" alt="" />
+            <p class="quiz-tip-text">Quizzes shuffle wrong answers from other cards in the same deck &mdash; so context matters.</p>
+          </section>
+          <section class="card">
+            <header class="card-head"><h3>Scoring</h3></header>
+            <ul class="quiz-scoring">
+              <li><strong>10 / 10</strong> &mdash; Trophy</li>
+              <li><strong>7&ndash;9</strong> &mdash; Strong</li>
+              <li><strong>4&ndash;6</strong> &mdash; Mid &mdash; review weak cards</li>
+              <li><strong>0&ndash;3</strong> &mdash; Practice this deck</li>
+            </ul>
+          </section>
+        </aside>
+
+      </div><!-- /.content -->
+    </div><!-- /.app-main -->
+  </div><!-- /.app-shell -->
+
+      <!-- ===== Welcome intro (onboarding-style, shown after a deck is picked) ==
+           Quizmaster mascot beside a speech bubble + START QUIZ button —
+           mirrors onboarding step 1. -->
+      <section class="quiz-welcome" id="quiz-welcome" hidden>
         <header class="qz-head">
-          <button type="button" class="qz-quit" id="quiz-rounds-back" aria-label="Back to deck picker">
+          <button type="button" class="qz-quit" id="quiz-welcome-back" aria-label="Back to deck picker">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
           </button>
           <div class="qz-progress" aria-hidden="true"><div class="qz-progress-fill" style="width:0%"></div></div>
-          <span class="quiz-rounds-decks" id="quiz-rounds-decks">1 deck</span>
+          <span class="qz-head-spacer" aria-hidden="true"></span>
         </header>
 
-        <main class="qz-main">
-          <div class="quiz-rounds-stage">
-            <img class="quiz-rounds-mascot" src="/images/popcard-mascot.png" alt="" />
-          </div>
-          <div class="qz-bubble">
-            <span class="qz-tag">Setup</span>
-            <h2 class="qz-question">How long do you want to play?</h2>
-            <p class="quiz-rounds-sub" id="quiz-rounds-sub">Distractors will be pulled from your whole card pool.</p>
-          </div>
-          <div class="quiz-rounds-grid">
-            <button type="button" class="quiz-round-card" data-rounds="quick">
-              <span class="quiz-round-emoji" aria-hidden="true">&#9889;</span>
-              <span class="quiz-round-body">
-                <span class="quiz-round-label">Quick</span>
-                <span class="quiz-round-meta"><strong class="quiz-round-count" data-cap="5">5</strong> questions &middot; ~1 min</span>
-              </span>
-              <span class="quiz-round-chevron" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-              </span>
-            </button>
-            <button type="button" class="quiz-round-card" data-rounds="standard">
-              <span class="quiz-round-emoji" aria-hidden="true">&#127919;</span>
-              <span class="quiz-round-body">
-                <span class="quiz-round-label">Standard</span>
-                <span class="quiz-round-meta"><strong class="quiz-round-count" data-cap="10">10</strong> questions &middot; ~3 min</span>
-              </span>
-              <span class="quiz-round-chevron" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-              </span>
-            </button>
-            <button type="button" class="quiz-round-card" data-rounds="long">
-              <span class="quiz-round-emoji" aria-hidden="true">&#127942;</span>
-              <span class="quiz-round-body">
-                <span class="quiz-round-label">Long</span>
-                <span class="quiz-round-meta"><strong class="quiz-round-count" data-cap="20">20</strong> questions &middot; ~5 min</span>
-              </span>
-              <span class="quiz-round-chevron" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-              </span>
-            </button>
+        <main class="qz-main qz-welcome-main">
+          <div class="qz-welcome-row">
+            <div class="qz-welcome-stage">
+              <video class="qz-welcome-mascot" id="quiz-welcome-mascot"
+                     muted loop playsinline autoplay preload="auto"
+                     poster="/images/popcard-mascot.png" aria-hidden="true">
+                <source src="/images/mascot-quizmaster.mp4?v=1" type="video/mp4" />
+              </video>
+            </div>
+            <div class="qz-welcome-bubble">
+              <span class="qz-tag">Quiz Mode</span>
+              <h2 class="qz-welcome-h">Welcome to Quiz Mode!</h2>
+              <p class="qz-welcome-sub">I'll quiz you on <strong id="quiz-welcome-deck">this deck</strong> &mdash; multiple-choice, one question at a time. Pick the right answer and earn Sparks. Ready?</p>
+            </div>
           </div>
         </main>
+
+        <footer class="qz-action">
+          <div class="qz-action-inner qz-welcome-action">
+            <button type="button" class="qz-cta" id="quiz-welcome-start">START QUIZ</button>
+          </div>
+        </footer>
       </section>
 
       <!-- ===== Quiz session (full-screen overlay, Duolingo-style) ============
@@ -190,20 +209,12 @@
           <div class="qz-progress" aria-hidden="true">
             <div class="qz-progress-fill" id="quiz-progress-fill"></div>
           </div>
-          <!-- Hearts / lives. JS paints fill state per heart. -->
-          <div class="qz-hearts" id="quiz-hearts" title="Lives remaining" aria-label="Lives remaining">
-            <span class="qz-heart" data-heart="1" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/></svg>
+          <div class="qz-score" title="Score so far">
+            <span class="qz-score-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             </span>
-            <span class="qz-heart" data-heart="2" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/></svg>
-            </span>
-            <span class="qz-heart" data-heart="3" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/></svg>
-            </span>
+            <span id="quiz-score-live">0</span>
           </div>
-          <!-- Hidden score counter kept for any analytics references — not displayed -->
-          <span id="quiz-score-live" hidden>0</span>
         </header>
 
         <main class="qz-main">
@@ -222,6 +233,16 @@
                    muted loop playsinline preload="auto"
                    poster="/images/popcard-mascot.png" aria-hidden="true">
               <source src="/images/mascot-quizmaster2.mp4?v=1" type="video/mp4" />
+            </video>
+            <video class="qz-mascot" data-state="ask3"
+                   muted loop playsinline preload="none"
+                   poster="/images/popcard-mascot.png" aria-hidden="true">
+              <source src="/images/mascot-quizmaster3.mp4?v=1" type="video/mp4" />
+            </video>
+            <video class="qz-mascot" data-state="ask4"
+                   muted loop playsinline preload="none"
+                   poster="/images/popcard-mascot.png" aria-hidden="true">
+              <source src="/images/mascot-quizmaster4.mp4?v=1" type="video/mp4" />
             </video>
 
             <!-- CORRECT / CELEBRATE (still pose) -->
@@ -266,8 +287,6 @@
                 <h3 class="qz-feedback-h" id="quiz-feedback-text">Correct!</h3>
                 <p class="qz-feedback-detail" id="quiz-feedback-detail" hidden></p>
               </div>
-              <!-- XP gain badge on correct, heart-loss badge on wrong. -->
-              <span class="qz-xp-badge" id="quiz-xp-badge" hidden>+3 XP</span>
             </div>
             <!-- One CTA button: CHECK (when option picked) → CONTINUE (after grade) -->
             <button type="button" class="qz-cta" id="quiz-cta" data-mode="check" disabled>CHECK</button>
@@ -323,39 +342,23 @@
         <footer class="qz-action">
           <div class="qz-action-inner qz-action-complete">
             <button type="button" class="qz-cta" id="quiz-again">RETAKE</button>
-            <button type="button" class="qz-cta-ghost" id="quiz-different-deck">Different deck</button>
+            <button type="button" class="qz-cta-ghost" id="quiz-different-deck">Select deck</button>
             <a href="/account" class="qz-cta-link">Back to dashboard</a>
           </div>
         </footer>
       </section>
 
-    </main>
-
-    <aside class="dash-rail" aria-label="Quiz rail">
-      <div class="rail-card rail-mascot">
-        <img class="rail-mascot-img" src="/images/popcard-mascot.png" alt="" />
-        <div class="rail-mascot-bubble" id="rail-mascot-bubble">
-          Quizzes shuffle wrong answers from other cards in the same deck — so context matters.
-        </div>
-      </div>
-      <div class="rail-card">
-        <div class="rail-card-head"><h3>Scoring</h3></div>
-        <ul class="quiz-scoring">
-          <li><strong>10 / 10</strong> &mdash; Trophy</li>
-          <li><strong>7&ndash;9</strong> &mdash; Strong</li>
-          <li><strong>4&ndash;6</strong> &mdash; Mid &mdash; review weak cards</li>
-          <li><strong>0&ndash;3</strong> &mdash; Practice this deck</li>
-        </ul>
-      </div>
-    </aside>
-
-  </div>
+  <!-- Lightweight toast for "coming soon" stubs -->
+  <div class="app-toast" id="app-toast" hidden></div>
 
   <script src="analytics.js"></script>
   <script src="cookies.js"></script>
   <script src="auth.js"></script>
   <script src="lang-picker.js"></script>
   <script src="i18n.js"></script>
-  <script src="quizzes.js?v=11"></script>
+  <script src="sfx.js?v=1"></script>
+  <script src="notifications.js?v=1"></script>
+  <script src="mobile-nav.js?v=1"></script>
+  <script src="quizzes.js?v=21"></script>
 </body>
 </html>

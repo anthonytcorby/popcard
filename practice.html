@@ -13,71 +13,78 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" />
 
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="account.css?v=13" />
-  <link rel="stylesheet" href="practice.css?v=4" />
+  <link rel="stylesheet" href="dashboard.css?v=15" />
+  <link rel="stylesheet" href="practice.css?v=6" />
 </head>
 <body class="dashboard is-study-mode">
 
-  <header class="dash-header">
-    <a class="dash-brand" href="/account">
-      <img class="dash-brand-icon" src="/images/popcard-icon.png" alt="" />
-      <span class="dash-brand-word">popcard</span>
-    </a>
-    <div class="dash-stats" data-auth-only>
-      <button type="button" class="dash-stat dash-streak" title="Daily streak" aria-label="Daily streak">
-        <span class="dash-stat-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14a8 8 0 1 0 16 0c0-4.16-2-7.87-6.5-13.33z"/></svg></span>
-        <span class="dash-stat-num" id="dash-streak-num">0</span>
-      </button>
-      <button type="button" class="dash-stat dash-sparks" title="Sparks earned" aria-label="Sparks earned">
-        <span class="dash-stat-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 13.7 8.3 20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7z"/></svg></span>
-        <span class="dash-stat-num" id="dash-sparks-num">0</span>
-      </button>
-    </div>
-    <div class="dash-user-wrap" data-auth-only>
-      <button type="button" class="dash-user-chip" id="dash-user-chip">
-        <img class="dash-user-pic" data-auth-picture alt="" referrerpolicy="no-referrer" />
-        <span class="dash-user-name" data-auth-name>Account</span>
-      </button>
-      <div class="dash-user-menu" id="dash-user-menu" hidden role="menu">
-        <a href="/account" role="menuitem">Dashboard</a>
-        <a href="/settings" role="menuitem">Settings</a>
-        <a href="/pricing" role="menuitem">Plan &amp; billing</a>
-        <button type="button" role="menuitem" id="sign-out-btn">Sign out</button>
-      </div>
-    </div>
-  </header>
+  <div class="app-loading" id="account-loading">
+    <img src="/images/popcard-icon.png" alt="" class="app-loading-icon" />
+    <span>Loading&hellip;</span>
+  </div>
 
-  <div class="dash-layout">
+  <div class="app-shell">
 
-    <aside class="dash-sidebar">
-      <nav class="dash-nav">
-        <a href="/account" class="dash-nav-item">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12 12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
-          <span>Home</span>
-        </a>
-        <a href="/account#decks" class="dash-nav-item">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="14" height="16" rx="2"/><path d="M21 8v12a1 1 0 0 1-1 1H8"/></svg>
-          <span>Decks</span>
-        </a>
-        <a href="/practice" class="dash-nav-item is-active">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a10 10 0 1 1 10-10"/><path d="m16 12-4 4-2-2"/></svg>
-          <span>Practice</span>
-        </a>
-        <a href="/quizzes" class="dash-nav-item">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11h6"/><path d="M9 15h4"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
-          <span>Quizzes</span>
-        </a>
+    <aside class="side" aria-label="Primary navigation">
+      <a class="side-brand" href="/account">
+        <img class="side-brand-icon" src="/images/popcard-icon.png" alt="" />
+        <span class="side-brand-word">popcard</span>
+      </a>
+      <nav class="side-nav">
+        <a href="/account" class="side-item"><svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span>Home</span></a>
+        <a href="/casual" class="side-item"><svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 11-13h-8z"/></svg><span>Casual</span></a>
+        <a href="/practice" class="side-item is-active"><svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m22 10-10-5L2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg><span>Study</span></a>
+        <a href="/quizzes" class="side-item"><svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 11h6"/><path d="M9 15h4"/></svg><span>Quizzes</span></a>
+        <a href="/decks" class="side-item"><svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="16" rx="2"/><path d="M21 8v12a1 1 0 0 1-1 1H8"/></svg><span>Decks</span></a>
+        <a href="/calendar" class="side-item"><svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Calendar</span></a>
       </nav>
+      <div class="side-foot">
+        <div class="side-upsell" data-tier-only="free">
+          <div class="side-upsell-head"><span class="side-upsell-crown" aria-hidden="true">&#128081;</span><strong>Unlock Popcard Study</strong></div>
+          <p>Unlimited Study Mode, quizzes, and your own AI tutor — for £3.99/mo.</p>
+          <a href="/pricing" class="side-upsell-btn" data-track="Sidebar Upgrade">Upgrade now</a>
+        </div>
+        <div class="side-user-wrap" data-auth-only>
+          <button type="button" class="side-user" id="dash-user-chip" aria-haspopup="menu" aria-expanded="false">
+            <img class="side-user-pic" data-auth-picture alt="" referrerpolicy="no-referrer" />
+            <span class="side-user-text"><span class="side-user-name" data-auth-name>Account</span><span class="side-user-plan"><span data-auth-tier>free</span> plan</span></span>
+            <svg class="side-user-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="side-user-menu" id="dash-user-menu" hidden role="menu">
+            <a href="/account" role="menuitem">Dashboard</a>
+            <a href="/settings" role="menuitem">Settings</a>
+            <a href="/pricing" role="menuitem">Plan &amp; billing</a>
+            <button type="button" role="menuitem" id="sign-out-btn">Sign out</button>
+          </div>
+        </div>
+      </div>
     </aside>
 
-    <main class="dash-main">
+    <div class="app-main">
+      <header class="topbar">
+        <div class="topbar-title"><h1>Study</h1></div>
+        <div class="topbar-actions" data-auth-only>
+          <a href="/pricing" class="topbar-pro" data-tier-only="free" data-track="Practice Upgrade"><span aria-hidden="true">&#128081;</span> Upgrade to Study</a>
+          <button type="button" class="topbar-streak" title="Daily streak" aria-label="Daily streak">
+            <span class="topbar-streak-flame" aria-hidden="true">&#128293;</span>
+            <span><span id="dash-streak-num">0</span> day streak</span>
+          </button>
+          <button type="button" class="topbar-streak quiz-sparks-chip" title="Sparks earned" aria-label="Sparks earned">
+            <span class="quiz-sparks-star" aria-hidden="true">&#10024;</span>
+            <span><span id="dash-sparks-num">0</span> Sparks</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content practice-content">
+        <div class="col-main">
 
       <!-- ===== List view (default) ===== -->
       <section class="prac-list" id="prac-list">
 
         <header class="prac-hero">
           <div class="prac-hero-text">
-            <span class="prac-eyebrow">PRACTICE</span>
+            <span class="prac-eyebrow">STUDY</span>
             <h1 class="prac-h1">Review what you&rsquo;ve learned.</h1>
             <p class="prac-sub" id="prac-sub">Pop reshuffles cards based on what you know — review what&rsquo;s slipping, skip what&rsquo;s solid.</p>
           </div>
@@ -101,6 +108,14 @@
             <span class="prac-stat-num" id="prac-total">&mdash;</span>
             <span class="prac-stat-label">Total cards</span>
           </div>
+        </div>
+
+        <!-- Deck picker — pick a deck (or all) before starting a session. Filled in by practice.js. -->
+        <div class="prac-picker" id="prac-picker" hidden>
+          <div class="prac-picker-head">
+            <span class="prac-picker-eyebrow">STUDY FROM</span>
+          </div>
+          <div class="prac-picker-list" id="prac-picker-list" role="tablist"></div>
         </div>
 
         <button type="button" class="prac-start" id="prac-start" data-track="Practice Start" disabled>
@@ -183,34 +198,38 @@
         </div>
       </section>
 
-    </main>
+        </div><!-- /.col-main -->
 
-    <aside class="dash-rail" aria-label="Practice rail">
-      <div class="rail-card rail-mascot">
-        <img class="rail-mascot-img" src="/images/popcard-mascot.png" alt="" />
-        <div class="rail-mascot-bubble" id="rail-mascot-bubble">
-          A 10-card session takes about 3 minutes. Try to be honest with the grades — that&rsquo;s how Pop learns what to bring back.
-        </div>
-      </div>
+        <aside class="col-rail" aria-label="Practice info">
+          <section class="card prac-tip">
+            <img class="prac-tip-mascot" src="/images/popcard-mascot.png" alt="" />
+            <p class="prac-tip-text">A 10-card session takes about 3 minutes. Be honest with the grades &mdash; that&rsquo;s how Pop learns what to bring back.</p>
+          </section>
+          <section class="card">
+            <header class="card-head"><h3>How it works</h3></header>
+            <ol class="prac-howto">
+              <li>Read the question, think of the answer.</li>
+              <li>Reveal &amp; check yourself.</li>
+              <li>Grade <strong>Hard / Good / Easy</strong>.</li>
+              <li>Cards you marked Hard come back sooner.</li>
+            </ol>
+          </section>
+        </aside>
 
-      <div class="rail-card">
-        <div class="rail-card-head"><h3>How it works</h3></div>
-        <ol class="prac-howto">
-          <li>Read the question, think of the answer.</li>
-          <li>Reveal &amp; check yourself.</li>
-          <li>Grade <strong>Hard / Good / Easy</strong>.</li>
-          <li>Cards you marked Hard come back sooner.</li>
-        </ol>
-      </div>
-    </aside>
+      </div><!-- /.content -->
+    </div><!-- /.app-main -->
+  </div><!-- /.app-shell -->
 
-  </div>
+  <div class="app-toast" id="app-toast" hidden></div>
 
   <script src="analytics.js"></script>
   <script src="cookies.js"></script>
   <script src="auth.js"></script>
   <script src="lang-picker.js"></script>
   <script src="i18n.js"></script>
-  <script src="practice.js?v=3"></script>
+  <script src="sfx.js?v=1"></script>
+  <script src="notifications.js?v=1"></script>
+  <script src="mobile-nav.js?v=1"></script>
+  <script src="practice.js?v=8"></script>
 </body>
 </html>

@@ -612,27 +612,31 @@ const QUIZ_SCHEMA = {
           options: {
             type: 'array',
             items: { type: 'string' },
+            minItems: 4,
+            maxItems: 4,
           },
           correctIndex: { type: 'integer' },
           explanation: { type: 'string' },
-          kind: { type: 'string', enum: ['multiple_choice', 'true_false'] },
         },
-        required: ['question', 'options', 'correctIndex', 'explanation', 'kind'],
+        required: ['question', 'options', 'correctIndex', 'explanation'],
       },
     },
   },
   required: ['questions'],
 };
 
-const QUIZ_SYSTEM = `You are Popcard's quiz generator. Turn a deck of study cards into 8–12 multiple-choice questions that test real understanding, not just memorisation.
+const QUIZ_SYSTEM = `You are Popcard's quiz generator. Turn a deck of study cards into 8–12 four-option multiple-choice questions that test real understanding, not just memorisation.
 
 Rules:
 - Mix difficulty: about a third easy recall, a third applied/conceptual, a third harder synthesis.
-- For multiple_choice questions: 4 options (correctIndex 0–3). Distractors must be plausible — based on common confusions, near-misses, or related concepts from the source material. No silly options.
-- For true_false questions: exactly 2 options ["True", "False"]; correctIndex is 0 or 1; use sparingly (max 2 of these per quiz).
+- Every question has EXACTLY 4 options (correctIndex 0–3), and exactly one is correct.
+- DISTRACTORS ARE THE MOST IMPORTANT THING. The three wrong options must be about the SAME concept as the correct answer — plausible near-misses, common student misconceptions, or commonly-confused related ideas. NEVER use options that are about a different topic, and never make the correct answer the only one that even relates to the question. A student who doesn't know the material should find all four genuinely tempting.
+- KEEP OPTIONS SHORT AND PARALLEL: each option ideally under 12 words, and all four similar in length, grammar, and format (e.g. all definitions, or all methods). The correct option must be a concise paraphrase — never a long passage copied from a card, and never obviously longer or more detailed than the distractors.
+- The question stem is tight and self-contained (e.g. "Which statement best describes X?", "What is the first step when …?"). Don't ask "what is X and why …" compound questions.
+- Vary which position (1st–4th) holds the correct answer across the quiz — don't cluster it.
 - Every question must be answerable from the source cards alone.
-- Explanation should be one or two sentences and tell the learner why the correct answer is right (and ideally why the distractor they likely picked is wrong).
-- No question/answer should duplicate another question's content.
+- Explanation: one or two sentences on why the correct answer is right (and ideally why a tempting distractor is wrong).
+- No question should duplicate another question's content.
 - Output strict JSON matching the provided schema.`;
 
 export async function generateQuiz({ deckTitle, cards }) {
@@ -660,11 +664,12 @@ export async function generateQuiz({ deckTitle, cards }) {
   if (!raw) throw new Error('Empty response from model');
   const parsed = JSON.parse(raw);
 
-  // Defensive: clamp correctIndex to options bounds, dedupe questions
+  // Defensive: keep only well-formed 4-option questions, dedupe by stem.
   const seen = new Set();
   const questions = (parsed.questions || []).filter((q) => {
-    if (!q?.options?.length) return false;
-    if (q.correctIndex < 0 || q.correctIndex >= q.options.length) return false;
+    if (!Array.isArray(q?.options) || q.options.length !== 4) return false;
+    if (q.options.some((o) => typeof o !== 'string' || !o.trim())) return false;
+    if (q.correctIndex < 0 || q.correctIndex > 3) return false;
     const key = q.question.toLowerCase().trim();
     if (seen.has(key)) return false;
     seen.add(key);
@@ -672,6 +677,266 @@ export async function generateQuiz({ deckTitle, cards }) {
   });
 
   return { questions, model: MODEL };
+}
+
+// ---------------------------------------------------------------------------
+// Deck critique (the "trust pass"). A second LLM pass that re-reads every
+// card and rates its factual confidence. The goal is to catch the rare
+// hallucinated fact or muddled answer BEFORE the learner memorises it wrong —
+// because a memory app lives or dies on trust.
+//
+// Returns: { verdicts: [{ index, confidence: 'high'|'medium'|'low', issue }], model }
+//   - 'high'   : factually sound, clearly stated, safe to learn
+//   - 'medium' : likely fine but slightly ambiguous / could mislead
+//   - 'low'    : a probable factual error, internal contradiction, or claim
+//                the source wouldn't support — flag it for the learner
+//
+// This is deliberately conservative: we'd rather pass a fine card than nag.
+// Only genuinely shaky cards should come back medium/low.
+// ---------------------------------------------------------------------------
+const REVIEW_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    verdicts: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          index: { type: 'integer', description: 'The [Card N] number being judged (1-based).' },
+          confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+          issue: { type: ['string', 'null'], description: 'Short reason (<=15 words) when confidence is medium/low; null when high.' },
+        },
+        required: ['index', 'confidence', 'issue'],
+      },
+    },
+  },
+  required: ['verdicts'],
+};
+
+const REVIEW_SYSTEM = `You are Popcard's fact-checker. You review study cards a learner is about to memorise and rate how much you'd trust each one. Your ONLY job is accuracy — not style, not formatting, not whether you'd phrase it differently.
+
+For each card, judge the QUESTION + ANSWER pair and assign a confidence:
+- "high": the answer is factually correct and clearly stated. The learner can safely commit it to memory. THE VAST MAJORITY OF CARDS SHOULD BE HIGH.
+- "medium": probably correct but something is ambiguous, oversimplified to the point it could mislead, or a claim is stated more strongly than warranted. Worth a second look.
+- "low": a likely factual error, an internal contradiction, a definition that's wrong or swapped, a date/number/name that looks incorrect, or a claim the source material almost certainly would not support.
+
+Rules:
+- Be conservative. Only flag medium/low when you have a genuine, specific concern. Do NOT flag a card just because it's brief, or because you'd word it differently, or because it lacks a citation. Stylistic taste is not your job.
+- For medium/low, the "issue" must name the SPECIFIC problem in <=15 words (e.g. "Mitochondria make ATP, not DNA — answer is wrong"). For high, issue is null.
+- Judge general factual correctness against well-established knowledge. You are catching hallucinations and slips, not nitpicking.
+- Output a verdict for EVERY card, identified by its [Card N] index. Output strict JSON matching the schema.`;
+
+export async function reviewDeckCards({ deckTitle, cards }) {
+  // Only review real study cards. Skip the position-0 overview (it's a
+  // summary, not a factual claim) — caller passes the slice it wants judged.
+  const list = (cards || []).filter((c) => c && c.question && c.answer);
+  if (!list.length) return { verdicts: [], model: MODEL };
+
+  const cardText = list.map((c, i) =>
+    `[Card ${i + 1}] Q: ${c.question}\nA: ${stripMarkup(c.answer).slice(0, 900)}`
+  ).join('\n\n');
+
+  const userPrompt = `Deck: ${deckTitle || 'Untitled'}\n\nReview these ${list.length} cards:\n\n${cardText}\n\nReturn a confidence verdict for every card.`;
+
+  const completion = await openai.chat.completions.create({
+    model: MODEL,
+    messages: [
+      { role: 'system', content: REVIEW_SYSTEM },
+      { role: 'user', content: userPrompt },
+    ],
+    max_completion_tokens: 8000,
+    response_format: {
+      type: 'json_schema',
+      json_schema: { name: 'popcard_review', schema: REVIEW_SCHEMA, strict: true },
+    },
+  });
+
+  const raw = completion.choices[0]?.message?.content;
+  if (!raw) throw new Error('Empty response from review model');
+  const parsed = JSON.parse(raw);
+  const verdicts = (parsed.verdicts || [])
+    .filter((v) => Number.isInteger(v.index) && v.index >= 1 && v.index <= list.length)
+    .map((v) => ({
+      index: v.index,
+      confidence: ['high', 'medium', 'low'].includes(v.confidence) ? v.confidence : 'high',
+      issue: v.confidence === 'high' ? null : (v.issue || null),
+    }));
+  return { verdicts, model: MODEL };
+}
+
+// Strip the lightweight markup we add to answers so the reviewer judges the
+// claim, not the formatting.
+function stripMarkup(s) {
+  return String(s || '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/•/g, '-')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
+}
+
+// ---------------------------------------------------------------------------
+// Lesson grouping (the "make lessons mean something" pass). The positional
+// chunker splits cards every 8 in raw order — arbitrary, and it can strand a
+// thin second lesson with no distinct value. This pass reads the deck's cards
+// (already in a sensible order) and decides where the REAL topic boundaries
+// are, names each lesson by its theme, and lets the lesson COUNT follow the
+// content. A tight single-topic deck becomes one lesson; only a genuine topic
+// shift starts a new one.
+//
+// Returns: { groups: [{ title, count }], model }  — counts are sizes of
+// CONTIGUOUS runs over the ordered card list and must sum to the card total
+// (the caller validates and falls back to positional chunking if not).
+// ---------------------------------------------------------------------------
+const GROUP_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    lessons: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          title: { type: 'string', description: 'A short, specific theme name (3–6 words) for this lesson.' },
+          count: { type: 'integer', description: 'How many consecutive cards (from where the previous lesson ended) belong to this lesson.' },
+        },
+        required: ['title', 'count'],
+      },
+    },
+  },
+  required: ['lessons'],
+};
+
+const GROUP_SYSTEM = `You organise a deck of study cards into LESSONS — coherent, themed units a learner works through one at a time, like a course module.
+
+The cards are given to you IN ORDER and numbered. Your job: decide where the real topic boundaries fall, and give each lesson a short, specific theme name.
+
+Hard rules:
+- A lesson is a MEANINGFUL unit. Only start a new lesson at a genuine shift in topic. If you can't say what a lesson teaches that the previous one didn't, don't split there.
+- The NUMBER of lessons follows the content, not a fixed size. A short, single-topic deck can be ONE lesson. A long, wide-ranging deck might be five or six.
+- Aim for roughly 5–9 cards per lesson, but let the topic decide. Never create a 1–3 card lesson unless that tiny group is a genuinely distinct, must-know topic — otherwise fold those cards into the adjacent lesson.
+- Lessons cover CONTIGUOUS runs of the ordered cards (lesson 1 = the first N cards, lesson 2 = the next M, …). The counts MUST add up to exactly the total number of cards. Do not reorder.
+- Title each lesson by its actual theme in 3–6 words (e.g. "Atomic structure & bonding", "Cells and enzymes", "The First Crusade"). Never "Lesson 1" or "Part 2" — name the content.
+
+Output strict JSON matching the schema.`;
+
+export async function groupCardsIntoLessons({ deckTitle, cards }) {
+  const list = (cards || []).filter((c) => c && c.question);
+  // Too small to be a multi-lesson path — one lesson, named after the deck.
+  if (list.length < 6) {
+    return { groups: [{ title: deckTitle || 'Lesson 1', count: list.length }], model: MODEL };
+  }
+
+  const cardText = list.map((c, i) => `${i + 1}. ${c.question}`).join('\n');
+  const userPrompt = `Deck: ${deckTitle || 'Untitled'}\n\n${list.length} cards, in order:\n${cardText}\n\nGroup them into themed lessons. Counts must total ${list.length}.`;
+
+  const completion = await openai.chat.completions.create({
+    model: MODEL,
+    messages: [
+      { role: 'system', content: GROUP_SYSTEM },
+      { role: 'user', content: userPrompt },
+    ],
+    // gpt-5-mini is a reasoning model — give ample headroom so reasoning
+    // tokens don't starve the (small) JSON output. 1200 returned empty.
+    max_completion_tokens: 8000,
+    response_format: {
+      type: 'json_schema',
+      json_schema: { name: 'popcard_lessons', schema: GROUP_SCHEMA, strict: true },
+    },
+  });
+
+  const raw = completion.choices[0]?.message?.content;
+  if (!raw) throw new Error('Empty response from grouping model');
+  const parsed = JSON.parse(raw);
+  let groups = (parsed.lessons || [])
+    .filter((g) => g && typeof g.title === 'string' && Number.isInteger(g.count) && g.count > 0)
+    .map((g) => ({ title: g.title.trim().slice(0, 80), count: g.count }));
+
+  // Validate the counts tile the whole deck exactly. If the model drifted,
+  // signal failure so the caller keeps the positional chunking.
+  const total = groups.reduce((s, g) => s + g.count, 0);
+  if (!groups.length || total !== list.length) {
+    return { groups: null, model: MODEL };
+  }
+  return { groups, model: MODEL };
+}
+
+// ---------------------------------------------------------------------------
+// AI Tutor — a chat grounded in the user's own deck. The tutor can quiz the
+// learner, explain a card more simply, connect ideas across the deck, or
+// answer a question — but it stays anchored to what's actually in the deck so
+// it can't drift into hallucinated tangents. This is the premium "why is this
+// an AI product" feature.
+//
+// Scoped to one deck for v1: the deck's cards are passed as grounding context
+// (bounded, so no embeddings infra needed). Cross-deck retrieval is a later
+// enhancement.
+// ---------------------------------------------------------------------------
+
+// How much card context to feed the tutor. Generous — most decks fit whole.
+const TUTOR_CARD_CHAR_BUDGET = 24000;
+const TUTOR_MAX_HISTORY = 16;   // last N turns kept (plus the system prompt)
+
+function buildTutorContext(cards) {
+  const lines = [];
+  let used = 0;
+  for (let i = 0; i < cards.length; i++) {
+    const c = cards[i];
+    if (!c.question) continue;
+    const block = `[Card ${i + 1}] Q: ${c.question}\nA: ${stripMarkup(c.answer || '').slice(0, 700)}`;
+    if (used + block.length > TUTOR_CARD_CHAR_BUDGET) break;
+    lines.push(block);
+    used += block.length;
+  }
+  return lines.join('\n\n');
+}
+
+const TUTOR_SYSTEM = (deckTitle, context) => `You are Pop, Popcard's friendly study tutor. You're helping a learner master a specific deck of study cards. Your whole personality: encouraging, sharp, never condescending, allergic to waffle. You explain things the way a brilliant friend would — plain language, concrete, a little warm.
+
+THE DECK ("${deckTitle || 'this deck'}") — these are the cards the learner is studying. This is your ground truth:
+
+${context}
+
+HOW YOU HELP:
+- Answer the learner's questions about this material clearly and correctly.
+- If they ask you to quiz them, ask ONE question at a time, wait for their answer, then tell them if they're right and why — don't dump a whole quiz at once.
+- If they ask you to explain a card or concept more simply, do it — analogies, examples, whatever makes it click.
+- If they ask how ideas connect, draw the links between cards in the deck.
+- If they got something wrong, be kind about it and re-explain the bit they missed.
+
+RULES:
+- Stay grounded in the deck. If the learner asks something the deck genuinely doesn't cover, you can answer from general knowledge BUT say clearly that it's beyond this deck (e.g. "That's not in this deck, but here's the gist…"). Never invent facts and never pretend a card says something it doesn't.
+- Keep replies tight. A few sentences usually. Use a short bullet list only when it genuinely helps. No walls of text.
+- Never use markdown headers, tables, or code fences. Plain text with the occasional "- " bullet is all you need.
+- You are talking TO the learner. Be direct and personable. No "As an AI…", no meta-commentary.`;
+
+export async function tutorReply({ deckTitle, cards, messages }) {
+  const context = buildTutorContext(cards || []);
+  // Keep only the last N turns to bound tokens; the system prompt carries the
+  // deck context every time (cheap relative to re-deriving it).
+  const history = (messages || [])
+    .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+    .slice(-TUTOR_MAX_HISTORY)
+    .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }));
+
+  if (!history.length || history[history.length - 1].role !== 'user') {
+    throw new Error('Last message must be from the user');
+  }
+
+  const completion = await openai.chat.completions.create({
+    model: MODEL,
+    messages: [
+      { role: 'system', content: TUTOR_SYSTEM(deckTitle, context) },
+      ...history,
+    ],
+    max_completion_tokens: 1200,
+  });
+
+  const reply = completion.choices[0]?.message?.content;
+  if (!reply) throw new Error('Empty response from tutor');
+  return { reply: reply.trim(), model: MODEL };
 }
 
 export async function refineCard({ action, question, answer }) {

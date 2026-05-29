@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Authenticated app surfaces — no SEO value, keep them out of the index.
+Disallow: /account
+Disallow: /deck/
+Disallow: /deck?
+Disallow: /practice
+Disallow: /quizzes
+Disallow: /decks
+Disallow: /calendar
+Disallow: /casual
+Disallow: /settings
+Disallow: /success
+Disallow: /api/
+
+Sitemap: https://www.popcard.me/sitemap.xml

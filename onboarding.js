@@ -6,7 +6,9 @@
 // succeeds. If the user is already authenticated and lands here, they get
 // bounced straight to /account.
 (function () {
-  const TOTAL_STEPS = 5;
+  // 6 steps as of Sprint 2: welcome → topics → mode → language → try-a-card → auth.
+  // The try-card step is the "experience first, sign up second" hook (Duolingo-style).
+  const TOTAL_STEPS = 6;
   const STORAGE_KEY = 'popcardOnboarding';
 
   // --- Reset escape hatch ----------------------------------------------------
@@ -131,7 +133,8 @@
       case 2: return state.topics.length > 0;       // at least one topic
       case 3: return state.mode !== null;
       case 4: return state.language !== null;
-      case 5: return true;                          // auth has its own CTA
+      case 5: return state.tryGraded === true;      // try-a-card: must grade before continue
+      case 6: return true;                          // auth has its own CTA
       default: return true;
     }
   }
@@ -183,6 +186,66 @@
     });
   });
 
+  // Step 5 — try a card (flip + grade). The reveal flips the card, then the
+  // three grade buttons appear. Picking a grade unlocks CONTINUE and makes
+  // Pop react. State.tryGraded is what isStepValid checks.
+  const tryCard = document.getElementById('ob-try-card');
+  const tryReveal = document.getElementById('ob-try-reveal');
+  const tryGrades = document.getElementById('ob-try-grades');
+  const tryBubble = document.getElementById('ob-try-bubble');
+  const tryMascot = document.getElementById('ob-try-mascot');
+
+  function flipTryCard() {
+    if (!tryCard) return;
+    if (tryCard.classList.contains('is-flipped')) return;
+    tryCard.classList.add('is-flipped');
+    if (tryReveal) tryReveal.disabled = true;
+    if (tryGrades) {
+      // Small delay so the flip finishes before grades pop in.
+      setTimeout(() => { tryGrades.hidden = false; }, 350);
+    }
+    if (tryBubble) {
+      tryBubble.innerHTML = '<span>Now grade yourself — how easy was that?</span>';
+    }
+    window.PopcardAnalytics?.track('onboarding_try_card_revealed');
+  }
+
+  if (tryCard) {
+    tryCard.addEventListener('click', (e) => {
+      if (e.target.closest('.ob-try-grade')) return; // grades handle their own clicks
+      flipTryCard();
+    });
+    tryCard.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipTryCard(); }
+    });
+  }
+  if (tryReveal) tryReveal.addEventListener('click', (e) => { e.stopPropagation(); flipTryCard(); });
+
+  document.querySelectorAll('.ob-try-grade').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const grade = btn.dataset.grade;
+      state.tryGraded = true;
+      save();
+      // Visual: highlight chosen grade, dim others
+      document.querySelectorAll('.ob-try-grade').forEach((b) => {
+        b.classList.toggle('is-selected', b === btn);
+        b.classList.toggle('is-dim', b !== btn);
+      });
+      // Pop reacts to the grade
+      const reactions = {
+        hard: { msg: 'Nice work being honest. Pop will show this one to you again soon.', img: '/images/popcard-mascot.png' },
+        good: { msg: 'Nailed it. Pop will check back in a couple of days.', img: '/images/mascot-cheer.png' },
+        easy: { msg: 'Boom. Pop will park this one for a week — you\'ve got it.', img: '/images/mascot-cheer.png' },
+      };
+      const r = reactions[grade] || reactions.good;
+      if (tryBubble) tryBubble.innerHTML = `<span>${r.msg}</span>`;
+      if (tryMascot) tryMascot.src = r.img;
+      refreshCTA(5);
+      window.PopcardAnalytics?.track('onboarding_try_card_graded', { grade });
+    });
+  });
+
   // Re-paint UI to reflect previously-saved selections (e.g. after refresh)
   function syncStepUI(n) {
     if (n === 2) {
@@ -197,6 +260,14 @@
       document.querySelectorAll('#ob-lang .ob-lang').forEach((pill) => {
         pill.classList.toggle('is-selected', state.language === pill.dataset.value);
       });
+    } else if (n === 5 && state.tryGraded) {
+      // If they're coming back to this step having already graded, skip
+      // straight to the "now sign up" feeling — flip card + show grades
+      // already selected. We don't reset the grade so CONTINUE stays unlocked.
+      if (tryCard && !tryCard.classList.contains('is-flipped')) {
+        tryCard.classList.add('is-flipped');
+      }
+      if (tryGrades) tryGrades.hidden = false;
     }
   }
 

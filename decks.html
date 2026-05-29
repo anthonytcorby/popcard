@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Your decks &mdash; Popcard</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png?v=3" />
+  <link rel="apple-touch-icon" href="/images/favicon.png?v=3" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="dashboard.css?v=15" />
+</head>
+<body class="dashboard is-study-mode decks-page">
+
+  <div class="app-loading" id="account-loading">
+    <img src="/images/popcard-icon.png" alt="" class="app-loading-icon" />
+    <span>Loading your decks&hellip;</span>
+  </div>
+
+  <div class="app-shell">
+
+    <!-- ===== LEFT SIDEBAR ============================================== -->
+    <aside class="side" aria-label="Primary navigation">
+      <a class="side-brand" href="/account">
+        <img class="side-brand-icon" src="/images/popcard-icon.png" alt="" />
+        <span class="side-brand-word">popcard</span>
+      </a>
+
+      <nav class="side-nav">
+        <a href="/account" class="side-item">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+          <span>Home</span>
+        </a>
+        <a href="/casual" class="side-item">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 11-13h-8z"/></svg>
+          <span>Casual</span>
+        </a>
+        <a href="/practice" class="side-item">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m22 10-10-5L2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg>
+          <span>Study</span>
+        </a>
+        <a href="/quizzes" class="side-item">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 11h6"/><path d="M9 15h4"/></svg>
+          <span>Quizzes</span>
+        </a>
+        <a href="/decks" class="side-item is-active">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="16" rx="2"/><path d="M21 8v12a1 1 0 0 1-1 1H8"/></svg>
+          <span>Decks</span>
+        </a>
+        <a href="/calendar" class="side-item">
+          <svg class="side-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span>Calendar</span>
+        </a>
+      </nav>
+
+      <div class="side-foot">
+        <div class="side-upsell" data-tier-only="free">
+          <div class="side-upsell-head">
+            <span class="side-upsell-crown" aria-hidden="true">&#128081;</span>
+            <strong>Unlock Popcard Study</strong>
+          </div>
+          <p>Unlimited Study Mode, quizzes, and your own AI tutor — for £3.99/mo.</p>
+          <a href="/pricing" class="side-upsell-btn" data-track="Sidebar Upgrade">Upgrade now</a>
+        </div>
+
+        <div class="side-user-wrap" data-auth-only>
+          <button type="button" class="side-user" id="dash-user-chip" aria-haspopup="menu" aria-expanded="false">
+            <img class="side-user-pic" data-auth-picture alt="" referrerpolicy="no-referrer" />
+            <span class="side-user-text">
+              <span class="side-user-name" data-auth-name>Account</span>
+              <span class="side-user-plan"><span data-auth-tier>free</span> plan</span>
+            </span>
+            <svg class="side-user-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="side-user-menu" id="dash-user-menu" hidden role="menu">
+            <a href="/account" role="menuitem">Dashboard</a>
+            <a href="/settings" role="menuitem">Settings</a>
+            <a href="/pricing" role="menuitem">Plan &amp; billing</a>
+            <button type="button" role="menuitem" id="sign-out-btn">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN COLUMN ============================================== -->
+    <div class="app-main">
+
+      <header class="topbar">
+        <form class="topbar-search" id="decks-search-form" role="search">
+          <svg class="topbar-search-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="decks-search" class="ph-no-capture" placeholder="Search your decks&hellip;" aria-label="Search decks" autocomplete="off" />
+          <kbd class="topbar-kbd">&#8984; K</kbd>
+        </form>
+        <div class="topbar-actions">
+          <a href="/account" class="topbar-pro" data-track="Decks New"><span aria-hidden="true">&#10024;</span> New deck</a>
+          <button type="button" class="topbar-streak" id="dash-streak-chip" aria-label="Daily streak" data-auth-only>
+            <span class="topbar-streak-flame" aria-hidden="true">&#128293;</span>
+            <span><span id="dash-streak-num">0</span> day streak</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content decks-content">
+        <div class="col-main">
+
+          <section class="decklib" id="decks">
+            <header class="card-head decklib-head">
+              <h2>Your decks</h2>
+            </header>
+            <div class="decklib-loading" id="account-decks-loading">Loading your decks&hellip;</div>
+            <div class="decklib-empty" id="account-decks-empty" hidden>
+              <p>No decks yet. Pop your first one from the dashboard.</p>
+              <a href="/account" class="decklib-empty-cta">Go to dashboard</a>
+            </div>
+            <div class="decklib-grid" id="account-decks-grid" hidden></div>
+            <div class="decklib-foot" id="account-decks-footer" hidden>
+              <button type="button" class="decklib-delete-all" id="delete-all-decks-btn">Delete all decks</button>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-toast" id="app-toast" hidden></div>
+
+  <script src="analytics.js"></script>
+  <script src="cookies.js"></script>
+  <script src="auth.js"></script>
+  <script src="i18n.js"></script>
+  <script src="notifications.js?v=1"></script>
+  <script src="mobile-nav.js?v=1"></script>
+  <script src="decks.js?v=1"></script>
+</body>
+</html>

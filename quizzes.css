@@ -6,6 +6,30 @@
 
 /* ===== Deck picker (lobby, inside dashboard chrome) ====================== */
 
+/* The picker is one child of the dashboard .col-main; give its own sections
+   the same vertical rhythm as the dashboard's stacked cards. */
+.quiz-list { display: flex; flex-direction: column; gap: 22px; }
+
+/* Sparks chip in the top bar — reuses the dashboard .topbar-streak shape. */
+.quiz-sparks-star { color: var(--purple); font-size: 15px; }
+/* Keep top-bar controls on one line even with the extra Sparks chip. */
+.topbar-pro, .topbar-streak { white-space: nowrap; }
+
+/* Right-rail "tip" card — mascot + note, on the dashboard .card base. */
+.quiz-tip {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(165deg, #F3EEFF 0%, #FBF9FF 100%);
+  border-color: var(--purple-ring);
+}
+.quiz-tip-mascot {
+  width: auto; height: 84px; flex-shrink: 0; object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(15,15,20,0.08));
+}
+.quiz-tip-text {
+  margin: 0; font-family: var(--font-display); font-weight: 700;
+  font-size: 13px; color: var(--ink); line-height: 1.35;
+}
+
 .quiz-eyebrow {
   display: inline-block;
   font-family: var(--font-display);
@@ -65,7 +89,6 @@
   border: 2px solid var(--line);
   border-radius: var(--r-lg);
   padding: 18px;
-  padding-right: 44px;        /* room for the check badge top-right */
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -105,6 +128,11 @@
   border-color: var(--purple);
   color: #fff;
 }
+/* YouTube thumbnail banner on a quiz deck card */
+.quiz-deck.has-thumb { overflow: hidden; }
+.quiz-deck-thumb { position: relative; margin: -18px -18px 14px; aspect-ratio: 16 / 9; background: var(--line-2); }
+.quiz-deck-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.quiz-deck-thumb-badge { position: absolute; bottom: 7px; left: 7px; width: 22px; height: 22px; border-radius: 5px; background: #FF0033; color: #fff; display: grid; place-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
 .quiz-deck-mode {
   align-self: flex-start;
   font-family: var(--font-display);
@@ -304,7 +332,7 @@
    body.is-quiz-active.
    ========================================================================= */
 
-.quiz-rounds,
+.quiz-welcome,
 .quiz-session,
 .quiz-complete {
   position: fixed;
@@ -315,6 +343,14 @@
   flex-direction: column;
   font-family: var(--font-body);
 }
+/* CRITICAL: the display:flex above is an author rule, which beats the
+   browser's UA `[hidden]{display:none}` — so without this override all three
+   overlays render on page load (the user sees the "You finished" complete
+   screen before starting a quiz). The class+attribute selector (0,2,0) beats
+   the plain class rule (0,1,0), restoring the hidden attribute's effect. */
+.quiz-welcome[hidden],
+.quiz-session[hidden],
+.quiz-complete[hidden] { display: none; }
 
 /* When the quiz session takes over, hide the dashboard chrome behind it so it
    doesn't bleed through if the user resizes or the overlay has any transparency. */
@@ -430,7 +466,7 @@ body.is-quiz-active { overflow: hidden; }
 .qz-stage {
   position: relative;
   width: 100%;
-  height: 180px;
+  height: 270px;          /* mascot +50% */
   display: grid;
   place-items: center;
 }
@@ -439,7 +475,7 @@ body.is-quiz-active { overflow: hidden; }
   inset: 0;
   margin: auto;
   width: auto;
-  height: 180px;
+  height: 270px;
   object-fit: contain;
   display: none;
   filter: drop-shadow(0 16px 22px rgba(15,15,20,0.10));
@@ -450,6 +486,18 @@ body.is-quiz-active { overflow: hidden; }
 @keyframes qz-mascot-in {
   from { opacity: 0; transform: translateY(8px) scale(0.94); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* The VIDEO mascot states (quizmaster ask/ask2, the 3 dances) have a white
+   background, so they get the same white-match treatment as the welcome /
+   onboarding video: white bg + brightness/contrast nudge + slight scale, and
+   NO drop-shadow (which would outline the white rectangle as a box). The PNG
+   states (cheer, sad) are transparent and keep the drop-shadow from the base
+   .qz-mascot rule above. `scale:` (the individual property) is used instead of
+   transform so it composes with the qz-mascot-in entry animation. */
+video.qz-mascot {
+  background: #fff;
+  filter: brightness(1.01) contrast(1.005);
+  scale: 1.04;
 }
 
 /* Speech bubble holding the question */
@@ -515,23 +563,25 @@ body.is-quiz-active { overflow: hidden; }
   width: 100%;
   margin-top: 6px;
 }
+/* Answer cards use the deck-mode gradient (same as .deck-card-a in the deck
+   view) — a richer look than the old flat-white rows. White text on purple. */
 .qz-option {
   display: grid;
   grid-template-columns: 36px 1fr 24px;
   align-items: center;
   gap: 14px;
   padding: 16px 18px;
-  background: #fff;
-  border: 2px solid var(--line);
+  background: linear-gradient(155deg, #5826D9 0%, #6E3DEA 60%, #8B5CF6 100%);
+  border: none;
   border-radius: 14px;
   cursor: pointer;
   text-align: left;
   font-family: var(--font-body);
   font-size: 15px;
-  font-weight: 500;
-  color: var(--ink);
-  box-shadow: 0 4px 0 var(--line);
-  transition: border-color .12s, background .12s, transform .08s, box-shadow .12s;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 4px 0 var(--purple-deep), 0 8px 20px rgba(110,61,234,0.22);
+  transition: transform .08s, box-shadow .12s, filter .12s, opacity .12s;
   line-height: 1.4;
   animation: qz-opt-in .35s ease-out backwards;
 }
@@ -543,46 +593,43 @@ body.is-quiz-active { overflow: hidden; }
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.qz-option:not(:disabled):hover { border-color: var(--purple-ring); background: var(--line-2); }
-.qz-option:not(:disabled):active { transform: translateY(2px); box-shadow: 0 2px 0 var(--line); }
+.qz-option:not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 6px 0 var(--purple-deep), 0 12px 26px rgba(110,61,234,0.28); }
+.qz-option:not(:disabled):active { transform: translateY(2px); box-shadow: 0 2px 0 var(--purple-deep), 0 6px 14px rgba(110,61,234,0.2); }
 .qz-option.is-selected {
-  border-color: var(--purple);
-  background: var(--purple-soft);
-  box-shadow: 0 4px 0 var(--purple-ring);
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,0.92), 0 4px 0 var(--purple-deep), 0 10px 24px rgba(110,61,234,0.3);
 }
-.qz-option.is-selected .qz-option-letter { background: var(--purple); color: #fff; }
 .qz-option-letter {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: var(--line-2);
-  color: var(--mute);
+  background: rgba(255,255,255,0.22);
+  color: #fff;
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 13px;
   display: grid;
   place-items: center;
-  border: 2px solid var(--line);
-  transition: background .12s, color .12s, border-color .12s;
+  border: none;
+  transition: background .12s, color .12s;
 }
-.qz-option.is-selected .qz-option-letter { border-color: var(--purple); }
+.qz-option.is-selected .qz-option-letter { background: #fff; color: var(--purple); }
 .qz-option-text { line-height: 1.4; }
-.qz-option-mark { color: transparent; line-height: 1; font-size: 18px; font-weight: 800; }
+.qz-option-mark { color: #fff; line-height: 1; font-size: 18px; font-weight: 800; }
 .qz-option:disabled { cursor: default; }
+/* After grading: correct = green gradient, the picked-wrong = red gradient. */
 .qz-option.is-correct {
-  border-color: var(--green);
-  background: #ECFDF5;
-  box-shadow: 0 4px 0 var(--green);
+  background: linear-gradient(155deg, #178A5B 0%, #1FA56C 55%, #2BC489 100%);
+  box-shadow: 0 4px 0 #126C48, 0 10px 24px rgba(43,196,137,0.32);
 }
-.qz-option.is-correct .qz-option-letter { background: var(--green); color: #fff; border-color: var(--green); }
-.qz-option.is-correct .qz-option-mark { color: var(--green-deep); }
+.qz-option.is-correct .qz-option-letter { background: rgba(255,255,255,0.28); color: #fff; }
 .qz-option.is-wrong {
-  border-color: #FCA5A5;
-  background: #FEF2F2;
-  box-shadow: 0 4px 0 #FCA5A5;
+  background: linear-gradient(155deg, #B92D34 0%, #D83C42 55%, #E5484D 100%);
+  box-shadow: 0 4px 0 #8F2229, 0 10px 24px rgba(229,72,77,0.32);
 }
-.qz-option.is-wrong .qz-option-letter { background: #DC2626; color: #fff; border-color: #DC2626; }
-.qz-option.is-wrong .qz-option-mark { color: #B91C1C; }
+.qz-option.is-wrong .qz-option-letter { background: rgba(255,255,255,0.28); color: #fff; }
+
+/* Generated questions have no card-type, so the chip is left empty — hide it. */
+.qz-tag:empty { display: none; }
 
 /* ---------- Sticky bottom action bar ---------- */
 .qz-action {
@@ -614,6 +661,7 @@ body.is-quiz-active { overflow: hidden; }
   text-transform: uppercase;
 }
 
+.qz-feedback[hidden] { display: none; }   /* same display:flex-vs-[hidden] override as the overlays */
 .qz-feedback {
   display: flex;
   align-items: center;
@@ -719,111 +767,103 @@ body.is-quiz-active { overflow: hidden; }
 
 
 /* =========================================================================
-   ROUND-LENGTH PICKER
+   WELCOME INTRO (onboarding-style: quizmaster + speech bubble)
    ========================================================================= */
-.quiz-rounds-decks {
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  color: var(--mute);
-  flex-shrink: 0;
+.qz-head-spacer { width: 40px; flex-shrink: 0; }   /* balances the back button */
+
+/* The welcome screen is pure white end-to-end so the quizmaster video (white
+   background) blends seamlessly — no header divider, no grey action bar. */
+.quiz-welcome .qz-head { border-bottom: none; }
+.quiz-welcome .qz-action { background: #fff; border-top: none; }
+
+.qz-main.qz-welcome-main {
+  justify-content: center;     /* centre the row vertically */
+  max-width: 880px;            /* wider so the bigger mascot + bubble fit side by side */
 }
-.quiz-rounds-stage {
-  width: 100%;
-  display: grid;
-  place-items: center;
-}
-.quiz-rounds-mascot {
-  width: auto;
-  height: 160px;
-  filter: drop-shadow(0 16px 22px rgba(15,15,20,0.10));
-}
-.quiz-rounds-sub {
-  margin: 8px 0 0;
-  font-family: var(--font-body);
-  font-size: 14px;
-  color: var(--mute);
-  font-weight: 500;
-  line-height: 1.4;
-}
-.quiz-rounds-grid {
+.qz-welcome-row {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 28px;
   width: 100%;
 }
-.quiz-round-card {
-  display: grid;
-  grid-template-columns: 56px 1fr 24px;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
+.qz-welcome-stage { flex-shrink: 0; display: grid; place-items: center; }
+.qz-welcome-mascot {
+  width: auto;
+  height: 540px;               /* mascot +50% */
   background: #fff;
-  border: 2px solid var(--line);
-  border-radius: 16px;
-  cursor: pointer;
-  text-align: left;
-  box-shadow: 0 4px 0 var(--line);
-  transition: border-color .12s, background .12s, transform .08s, box-shadow .12s;
-  font-family: inherit;
-  animation: qz-opt-in .35s ease-out backwards;
+  /* Same trick as the onboarding wave video (.ob-mascot-wave): a tiny inward
+     scale eats the AI generator's slightly-dim edge ring, and a brightness/
+     contrast nudge makes the video's white match the page white. NO
+     drop-shadow — it would outline the white video as a visible box. */
+  transform: scale(1.04);
+  filter: brightness(1.01) contrast(1.005);
 }
-.quiz-rounds-grid .quiz-round-card:nth-child(1) { animation-delay: .04s; }
-.quiz-rounds-grid .quiz-round-card:nth-child(2) { animation-delay: .12s; }
-.quiz-rounds-grid .quiz-round-card:nth-child(3) { animation-delay: .20s; }
-@media (hover: hover) {
-  .quiz-round-card:hover {
-    border-color: var(--purple-ring);
-    background: var(--purple-soft);
-  }
-  .quiz-round-card:hover .quiz-round-chevron { color: var(--purple); transform: translateX(3px); }
+.qz-welcome-bubble {
+  position: relative;
+  background: var(--purple);
+  border: 2px solid var(--purple);
+  border-radius: var(--r-2xl);
+  padding: 24px 28px;
+  box-shadow: 0 4px 0 var(--purple-deep);
+  max-width: 380px;
+  animation: qz-q-in .35s cubic-bezier(.4,0,.2,1);
 }
-.quiz-round-card:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--line); }
-.quiz-round-emoji {
-  width: 56px;
-  height: 56px;
-  display: grid;
-  place-items: center;
-  font-size: 30px;
-  background: var(--purple-soft);
-  border-radius: 14px;
-  flex-shrink: 0;
+/* Tail pointing left toward the mascot — solid purple to match the bubble */
+.qz-welcome-bubble::before,
+.qz-welcome-bubble::after {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: 50%;
+  margin-top: -12px;
+  width: 0; height: 0;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-right: 14px solid var(--purple);
 }
-.quiz-round-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.quiz-round-label {
+.qz-welcome-bubble::after { left: -13px; border-right-color: var(--purple); }
+/* The "Quiz Mode" tag inverts on the purple bubble: white pill, purple text */
+.qz-welcome-bubble .qz-tag { background: #fff; color: var(--purple); }
+.qz-welcome-h {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 18px;
-  letter-spacing: -0.015em;
-  color: var(--ink);
+  font-size: clamp(22px, 3vw, 28px);
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin: 10px 0 8px;
+  line-height: 1.15;
 }
-.quiz-round-meta {
-  font-size: 13px;
-  color: var(--mute);
+.qz-welcome-sub {
+  font-size: 15px;
+  color: rgba(255,255,255,0.92);
+  line-height: 1.5;
+  margin: 0;
   font-weight: 500;
 }
-.quiz-round-meta strong {
+.qz-welcome-sub strong {
   font-family: var(--font-display);
   font-weight: 800;
-  color: var(--ink);
+  color: #fff;
 }
-.quiz-round-chevron {
-  display: grid;
-  place-items: center;
-  color: var(--mute-2);
-  transition: color .12s, transform .12s;
-  flex-shrink: 0;
+.qz-welcome-action { justify-content: center; }
+.qz-welcome-action .qz-cta { min-width: 240px; }
+
+@media (max-width: 600px) {
+  .qz-welcome-row { flex-direction: column; gap: 14px; }
+  .qz-welcome-mascot { height: 255px; }
+  /* Tail flips to point up (bubble sits below the mascot when stacked) */
+  .qz-welcome-bubble::before,
+  .qz-welcome-bubble::after {
+    left: 50%; top: -13px; margin-top: 0; margin-left: -12px;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 0;
+    border-bottom: 14px solid var(--purple);
+  }
+  .qz-welcome-bubble::after { top: -13px; border-bottom-color: var(--purple); }
 }
-.quiz-round-card:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background: var(--line-2);
-}
-.quiz-round-card:disabled .quiz-round-label,
-.quiz-round-card:disabled .quiz-round-meta strong { color: var(--mute); }
 
 /* =========================================================================
    COMPLETE VIEW
@@ -850,7 +890,7 @@ body.is-quiz-active { overflow: hidden; }
 .qz-complete-stage {
   position: relative;
   width: 100%;
-  height: 280px;
+  height: 420px;          /* mascot +50% */
   display: grid;
   place-items: center;
 }
@@ -859,7 +899,7 @@ body.is-quiz-active { overflow: hidden; }
   inset: 0;
   margin: auto;
   width: auto;
-  height: 280px;
+  height: 420px;
   object-fit: contain;
   display: none;
   filter: drop-shadow(0 20px 30px rgba(15,15,20,0.14));

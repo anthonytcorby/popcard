@@ -79,6 +79,64 @@
   color: var(--mute);
 }
 
+/* ----------------- Deck picker ----------------- */
+.prac-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.prac-picker[hidden] { display: none; }
+.prac-picker-head { display: flex; align-items: center; gap: 10px; }
+.prac-picker-eyebrow {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.prac-picker-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.prac-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1.5px solid var(--card-bd);
+  border-radius: 999px;
+  padding: 9px 14px 9px 16px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color .12s, background .12s, color .12s, transform .08s;
+}
+.prac-chip:hover { border-color: var(--purple-ring); color: var(--purple); }
+.prac-chip:active { transform: translateY(1px); }
+.prac-chip.is-active {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--purple-deep);
+}
+.prac-chip-label { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prac-chip-count {
+  font-size: 11.5px;
+  font-weight: 700;
+  background: rgba(0,0,0,0.06);
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--mute);
+}
+.prac-chip.is-active .prac-chip-count {
+  background: rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.95);
+}
+
 .prac-start {
   display: flex;
   align-items: center;
@@ -462,6 +520,22 @@
   line-height: 1.45;
 }
 .prac-howto strong { color: var(--purple); }
+
+/* The practice list lays out as a stacked column inside the dashboard's
+   .col-main. */
+.prac-list { display: flex; flex-direction: column; gap: 22px; }
+/* The list/session/complete views are author display:flex, which beats the
+   UA [hidden]{display:none}; restore it so hidden views actually hide. */
+.prac-list[hidden], .prac-session[hidden], .prac-complete[hidden] { display: none; }
+
+/* Right-rail "tip" card — mascot + note, on the dashboard .card base. */
+.prac-tip { display: flex; align-items: center; gap: 12px; background: linear-gradient(165deg, #F3EEFF 0%, #FBF9FF 100%); border-color: var(--purple-ring); }
+.prac-tip-mascot { width: auto; height: 84px; flex-shrink: 0; object-fit: contain; filter: drop-shadow(0 6px 12px rgba(15,15,20,0.08)); }
+.prac-tip-text { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--ink); line-height: 1.35; }
+
+/* Sparks chip + keep top-bar controls on one line (quizzes.css isn't loaded here). */
+.quiz-sparks-star { color: var(--purple); font-size: 15px; }
+.topbar-pro, .topbar-streak { white-space: nowrap; }
 
 /* ===== Responsive ======================================================== */
 @media (max-width: 880px) {

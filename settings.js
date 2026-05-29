@@ -63,25 +63,91 @@
   }
 
   // ---------------------------------------------------------------------
-  // Notification toggles — localStorage only for now (no backend yet)
+  // Browser push toggle — real, end-to-end. Delegates to push.js for the
+  // service-worker dance and the server roundtrip. The Weekly Summary
+  // checkbox is deliberately left disabled (it's a "coming soon" stub
+  // until we set up Resend / similar — see Backlog task #24).
   // ---------------------------------------------------------------------
-  function setupNotificationToggles() {
-    const pairs = [
-      { id: 'settings-reminder', key: 'popcardNotifyReminder', defaultOn: true },
-      { id: 'settings-weekly',   key: 'popcardNotifyWeekly',   defaultOn: true },
-    ];
-    pairs.forEach((pair) => {
-      const el = document.getElementById(pair.id);
-      if (!el) return;
-      let stored;
-      try { stored = localStorage.getItem(pair.key); } catch {}
-      el.checked = stored === null ? pair.defaultOn : stored === 'true';
-      el.addEventListener('change', () => {
-        try { localStorage.setItem(pair.key, String(el.checked)); } catch {}
-        window.PopcardAnalytics?.track('Settings Notification Toggle', {
-          key: pair.key, on: String(el.checked),
-        });
-      });
+  // Sound-effects toggle — drives PopcardSfx's persisted mute pref.
+  function setupSound() {
+    const t = document.getElementById('settings-sound');
+    if (!t) return;
+    let m = false;
+    try { m = localStorage.getItem('popcardMuted') === 'true'; } catch {}
+    t.checked = !m;
+    t.addEventListener('change', () => {
+      const muted = !t.checked;
+      if (window.PopcardSfx) window.PopcardSfx.setMuted(muted);
+      else { try { localStorage.setItem('popcardMuted', String(muted)); } catch {} }
+      if (!muted) window.PopcardSfx?.correct?.();   // little preview when turning on
+    });
+  }
+
+  async function setupNotificationToggles() {
+    const pushToggle = document.getElementById('settings-push');
+    const pushHelp = document.getElementById('settings-push-help');
+    const testRow = document.getElementById('settings-push-test-row');
+    const testBtn = document.getElementById('settings-push-test');
+    if (!pushToggle || !window.PopcardPush) return;
+
+    function setHelp(msg) { if (pushHelp) pushHelp.textContent = msg; }
+
+    if (!window.PopcardPush.supported()) {
+      pushToggle.disabled = true;
+      setHelp('Browser push isn\'t supported here. Try a different browser (or your phone).');
+      return;
+    }
+
+    // Reflect current state into the toggle
+    async function refresh() {
+      const s = await window.PopcardPush.status();
+      pushToggle.checked = (s === 'enabled');
+      pushToggle.disabled = (s === 'denied');
+      testRow.hidden = (s !== 'enabled');
+      if (s === 'denied') {
+        setHelp('You blocked notifications for this site. Allow them in your browser settings, then refresh.');
+      } else if (s === 'enabled') {
+        setHelp('Push is on for this device. We\'ll only send: streak-at-risk in the evening, and 10 min before any scheduled session.');
+      } else {
+        setHelp('Reminders fire only on this device. We send: streak-at-risk in the evening, and 10 min before any scheduled session.');
+      }
+    }
+    await refresh();
+
+    pushToggle.addEventListener('change', async () => {
+      pushToggle.disabled = true;
+      try {
+        if (pushToggle.checked) {
+          const s = await window.PopcardPush.enable();
+          window.PopcardAnalytics?.track('Settings Push Enable', { result: s });
+          if (s !== 'enabled') {
+            // Permission denied / unsupported — revert
+            pushToggle.checked = false;
+          }
+        } else {
+          await window.PopcardPush.disable();
+          window.PopcardAnalytics?.track('Settings Push Disable');
+        }
+      } catch (e) {
+        console.error('push toggle failed', e);
+        pushToggle.checked = false;
+      } finally {
+        pushToggle.disabled = false;
+        await refresh();
+      }
+    });
+
+    testBtn?.addEventListener('click', async () => {
+      testBtn.disabled = true;
+      testBtn.textContent = 'Sending…';
+      try {
+        const r = await window.PopcardPush.sendTest();
+        testBtn.textContent = r && r.sent ? 'Sent ✓' : 'No devices';
+      } catch {
+        testBtn.textContent = 'Failed';
+      } finally {
+        setTimeout(() => { testBtn.disabled = false; testBtn.textContent = 'Send test'; }, 1800);
+      }
     });
   }
 
@@ -90,14 +156,48 @@
   // ---------------------------------------------------------------------
   function setupLanguage() {
     const btn = document.getElementById('settings-lang-btn');
-    if (!btn) return;
-    btn.addEventListener('click', () => {
-      if (window.PopcardLangPicker && typeof window.PopcardLangPicker.open === 'function') {
-        window.PopcardLangPicker.open();
-      } else {
-        alert("Language picker coming soon. Your current language is English.");
-      }
+    const wrap = btn && btn.closest('.settings-lang-wrap');
+    const flagEl = document.getElementById('settings-lang-flag');
+    const nameEl = document.getElementById('settings-lang-name');
+    if (!btn || !wrap || !window.PopcardLang) return;
+
+    const langs = window.PopcardLang.languages || [];
+
+    function paintCurrent() {
+      const cur = window.PopcardLang.current;
+      const l = langs.find((x) => x.code === cur) || langs[0];
+      if (!l) return;
+      if (flagEl) flagEl.className = `flag fi fi-${l.flag}`;
+      if (nameEl) nameEl.textContent = l.native;
+    }
+    paintCurrent();
+
+    // Build a real dropdown menu (the settings page has no header picker).
+    const menu = document.createElement('div');
+    menu.className = 'settings-lang-menu';
+    menu.hidden = true;
+    menu.setAttribute('role', 'menu');
+    menu.innerHTML = langs.map((l) =>
+      `<button type="button" role="menuitemradio" data-lang="${l.code}"><span class="flag fi fi-${l.flag}"></span><span>${l.native}</span></button>`
+    ).join('');
+    wrap.appendChild(menu);
+
+    function setOpen(open) {
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+    }
+    btn.addEventListener('click', (e) => { e.stopPropagation(); setOpen(menu.hidden); });
+    menu.addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-lang]');
+      if (!b) return;
+      window.PopcardLang.set(b.dataset.lang);
+      paintCurrent();
+      setOpen(false);
     });
+    document.addEventListener('click', (e) => {
+      if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) setOpen(false);
+    });
+    window.addEventListener('popcard-language-change', paintCurrent);
   }
 
   // ---------------------------------------------------------------------
@@ -149,12 +249,16 @@
         alert('Cancelled — account not deleted.');
         return;
       }
-      // No backend wired yet. Tell the user we'll email them so it doesn't
-      // silently fail with a dead button.
-      alert(
-        "Got it. We'll process your deletion request and email you " +
-        "within 24 hours to confirm. If you change your mind, just reply."
+      // Fire a real deletion request via email (GDPR allows up to 30 days to
+      // process). This avoids silently cancelling a paying customer's billing
+      // — we confirm + handle Stripe on our side. Opens the user's mail client
+      // with a pre-filled request so the action actually does something.
+      const subject = encodeURIComponent('Account deletion request');
+      const body = encodeURIComponent(
+        "Please delete my Popcard account and all my data.\n\n" +
+        "(Sent from Settings. We'll confirm and erase your data within 30 days.)"
       );
+      window.location.href = `mailto:hello@popcard.me?subject=${subject}&body=${body}`;
       window.PopcardAnalytics?.track('Settings Delete Account Request');
     });
   }
@@ -235,6 +339,7 @@
 
     // Wire interactive bits
     setupNotificationToggles();
+    setupSound();
     setupLanguage();
     setupUserMenu();
     setupDelete();

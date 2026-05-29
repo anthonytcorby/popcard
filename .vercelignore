@@ -1,0 +1,11 @@
+# Atomic-write temp files. Tools/editors create files like
+# `account.html.tmp.34428.4cee44dfc561` during saves, then rename them away.
+# On Windows, `vercel dev`'s file watcher crashes with a libuv assertion
+# (UV_HANDLE_CLOSING) when it tries to watch one of these as it disappears.
+# These should never be deployed regardless.
+*.tmp.*
+*.tmp
+
+# OS / editor noise
+.DS_Store
+Thumbs.db

@@ -14,8 +14,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
 
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="account.css?v=13" />
-  <link rel="stylesheet" href="settings.css?v=1" />
+  <link rel="stylesheet" href="account.css?v=14" />
+  <link rel="stylesheet" href="settings.css?v=3" />
 </head>
 <body class="dashboard">
 
@@ -165,28 +165,46 @@
         </div>
       </section>
 
-      <!-- Notifications (stub for now — wire when backend is built) -->
+      <!-- Notifications — browser push is real; email summary deferred until
+           we sign up for an email provider (Backlog task #24). -->
       <section class="settings-card">
         <div class="settings-card-head">
-          <h2>Notifications</h2>
+          <h2>Notifications &amp; sound</h2>
         </div>
         <div class="settings-row">
           <div class="settings-row-text">
-            <h3>Daily reminder</h3>
-            <p>Get a friendly nudge from Pop if you haven't studied today.</p>
+            <h3>Sound effects</h3>
+            <p>Pops, dings, and the little fanfare when you finish a session.</p>
           </div>
           <label class="settings-toggle">
-            <input type="checkbox" id="settings-reminder" />
+            <input type="checkbox" id="settings-sound" checked />
             <span class="settings-toggle-track"><span class="settings-toggle-knob"></span></span>
           </label>
         </div>
         <div class="settings-row">
           <div class="settings-row-text">
-            <h3>Weekly summary email</h3>
-            <p>A recap of your decks, streak, and Sparks every Sunday.</p>
+            <h3>Browser push</h3>
+            <p id="settings-push-help">Reminders fire only on this device. We send: streak-at-risk in the evening, and 10 min before any scheduled session.</p>
           </div>
           <label class="settings-toggle">
-            <input type="checkbox" id="settings-weekly" />
+            <input type="checkbox" id="settings-push" disabled />
+            <span class="settings-toggle-track"><span class="settings-toggle-knob"></span></span>
+          </label>
+        </div>
+        <div class="settings-row" id="settings-push-test-row" hidden>
+          <div class="settings-row-text">
+            <h3>Send a test push</h3>
+            <p>Hit this to confirm notifications reach you on this device.</p>
+          </div>
+          <button type="button" class="settings-btn-secondary" id="settings-push-test">Send test</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <h3>Weekly summary email <span class="settings-pill">Coming soon</span></h3>
+            <p>A recap of your decks, streak, and Sparks every Sunday. Needs an email provider — wired in once we ship it.</p>
+          </div>
+          <label class="settings-toggle settings-toggle-disabled">
+            <input type="checkbox" id="settings-weekly" disabled />
             <span class="settings-toggle-track"><span class="settings-toggle-knob"></span></span>
           </label>
         </div>
@@ -236,6 +254,8 @@
   <script src="auth.js"></script>
   <script src="lang-picker.js"></script>
   <script src="i18n.js"></script>
-  <script src="settings.js?v=1"></script>
+  <script src="sfx.js?v=1"></script>
+  <script src="push.js?v=1"></script>
+  <script src="settings.js?v=3"></script>
 </body>
 </html>
