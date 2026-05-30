@@ -152,17 +152,17 @@
       </div>
 
       <div class="ob-try-grades" id="ob-try-grades" hidden>
-        <button type="button" class="ob-try-grade ob-try-grade-hard" data-grade="hard">
-          <span class="ob-try-grade-emoji">&#128557;</span>
-          <span class="ob-try-grade-label">Hard</span>
+        <button type="button" class="ob-try-grade ob-try-grade-easy" data-grade="easy">
+          <span class="ob-try-grade-emoji">&#128293;</span>
+          <span class="ob-try-grade-label">Easy</span>
         </button>
         <button type="button" class="ob-try-grade ob-try-grade-good" data-grade="good">
           <span class="ob-try-grade-emoji">&#128526;</span>
           <span class="ob-try-grade-label">Good</span>
         </button>
-        <button type="button" class="ob-try-grade ob-try-grade-easy" data-grade="easy">
-          <span class="ob-try-grade-emoji">&#128293;</span>
-          <span class="ob-try-grade-label">Easy</span>
+        <button type="button" class="ob-try-grade ob-try-grade-hard" data-grade="hard">
+          <span class="ob-try-grade-emoji">&#128557;</span>
+          <span class="ob-try-grade-label">Hard</span>
         </button>
       </div>
 
@@ -184,9 +184,9 @@
            data-ux_mode="popup"></div>
 
       <div class="ob-social">
-        <!-- Google: custom button styled to match the others, with Google's
-             real auth iframe overlaid invisibly on top so the click triggers
-             the official sign-in flow. -->
+        <!-- Google — the only live provider at launch. Custom button with
+             Google's real auth iframe overlaid invisibly on top so the click
+             triggers the official sign-in flow. -->
         <div class="ob-google-stack">
           <button type="button" class="ob-social-btn ob-social-google" tabindex="-1" aria-hidden="true">
             <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
@@ -206,25 +206,9 @@
                data-logo_alignment="left"
                data-width="360"></div>
         </div>
-
-        <!-- Apple (visual stub) -->
-        <button type="button" class="ob-social-btn ob-social-apple" data-provider="apple">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
-            <path d="M17.05 12.05a4.4 4.4 0 0 1 2.1-3.7 4.5 4.5 0 0 0-3.55-1.92c-1.5-.16-2.93.88-3.7.88-.78 0-1.95-.85-3.21-.83a4.72 4.72 0 0 0-3.98 2.42c-1.7 2.95-.43 7.3 1.22 9.7.81 1.16 1.77 2.47 3.04 2.42 1.22-.05 1.68-.79 3.16-.79 1.46 0 1.9.79 3.2.76 1.32-.02 2.16-1.18 2.97-2.36a10.4 10.4 0 0 0 1.34-2.78 4.27 4.27 0 0 1-2.59-3.8zM14.61 4.4a4.2 4.2 0 0 0 .97-3.07 4.3 4.3 0 0 0-2.82 1.46 4 4 0 0 0-1 3.02 3.55 3.55 0 0 0 2.85-1.41z"/>
-          </svg>
-          <span>Continue with Apple</span>
-        </button>
-
-        <!-- Facebook (visual stub) -->
-        <button type="button" class="ob-social-btn ob-social-facebook" data-provider="facebook">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
-            <path d="M22 12a10 10 0 1 0-11.56 9.88V14.9H7.9V12h2.54V9.8c0-2.5 1.5-3.9 3.78-3.9 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.57V12h2.78l-.45 2.9h-2.33v6.98A10 10 0 0 0 22 12z"/>
-          </svg>
-          <span>Continue with Facebook</span>
-        </button>
       </div>
 
-      <p class="ob-fine">By continuing you agree to our Terms and Privacy.</p>
+      <p class="ob-fine">By continuing you agree to our <a href="/legal#terms">Terms</a> and <a href="/legal#privacy">Privacy</a>.</p>
       <div id="ob-auth-error" class="ob-error" hidden></div>
     </section>
 
@@ -240,6 +224,6 @@
   <script src="auth.js"></script>
   <script src="lang-picker.js"></script>
   <script src="i18n.js"></script>
-  <script src="onboarding.js?v=6"></script>
+  <script src="onboarding.js?v=7"></script>
 </body>
 </html>

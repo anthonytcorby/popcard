@@ -508,9 +508,9 @@
       if (!session.flipped) {
         if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
       } else {
-        if (e.key === '1') applyGrade('hard');
+        if (e.key === '1') applyGrade('easy');
         else if (e.key === '2') applyGrade('good');
-        else if (e.key === '3') applyGrade('easy');
+        else if (e.key === '3') applyGrade('hard');
       }
     });
 

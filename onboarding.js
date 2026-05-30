@@ -333,22 +333,9 @@
     }
   };
 
-  // --- Apple / Facebook stubs (parity with /login) ---------------------------
-  // Both OAuth flows need provider-side app registration; until then they
-  // show a friendly "coming soon" message and bounce the user to Google.
-  (function socialStubs() {
-    document.querySelectorAll('[data-provider]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const p = btn.dataset.provider;
-        const label = p === 'apple' ? 'Apple' : p === 'facebook' ? 'Facebook' : p;
-        if (errorEl) {
-          errorEl.textContent = `${label} sign-in is coming soon. For now, please use Google.`;
-          errorEl.hidden = false;
-        }
-        window.PopcardAnalytics?.track('Sign Up Click', { method: p, status: 'coming_soon', via: 'onboarding' });
-      });
-    });
-  })();
+  // Apple / Facebook sign-up were removed from the UI at launch (Google is the
+  // only live provider) rather than shown as non-functional "coming soon"
+  // buttons. Re-add the markup + handlers here once their backend flows exist.
 
   // --- Already signed in? Skip to /account -----------------------------------
   // Skipped when ?reset=1 so you can review the flow even while signed in.

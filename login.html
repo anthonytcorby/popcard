@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <title>Log in &mdash; Popcard</title>
+  <meta name="description" content="Log in to Popcard to keep your study streak going and pick up your flashcard decks where you left off." />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://www.popcard.me/login" />
+  <meta property="og:title" content="Log in — Popcard" />
+  <meta property="og:description" content="Sign in to Popcard and keep your study streak going." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.popcard.me/login" />
+  <meta property="og:image" content="https://www.popcard.me/images/hero-drop.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.popcard.me/images/hero-drop.png" />
   <link rel="icon" type="image/png" href="/images/favicon.png?v=3" />
   <link rel="apple-touch-icon" href="/images/favicon.png?v=3" />
 
@@ -32,38 +42,6 @@
       <h1 class="login-h1">Welcome back.</h1>
       <p class="login-sub">Sign in to keep your streak going.</p>
 
-      <!-- Email / Password -->
-      <form class="login-form" id="login-form" autocomplete="on" novalidate>
-        <label class="login-field">
-          <span class="login-field-label">Email or username</span>
-          <input type="text" name="identifier" id="login-id" class="ph-no-capture" autocomplete="username"
-                 placeholder="you@example.com" />
-        </label>
-        <label class="login-field">
-          <span class="login-field-label">Password</span>
-          <div class="login-pw-wrap">
-            <input type="password" name="password" id="login-pw" class="ph-no-capture" autocomplete="current-password"
-                   placeholder="At least 8 characters" />
-            <button type="button" class="login-pw-toggle" id="login-pw-toggle" aria-label="Show password">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-            </button>
-          </div>
-        </label>
-        <div class="login-row-between">
-          <label class="login-remember">
-            <input type="checkbox" id="login-remember" />
-            <span>Remember me</span>
-          </label>
-          <a href="mailto:hello@popcard.me?subject=Password%20reset" class="login-forgot" data-action="forgot">Forgot password?</a>
-        </div>
-        <button type="submit" class="login-submit">LOG IN</button>
-      </form>
-
-      <div class="login-divider" aria-hidden="true"><span>or continue with</span></div>
-
       <!-- GSI bootstrap (no visible UI; needed for the overlay iframe to render) -->
       <div id="g_id_onload"
            data-client_id="61959955783-pjfsl2pf4r3l38qdh864b5kod2nr7f60.apps.googleusercontent.com"
@@ -72,9 +50,9 @@
            data-context="signin"
            data-ux_mode="popup"></div>
 
-      <!-- Social auth — identical chunky-pill design across all three providers.
-           Google uses a custom button with the real GSI iframe overlaid invisibly
-           on top so the click triggers the official auth flow. -->
+      <!-- Google sign-in — the only live provider at launch. A custom-styled
+           button sits beneath the real (invisible) GSI iframe so the click fires
+           Google's official popup flow. -->
       <div class="login-social">
         <div class="login-google-stack">
           <button type="button" class="login-social-btn login-social-google" tabindex="-1" aria-hidden="true">
@@ -95,22 +73,6 @@
                data-logo_alignment="left"
                data-width="360"></div>
         </div>
-
-        <!-- Apple (visual stub) -->
-        <button type="button" class="login-social-btn login-social-apple" data-provider="apple">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
-            <path d="M17.05 12.05a4.4 4.4 0 0 1 2.1-3.7 4.5 4.5 0 0 0-3.55-1.92c-1.5-.16-2.93.88-3.7.88-.78 0-1.95-.85-3.21-.83a4.72 4.72 0 0 0-3.98 2.42c-1.7 2.95-.43 7.3 1.22 9.7.81 1.16 1.77 2.47 3.04 2.42 1.22-.05 1.68-.79 3.16-.79 1.46 0 1.9.79 3.2.76 1.32-.02 2.16-1.18 2.97-2.36a10.4 10.4 0 0 0 1.34-2.78 4.27 4.27 0 0 1-2.59-3.8zM14.61 4.4a4.2 4.2 0 0 0 .97-3.07 4.3 4.3 0 0 0-2.82 1.46 4 4 0 0 0-1 3.02 3.55 3.55 0 0 0 2.85-1.41z"/>
-          </svg>
-          <span>Continue with Apple</span>
-        </button>
-
-        <!-- Facebook (visual stub) -->
-        <button type="button" class="login-social-btn login-social-facebook" data-provider="facebook">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
-            <path d="M22 12a10 10 0 1 0-11.56 9.88V14.9H7.9V12h2.54V9.8c0-2.5 1.5-3.9 3.78-3.9 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.57V12h2.78l-.45 2.9h-2.33v6.98A10 10 0 0 0 22 12z"/>
-          </svg>
-          <span>Continue with Facebook</span>
-        </button>
       </div>
 
       <div id="login-error" class="login-error" hidden></div>
@@ -119,7 +81,7 @@
         Don&rsquo;t have an account? <a href="/onboarding">Sign up</a>
       </p>
 
-      <p class="login-fine">By continuing you agree to our Terms and Privacy.</p>
+      <p class="login-fine">By continuing you agree to our <a href="/legal#terms">Terms</a> and <a href="/legal#privacy">Privacy</a>.</p>
     </div>
   </main>
 
@@ -148,48 +110,9 @@
       });
     }
 
-    // Stub handlers for Apple / Facebook — show a friendly "coming soon" message
-    // until the OAuth flows are wired up server-side.
-    (function () {
-      const err = document.getElementById('login-error');
-      function comingSoon(provider) {
-        err.textContent = `${provider} sign-in is coming soon. For now, please use Google or email.`;
-        err.hidden = false;
-        window.PopcardAnalytics?.track('Sign In Click', { method: provider.toLowerCase(), status: 'coming_soon' });
-      }
-      document.querySelectorAll('[data-provider]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const p = btn.dataset.provider;
-          comingSoon(p === 'apple' ? 'Apple' : p === 'facebook' ? 'Facebook' : p);
-        });
-      });
-
-      // Password show/hide toggle
-      const pw = document.getElementById('login-pw');
-      const tog = document.getElementById('login-pw-toggle');
-      tog?.addEventListener('click', () => {
-        const isPw = pw.type === 'password';
-        pw.type = isPw ? 'text' : 'password';
-        tog.setAttribute('aria-label', isPw ? 'Hide password' : 'Show password');
-      });
-
-      // Email/password form — wired to a stub for now. Real email auth needs
-      // a backend route + password hashing.
-      const form = document.getElementById('login-form');
-      form?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        err.textContent = 'Email sign-in is coming soon. For now, please use Google.';
-        err.hidden = false;
-        window.PopcardAnalytics?.track('Sign In Click', { method: 'email', status: 'coming_soon' });
-      });
-
-      // Forgot-password stub
-      document.querySelector('[data-action="forgot"]')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        err.textContent = 'Password reset is coming soon. Email us if you need help.';
-        err.hidden = false;
-      });
-    })();
+    // Google is the only live provider at launch. Apple/Facebook/email sign-in
+    // were removed from the UI rather than shown as non-functional "coming soon"
+    // buttons — re-add them here (and in the markup) once their backend flows exist.
   </script>
 </body>
 </html>
